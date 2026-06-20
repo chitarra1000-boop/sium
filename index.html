@@ -11959,10 +11959,8 @@ var SCENE_AUDIO = [
   { id:'villaggio',     nome:'Villaggio Rurale',    audioFile:'villaggio.mp3',     combatFile:'fuga.mp3',          sfx:['folla','vento','pioggia','tuoni','campana'] }
 ];
 
-/* Base URL per Firebase Storage (audio ospitato su Firebase) */
-var _FB_AUDIO = 'https://firebasestorage.googleapis.com/v0/b/mercante-errante.appspot.com/o/audio%2F';
-var _FB_AUDIO_ALT = 'https://firebasestorage.googleapis.com/v0/b/mercante-errante.firebasestorage.app/o/audio%2F';
-function _au(f) { return _FB_AUDIO + encodeURIComponent(f) + '?alt=media'; }
+/* Funzione URL audio — file nella cartella audio/ del sito */
+function _au(f) { return 'audio/' + f; }
 
 /* Effetti sonori */
 var SFX_MAP = {
