@@ -8933,6 +8933,22 @@ function renderGeneratore() {
     p1l.appendChild(appFr);
     var ib1=document.createElement('div');ib1.style.cssText='display:flex;gap:4px;margin:4px 0;';
     var bs1=document.createElement('button');bs1.className='btn-av btn-av-gold';bs1.style.fontSize='12px';bs1.innerHTML=ICON.sparkles+' Cerca';bs1.onclick=function(){cercaImmagineNpc(state.npc);};
+    /* Bottone Carica da dispositivo — salva base64 in Firebase, non scade mai */
+    var bup1=document.createElement('button');bup1.className='btn-av btn-av-dim';bup1.style.fontSize='12px';bup1.textContent='📁 Carica';
+    bup1.onclick=function(){
+      var inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+      inp.onchange=function(){
+        if(!this.files[0])return;
+        var reader=new FileReader();
+        reader.onload=function(ev){
+          state.npc.immagine=ev.target.result;
+          saveToStorage();fbSavePersonaggi();
+          aggiornaPannelloAvatar();
+          notify('Immagine caricata e salvata.');
+        };
+        reader.readAsDataURL(this.files[0]);
+      };inp.click();
+    };
     var bu1=document.createElement('button');bu1.className='btn-av btn-av-dim';bu1.style.fontSize='12px';bu1.textContent='URL';
     var ur1=document.createElement('div');ur1.style.cssText='display:none;gap:3px;margin-bottom:4px;';
     var ui1=ti(state.npc.immagine||'','https://...','');ui1.style.cssText='flex:1;border:none;border-bottom:1px solid #aaa;outline:none;background:transparent;font-size:12px;color:#111;';
@@ -8940,7 +8956,7 @@ function renderGeneratore() {
     uo1.onclick=function(){state.npc.immagine=ui1.value.trim();ur1.style.display='none';saveToStorage();aggiornaPannelloAvatar();};
     bu1.onclick=function(){ur1.style.display=ur1.style.display==='flex'?'none':'flex';};
     ur1.appendChild(ui1);ur1.appendChild(uo1);
-    ib1.appendChild(bs1);ib1.appendChild(bu1);p1l.appendChild(ib1);p1l.appendChild(ur1);
+    ib1.appendChild(bs1);ib1.appendChild(bup1);ib1.appendChild(bu1);p1l.appendChild(ib1);p1l.appendChild(ur1);
 
     /* Aspetto fisico */
     var p1aspBox=document.createElement('div');p1aspBox.className='dnd-big-box';p1aspBox.style.flex='1';
