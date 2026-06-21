@@ -4856,6 +4856,27 @@ function fbSavePersonaggi() {
   _db.ref('state/personaggi').set(state.personaggi.length > 0 ? state.personaggi : null);
 }
 
+/* Salva chiavi API su Firebase — persistenti su qualsiasi dominio/dispositivo */
+function fbSaveApiKeys() {
+  if (!_db || !isDM()) return;
+  _db.ref('dmConfig/apiKeys').set({
+    geminiKey: state.geminiKey || '',
+    groqKey: state.groqKey || ''
+  });
+}
+
+/* Carica chiavi API da Firebase (priorità su localStorage) */
+function fbLoadApiKeys() {
+  if (!_db || !isDM()) return;
+  _db.ref('dmConfig/apiKeys').once('value', function(snap) {
+    var v = snap.val();
+    if (!v) return;
+    if (v.geminiKey) state.geminiKey = v.geminiKey;
+    if (v.groqKey)   state.groqKey   = v.groqKey;
+    saveToStorage();
+  });
+}
+
 function fbSaveBestiario() {
   if (!_db) return;
   _db.ref('state/bestiario').set(state.bestiario.length > 0 ? state.bestiario : null);
@@ -5088,6 +5109,7 @@ function tentaLogin() {
     // setupRealtimeListeners e presenza
     setupPresence();
     setupRealtimeListeners();
+    fbLoadApiKeys();
     // Inizializza users su Firebase se prima volta (solo DM)
     if ((ru.role === 'DM' || ru.dmPriv) && _db) {
       _db.ref('users').once('value', function(snap) {
@@ -8589,7 +8611,7 @@ function renderGeneratore() {
     groqSave.className = 'btn-npc btn-npc-gold';
     groqSave.style.cssText = 'width:auto;padding:0.25rem 0.6rem;font-size:9px;';
     groqSave.textContent = 'Salva';
-    groqSave.onclick = function() { state.groqKey = groqInp.value.trim(); saveToStorage(); notify('\u26A1 Chiave Groq salvata — generazione ultra-veloce attiva!'); };
+    groqSave.onclick = function() { state.groqKey = groqInp.value.trim(); saveToStorage(); fbSaveApiKeys(); notify('\u26A1 Chiave Groq salvata — generazione ultra-veloce attiva!'); };
     groqRow.appendChild(groqSave);
     apiBox.appendChild(groqRow);
 
@@ -8618,7 +8640,7 @@ function renderGeneratore() {
     apiSave.className = 'btn-npc btn-npc-gold';
     apiSave.style.cssText = 'width:auto;padding:0.25rem 0.6rem;font-size:9px;';
     apiSave.textContent = 'Salva';
-    apiSave.onclick = function() { state.geminiKey = apiInp.value.trim(); saveToStorage(); notify('Chiave Gemini salvata.'); };
+    apiSave.onclick = function() { state.geminiKey = apiInp.value.trim(); saveToStorage(); fbSaveApiKeys(); notify('Chiave Gemini salvata.'); };
     apiRow.appendChild(apiSave);
     apiBox.appendChild(apiRow);
     var apiHint = document.createElement('div');
