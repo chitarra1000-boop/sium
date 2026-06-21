@@ -7339,7 +7339,6 @@ function salvaNpcInArchivio() {
   }
   saveToStorage();
   fbSavePersonaggi();
-  saveNpc();
   renderMain();
 }
 
@@ -7418,7 +7417,6 @@ function archivaNpcInCitta(npc) {
     chosen.city.npcChiave.push(snapshot);
     state.personaggi = state.personaggi.filter(function(p) { return p._id !== npc._id; });
     fbSaveWorldbuilding(); fbSavePersonaggi(); saveToStorage();
-    try { var j=JSON.stringify(state.personaggi,null,2); triggerDownload(new Blob([j],{type:'application/json'}),'database_npc.json'); } catch(e) {}
     notify('"' + escapeHtml(npc.nome || 'NPC') + '" archiviato in ' + escapeHtml(chosen.city.nome) + '.');
     back.remove(); renderMain();
   };
@@ -10732,7 +10730,6 @@ function renderWorldbuilding() {
                 fresh.splice(i,1);
                 c.npcChiave=fresh;
                 fbSavePersonaggi(); fbSaveWorldbuilding(); saveToStorage();
-                try { var j=JSON.stringify(state.personaggi,null,2); triggerDownload(new Blob([j],{type:'application/json'}),'database_npc.json'); } catch(e){}
                 notify('"'+(n.nome||'NPC')+'" riabilitato nell\'archivio del Generatore NPC.');
                 rebuildNPCList();
               }; })(npc,ni);
