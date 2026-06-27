@@ -4762,21 +4762,7 @@ function setupRealtimeListeners() {
     }
   });
 
-  // ---- WORLDBUILDING (per-mappa) ----
-  // Migrazione: se esiste il vecchio array globale in state/worldbuilding, lo sposta al percorso della mappa corrente
-  _db.ref('state/worldbuilding').once('value', function(snap) {
-    var v = snap.val();
-    if (v && Array.isArray(v)) {
-      var mid = state.mappaActiveId || 'default';
-      _db.ref('state/worldbuilding/' + mid).once('value', function(ms) {
-        if (!ms.val()) _db.ref('state/worldbuilding/' + mid).set(v);
-        _db.ref('state/worldbuilding').set(null);
-        _attachWorldbuildingListener(mid);
-      });
-    } else {
-      _attachWorldbuildingListener(state.mappaActiveId || 'default');
-    }
-  });
+  // ---- WORLDBUILDING: agganciato dentro il listener mappa (vedi sotto) ----
 
   // ---- DICE ROLLS ----
   _db.ref('diceRolls').limitToLast(15).on('value', function(snap) {
@@ -4828,6 +4814,8 @@ function setupRealtimeListeners() {
       var selEl = document.getElementById('mappa-selector');
       if (selEl) _refreshMappaSelectorOptions(selEl);
     }
+    // Aggancia worldbuilding alla mappa attiva (una volta sola per ID)
+    if (state.mappaActiveId) _attachWorldbuildingListener(state.mappaActiveId);
   });
 
   // ---- BACHECA DEI RICERCATI ----
@@ -4977,17 +4965,38 @@ function updateSchedaDerived() {
 var _wbLocalWrite = false;
 var _wbListenerRef = null; // riferimento al listener Firebase corrente del worldbuilding
 
-/* Attacca (o ri-attacca) il listener realtime al worldbuilding della mappa attiva */
+/* Attacca (o ri-attacca) il listener realtime al worldbuilding della mappa attiva.
+   Gestisce anche la migrazione dal vecchio percorso globale al nuovo per-mappa. */
+var _lastWbMapId = null;
 function _attachWorldbuildingListener(mapId) {
-  if (_wbListenerRef) { _wbListenerRef.off(); _wbListenerRef = null; }
   if (!_db) return;
   var mid = mapId || 'default';
-  _wbListenerRef = _db.ref('state/worldbuilding/' + mid);
-  _wbListenerRef.on('value', function(snap) {
-    if (_wbLocalWrite) { _wbLocalWrite = false; return; }
-    var v = snap.val();
-    state.worldbuilding = (v && Array.isArray(v)) ? v : [];
-    if (state.section === 'worldbuilding') renderMain();
+  if (mid === _lastWbMapId) return; // già agganciato a questa mappa
+  _lastWbMapId = mid;
+  if (_wbListenerRef) { _wbListenerRef.off(); _wbListenerRef = null; }
+
+  function doAttach() {
+    _wbListenerRef = _db.ref('state/worldbuilding/' + mid);
+    _wbListenerRef.on('value', function(snap) {
+      if (_wbLocalWrite) { _wbLocalWrite = false; return; }
+      var v = snap.val();
+      state.worldbuilding = (v && Array.isArray(v)) ? v : [];
+      if (state.section === 'worldbuilding') renderMain();
+    });
+  }
+
+  // Migrazione una-tantum: se esiste ancora il vecchio array globale, spostalo
+  _db.ref('state/worldbuilding').once('value', function(legSnap) {
+    var leg = legSnap.val();
+    if (leg && Array.isArray(leg)) {
+      _db.ref('state/worldbuilding/' + mid).once('value', function(ms) {
+        if (!ms.val()) _db.ref('state/worldbuilding/' + mid).set(leg);
+        _db.ref('state/worldbuilding').set(null);
+        doAttach();
+      });
+    } else {
+      doAttach();
+    }
   });
 }
 
