@@ -4968,36 +4968,53 @@ var _wbListenerRef = null; // riferimento al listener Firebase corrente del worl
 /* Attacca (o ri-attacca) il listener realtime al worldbuilding della mappa attiva.
    Gestisce anche la migrazione dal vecchio percorso globale al nuovo per-mappa. */
 var _lastWbMapId = null;
+var _wbRecovered = false; // true dopo il primo recovery da localStorage
+
+/* Legge il worldbuilding salvato in localStorage.
+   Se c'è un worldbuildingMapId salvato, lo restituisce solo se corrisponde alla mappa richiesta.
+   Se non c'è worldbuildingMapId (formato vecchio), lo restituisce comunque (recovery una-tantum). */
+function _getLocalStorageWorldbuilding(forMapId) {
+  try {
+    var s = localStorage.getItem('mercante_errante_v1');
+    if (!s) return null;
+    var d = JSON.parse(s);
+    if (!d.worldbuilding || !Array.isArray(d.worldbuilding) || !d.worldbuilding.length) return null;
+    if (d.worldbuildingMapId && d.worldbuildingMapId !== forMapId) return null;
+    return d.worldbuilding;
+  } catch(e) { return null; }
+}
+
 function _attachWorldbuildingListener(mapId) {
   if (!_db) return;
   var mid = mapId || 'default';
   if (mid === _lastWbMapId) return; // già agganciato a questa mappa
   _lastWbMapId = mid;
-  _wbLocalWrite = false; // reset: non bloccare il primo caricamento della nuova mappa
+  _wbLocalWrite = false;
   if (_wbListenerRef) { _wbListenerRef.off(); _wbListenerRef = null; }
 
-  function doAttach() {
-    _wbListenerRef = _db.ref('state/worldbuilding/' + mid);
-    _wbListenerRef.on('value', function(snap) {
-      if (_wbLocalWrite) { _wbLocalWrite = false; return; }
-      var v = snap.val();
-      state.worldbuilding = (v && Array.isArray(v)) ? v : [];
-      if (state.section === 'worldbuilding') renderMain();
-    });
-  }
-
-  // Migrazione una-tantum: se esiste ancora il vecchio array globale, spostalo
-  _db.ref('state/worldbuilding').once('value', function(legSnap) {
-    var leg = legSnap.val();
-    if (leg && Array.isArray(leg)) {
-      _db.ref('state/worldbuilding/' + mid).once('value', function(ms) {
-        if (!ms.val()) _db.ref('state/worldbuilding/' + mid).set(leg);
-        _db.ref('state/worldbuilding').set(null);
-        doAttach();
-      });
+  _wbListenerRef = _db.ref('state/worldbuilding/' + mid);
+  _wbListenerRef.on('value', function(snap) {
+    if (_wbLocalWrite) { _wbLocalWrite = false; return; }
+    var v = snap.val();
+    if (v && Array.isArray(v) && v.length > 0) {
+      state.worldbuilding = v;
+      _wbRecovered = true;
+    } else if (!_wbRecovered && isDM()) {
+      // Firebase vuoto: prova localStorage come recovery una-tantum
+      _wbRecovered = true;
+      var lsWb = _getLocalStorageWorldbuilding(mid);
+      if (lsWb && lsWb.length > 0) {
+        state.worldbuilding = lsWb;
+        _wbLocalWrite = true;
+        _db.ref('state/worldbuilding/' + mid).set(lsWb);
+        notify('Worldbuilding ripristinato correttamente.');
+      } else {
+        state.worldbuilding = [];
+      }
     } else {
-      doAttach();
+      state.worldbuilding = [];
     }
+    if (state.section === 'worldbuilding') renderMain();
   });
 }
 
@@ -5722,6 +5739,7 @@ function saveToStorage() {
       bestiario: state.bestiario,
       pet: state.pet,
       worldbuilding: state.worldbuilding,
+      worldbuildingMapId: state.mappaActiveId || '',
       npc: state.npc,
       npcActiveTab: state.npcActiveTab,
       npcTabs: state.npcTabs,
