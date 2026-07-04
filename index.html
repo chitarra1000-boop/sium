@@ -5210,6 +5210,9 @@ function tentaLogin() {
           // Utente non ancora su Firebase, usa default
           doLogin({ password: defFound.password, role: defFound.role, dmPriv: defFound.dmPriv || false }, username, password);
         }
+      }, function() {
+        // Firebase non raggiungibile o accesso negato: fallback credenziali locali
+        doLogin({ password: defFound.password, role: defFound.role, dmPriv: defFound.dmPriv || false }, username, password);
       });
     } else {
       doLogin({ password: defFound.password, role: defFound.role, dmPriv: defFound.dmPriv || false }, username, password);
