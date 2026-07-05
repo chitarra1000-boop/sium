@@ -6781,43 +6781,30 @@ function buildCombatantCard(c, isActive) {
     (isActive ? ' is-active' : '') + (hasAnyCond ? ' has-conditions' : '');
   card.dataset.combatantId = c.id;
 
-  // Drag & drop (solo se ha nome)
-  if (isNamed) {
-    card.draggable = true;
-    card.ondragstart = function(e) {
-      _dragSrcId = c.id;
-      card.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', c.id);
-    };
-    card.ondragend = function() {
-      card.classList.remove('dragging');
-      document.querySelectorAll('.combatant-card.drag-over').forEach(function(el){
-        el.classList.remove('drag-over');
-      });
-    };
-    card.ondragover = function(e) {
-      e.preventDefault();
-      if (c.id !== _dragSrcId) card.classList.add('drag-over');
-    };
-    card.ondragleave = function() { card.classList.remove('drag-over'); };
-    card.ondrop = function(e) {
-      e.preventDefault();
-      card.classList.remove('drag-over');
-      if (!_dragSrcId || _dragSrcId === c.id) return;
-      var srcIdx = -1, dstIdx = -1;
-      state.combatants.forEach(function(x, i) {
-        if (x.id === _dragSrcId) srcIdx = i;
-        if (x.id === c.id) dstIdx = i;
-      });
-      if (srcIdx < 0 || dstIdx < 0) return;
-      var moved = state.combatants.splice(srcIdx, 1)[0];
-      state.combatants.splice(dstIdx, 0, moved);
-      _dragSrcId = null;
-      fbSaveIniziativa(true);
-      renderCombatantsList();
-    };
-  }
+  // La card è sempre drop target (il drag parte solo dall'handle)
+  card.ondragover = function(e) {
+    e.preventDefault();
+    if (c.id !== _dragSrcId) card.classList.add('drag-over');
+  };
+  card.ondragleave = function(e) {
+    if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
+  };
+  card.ondrop = function(e) {
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    if (!_dragSrcId || _dragSrcId === c.id) return;
+    var srcIdx = -1, dstIdx = -1;
+    state.combatants.forEach(function(x, i) {
+      if (x.id === _dragSrcId) srcIdx = i;
+      if (x.id === c.id) dstIdx = i;
+    });
+    if (srcIdx < 0 || dstIdx < 0) return;
+    var moved = state.combatants.splice(srcIdx, 1)[0];
+    state.combatants.splice(dstIdx, 0, moved);
+    _dragSrcId = null;
+    fbSaveIniziativa(true);
+    renderCombatantsList();
+  };
 
   // Layer condizioni atmosferiche
   function addCondLayer(condId, className, childrenHtml) {
@@ -6857,12 +6844,25 @@ function buildCombatantCard(c, isActive) {
   var header = document.createElement('div');
   header.className = 'combatant-header';
 
-  // Drag handle
+  // Drag handle — il drag parte da qui, non dalla card intera
   if (isNamed) {
     var dh = document.createElement('div');
     dh.className = 'drag-handle';
     dh.title = 'Trascina per riordinare';
     dh.innerHTML = ICON.dragHandle;
+    dh.draggable = true;
+    dh.ondragstart = function(e) {
+      _dragSrcId = c.id;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', c.id);
+    };
+    dh.ondragend = function() {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.combatant-card.drag-over').forEach(function(el){
+        el.classList.remove('drag-over');
+      });
+    };
     header.appendChild(dh);
   }
 
@@ -6908,15 +6908,26 @@ function buildCombatantCard(c, isActive) {
         }
       }
       updateToolbarCount();
-      // Aggiorna drag handle (appare solo dopo che ha un nome)
+      // Aggiunta drag handle con eventi quando il nome appare per la prima volta
       if (!card.querySelector('.drag-handle')) {
         var dh2 = document.createElement('div');
         dh2.className = 'drag-handle';
         dh2.title = 'Trascina per riordinare';
         dh2.innerHTML = ICON.dragHandle;
+        dh2.draggable = true;
+        dh2.ondragstart = function(e) {
+          _dragSrcId = c.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', c.id);
+        };
+        dh2.ondragend = function() {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.combatant-card.drag-over').forEach(function(el){
+            el.classList.remove('drag-over');
+          });
+        };
         header.insertBefore(dh2, header.firstChild);
-        // Riabilita drag sulla card
-        card.draggable = true;
       }
     } else if (!nowHas && !wasEmpty) {
       updateToolbarCount();
@@ -6979,22 +6990,20 @@ function buildCombatantCard(c, isActive) {
   hpW.title = 'Punti Ferita';
   hpW.innerHTML = '<span>HP</span>';
   var isMonster = (c.tipo === 'boss' || c.tipo === 'sgherri');
-  if (!isDM() && isMonster) {
-    var hiddenHp = document.createElement('span');
-    hiddenHp.style.cssText = 'font-family:\'Cinzel\',serif;font-size:14px;color:var(--text-faint);letter-spacing:0.15em;padding:0 0.4rem;';
-    hiddenHp.textContent = '???';
-    hpW.appendChild(hiddenHp);
-  } else {
-    var hpInput = document.createElement('input');
-    hpInput.type = 'number';
-    hpInput.value = c.hp;
-    hpInput.placeholder = '\u2014';
+  var hpInput = document.createElement('input');
+  hpInput.type = 'number';
+  hpInput.value = c.hp;
+  hpInput.placeholder = '\u2014';
+  if (isDM() || !isMonster) {
     hpInput.oninput = function() {
       c.hp = this.value;
-      fbSaveIniziativa(); // debounce
+      fbSaveIniziativa();
     };
-    hpW.appendChild(hpInput);
+  } else {
+    hpInput.readOnly = true;
+    hpInput.style.cssText = 'pointer-events:none;opacity:0.75;';
   }
+  hpW.appendChild(hpInput);
   header.appendChild(hpW);
 
   // Pulsante elimina (solo DM)
