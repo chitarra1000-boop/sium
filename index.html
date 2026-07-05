@@ -4668,7 +4668,11 @@ function setupRealtimeListeners() {
     if (_localWrite.iniziativa) return; // siamo noi, ignora
     var v = snap.val();
     if (v && v.combatants && Array.isArray(v.combatants) && v.combatants.length > 0) {
-      state.combatants = v.combatants;
+      // Normalizza: Firebase salva condizioni:[] come null, bisogna ripristinarlo
+      state.combatants = v.combatants.map(function(c) {
+        if (!Array.isArray(c.condizioni)) c.condizioni = [];
+        return c;
+      });
       if (typeof v.round === 'number') state.round = v.round;
       if (typeof v.activeIndex === 'number') state.activeIndex = v.activeIndex;
     } else {
@@ -6698,6 +6702,7 @@ function renderCombatantsList() {
 // Aggiorna solo gli aspetti non-input di una card esistente
 // (badge, classe attiva, ecc.) senza toccare gli input
 function updateCombatantCard(cardEl, c, isActive) {
+  if (!Array.isArray(c.condizioni)) c.condizioni = [];
   var cat = getCategoria(c.tipo);
   var condClasses = c.condizioni.map(function(cid){
     var co = getCondizione(cid); return co ? co.cssClass : '';
@@ -6769,6 +6774,7 @@ function updateCombatantCard(cardEl, c, isActive) {
 
 // Costruisce una card da zero (solo per nuovi combattenti)
 function buildCombatantCard(c, isActive) {
+  if (!Array.isArray(c.condizioni)) c.condizioni = [];
   var cat = getCategoria(c.tipo);
   var condClasses = c.condizioni.map(function(cid){
     var co = getCondizione(cid); return co ? co.cssClass : '';
