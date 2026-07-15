@@ -6034,7 +6034,7 @@ function render() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
-  else if (state.section === 'storia') { if (isDM()) main.appendChild(renderStoria()); else main.appendChild(renderDadi()); }
+  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
   contentWrap.appendChild(main);
 
   if (state.regiaActive) {
@@ -6066,7 +6066,7 @@ function renderMain() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
-  else if (state.section === 'storia') { if (isDM()) main.appendChild(renderStoria()); else main.appendChild(renderDadi()); }
+  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -14589,7 +14589,7 @@ function renderStoria() {
   /* Pannello NPC */
   var npcPanel = document.createElement('div'); npcPanel.className = 'storia-npc-panel';
   var npcHdr = document.createElement('div'); npcHdr.className = 'storia-npc-header'; npcHdr.textContent = 'PERSONAGGI'; npcPanel.appendChild(npcHdr);
-  (state.personaggi || []).filter(function(p){ return p.nome; }).forEach(function(npc) {
+  (state.personaggi || []).filter(function(p){ return p && p.nome; }).forEach(function(npc) {
     var item = document.createElement('div'); item.className = 'storia-npc-item';
     if (npc.immagine) {
       var av = document.createElement('img'); av.src = npc.immagine; av.className = 'storia-npc-avatar';
