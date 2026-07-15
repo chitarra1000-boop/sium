@@ -4547,6 +4547,143 @@
   .dnd-trucchi-section { border:1.5px solid #444; background:#fff; border-radius:2px; padding:2px 4px; margin-bottom:3px; }
   .dnd-trucchi-lbl { font-family:'Cinzel',serif; font-size:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#444; text-align:center; padding-bottom:2px; border-bottom:1px solid #bbb; margin-bottom:2px; }
 
+
+  /* ============================================================
+     STORIA DELLA CAMPAGNA
+     ============================================================ */
+  .storia-wrap { display:flex; flex-direction:column; height:calc(100vh - 64px); overflow:hidden; background:var(--bg-base); }
+  .storia-toolbar {
+    display:flex; align-items:center; gap:0.3rem; padding:0.45rem 0.8rem;
+    background:var(--bg-card); border-bottom:1px solid var(--border-subtle);
+    flex-wrap:wrap; flex-shrink:0; min-height:44px;
+  }
+  .storia-fmt-btn {
+    background:var(--bg-card-elevated); border:1px solid var(--border-subtle);
+    color:var(--text-secondary); border-radius:4px; padding:0.2rem 0.45rem;
+    cursor:pointer; font-size:13px; min-width:26px; text-align:center; line-height:1.4;
+    transition:background 0.12s, border-color 0.12s, color 0.12s; flex-shrink:0;
+  }
+  .storia-fmt-btn:hover { border-color:var(--gold-dim); color:var(--gold-bright); }
+  .storia-sep { width:1px; height:20px; background:var(--border-subtle); margin:0 0.15rem; flex-shrink:0; }
+  .storia-map-toggle {
+    margin-left:auto; display:flex; align-items:center; gap:0.35rem;
+    background:var(--bg-card-elevated); border:1px solid var(--border-subtle);
+    color:var(--text-secondary); border-radius:5px; padding:0.25rem 0.65rem;
+    cursor:pointer; font-size:11px; font-family:'Cinzel',serif; letter-spacing:0.07em;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  .storia-map-toggle:hover, .storia-map-toggle.active { border-color:var(--gold); color:var(--gold-bright); background:rgba(201,165,92,0.1); }
+  .storia-anchor-btn {
+    display:flex; align-items:center; gap:0.3rem;
+    background:rgba(60,120,200,0.1); border:1px solid rgba(100,160,240,0.25);
+    color:#88b0e8; border-radius:5px; padding:0.25rem 0.65rem;
+    cursor:pointer; font-size:11px; font-family:'Cinzel',serif; letter-spacing:0.07em;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  .storia-anchor-btn:hover { border-color:#88b0e8; }
+  .storia-anchor-btn.active { background:rgba(60,120,200,0.25); border-color:#aacaff; color:#aacaff; }
+
+  .storia-main { display:flex; flex:1; overflow:hidden; }
+
+  /* Editor */
+  .storia-editor-wrap { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+  .storia-editor {
+    flex:1; overflow-y:auto; padding:2.5rem 3rem;
+    color:var(--text-primary); font-family:'EB Garamond',Georgia,serif;
+    font-size:17px; line-height:1.8; outline:none; word-break:break-word;
+  }
+  .storia-editor:focus { outline:none; }
+  .storia-editor [data-storia-npc] {
+    text-decoration:underline; text-decoration-color:var(--gold);
+    text-underline-offset:3px; cursor:pointer;
+  }
+  .storia-editor [data-storia-npc]:hover { color:var(--gold-bright); }
+  .storia-editor .storia-map-link {
+    background:rgba(100,160,240,0.12); border-bottom:2px solid rgba(100,160,240,0.5);
+    cursor:pointer; border-radius:2px; padding:0 2px;
+  }
+  .storia-editor .storia-map-link:hover { background:rgba(100,160,240,0.22); }
+
+  /* NPC panel */
+  .storia-npc-panel {
+    width:200px; flex-shrink:0; border-left:1px solid var(--border-subtle);
+    background:var(--bg-card); overflow-y:auto; display:flex; flex-direction:column;
+  }
+  .storia-npc-header {
+    padding:0.65rem 0.9rem 0.4rem; font-family:'Cinzel',serif; font-size:9px;
+    color:var(--gold-dim); letter-spacing:0.18em; border-bottom:1px solid var(--border-subtle);
+    flex-shrink:0;
+  }
+  .storia-npc-item {
+    display:flex; align-items:center; gap:0.45rem; padding:0.45rem 0.7rem;
+    cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.12s;
+  }
+  .storia-npc-item:hover { background:rgba(201,165,92,0.07); }
+  .storia-npc-avatar { width:30px; height:30px; border-radius:50%; object-fit:cover; flex-shrink:0; border:1px solid var(--border-subtle); }
+  .storia-npc-avatar-ph {
+    width:30px; height:30px; border-radius:50%; background:var(--bg-card-elevated);
+    border:1px solid var(--border-subtle); display:flex; align-items:center;
+    justify-content:center; font-size:13px; color:var(--text-faint); flex-shrink:0;
+  }
+  .storia-npc-nome { font-size:11px; color:var(--text-secondary); font-family:'Cinzel',serif; line-height:1.3; }
+
+  /* NPC tooltip */
+  #storia-npc-tooltip {
+    position:fixed; z-index:9999; pointer-events:none; display:none;
+    width:250px; border-radius:8px; overflow:hidden;
+    box-shadow:0 8px 32px rgba(0,0,0,0.7); border:1px solid var(--border-subtle);
+  }
+  .sntt-img { width:250px; height:150px; object-fit:cover; display:block; }
+  .sntt-img-ph { width:250px; height:70px; background:var(--bg-card-elevated); display:flex; align-items:center; justify-content:center; color:var(--text-faint); font-size:12px; }
+  .sntt-body { background:var(--bg-card); padding:0.55rem 0.75rem; }
+  .sntt-nome { font-family:'Cinzel',serif; font-size:11px; color:var(--gold-bright); margin-bottom:0.25rem; }
+  .sntt-bg { font-size:11px; color:var(--text-muted); line-height:1.5; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; }
+
+  /* Map panel */
+  .storia-map-panel {
+    width:0; overflow:hidden; transition:width 0.3s ease; flex-shrink:0;
+    border-left:1px solid var(--border-subtle); display:flex; flex-direction:column;
+  }
+  .storia-map-panel.open { width:50%; }
+  .storia-map-toolbar {
+    padding:0.35rem 0.65rem; display:flex; align-items:center; gap:0.4rem; flex-shrink:0;
+    border-bottom:1px solid var(--border-subtle); background:var(--bg-card);
+    font-size:10px; color:var(--text-faint); font-family:'Cinzel',serif; letter-spacing:0.06em;
+  }
+  .storia-map-mode-btn {
+    background:var(--bg-card-elevated); border:1px solid var(--border-subtle);
+    color:var(--text-secondary); border-radius:4px; padding:0.15rem 0.45rem;
+    cursor:pointer; font-size:10px; font-family:'Cinzel',serif; letter-spacing:0.05em;
+    transition:all 0.12s;
+  }
+  .storia-map-mode-btn.active { background:rgba(201,165,92,0.15); border-color:var(--gold); color:var(--gold-bright); }
+  #storia-map-container { flex:1; position:relative; overflow:hidden; }
+  #storia-leaflet-map { width:100%; height:100%; }
+
+  /* Marker panel */
+  .storia-marker-panel {
+    position:absolute; top:0; right:0; width:230px; height:100%;
+    background:var(--bg-card); border-left:1px solid var(--border-subtle);
+    overflow-y:auto; padding:0.7rem; z-index:1000;
+    transform:translateX(105%); transition:transform 0.2s ease;
+    display:flex; flex-direction:column; gap:0.5rem;
+  }
+  .storia-marker-panel.open { transform:translateX(0); }
+  .storia-marker-close-btn { background:none; border:none; color:var(--text-faint); cursor:pointer; align-self:flex-end; font-size:15px; padding:0; }
+  .storia-marker-field-lbl { font-size:9px; color:var(--gold-dim); font-family:'Cinzel',serif; letter-spacing:0.12em; margin-bottom:0.15rem; display:block; }
+  .storia-marker-img-preview { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:4px; border:1px solid var(--border-subtle); display:block; }
+  .storia-marker-textarea {
+    width:100%; min-height:90px; background:var(--bg-card-elevated);
+    border:1px solid var(--border-subtle); color:var(--text-primary);
+    border-radius:4px; padding:0.4rem; font-size:12px; resize:vertical;
+    font-family:'EB Garamond',Georgia,serif; box-sizing:border-box;
+  }
+  .storia-marker-del-btn {
+    background:rgba(200,60,60,0.1); border:1px solid rgba(200,60,60,0.3);
+    color:#ffa0a0; border-radius:4px; padding:0.25rem 0.5rem; cursor:pointer;
+    font-size:11px; margin-top:auto; font-family:'Cinzel',serif; letter-spacing:0.05em;
+  }
+
 </style>
 </head>
 <body>
@@ -5610,7 +5747,16 @@ var state = {
   schedaLoaded: false,
 
   /* ===== WORLDBUILDING ===== */
-  worldbuilding: []           // [{id, nome, desc, citta:[]}]
+  worldbuilding: [],           // [{id, nome, desc, citta:[]}]
+
+  /* ===== STORIA DELLA CAMPAGNA ===== */
+  storia: {
+    content: '',       // HTML del testo
+    markers: {},       // {id: {lat, lng, image, text}}
+    showMap: false,
+    mapMode: 'move',   // 'move' | 'place'
+    selectedMarker: null
+  }
 };
 
 /* Numero di settori per ciascuno stadio */
@@ -5726,6 +5872,10 @@ function loadFromStorage() {
       }
       if (typeof data.npcActiveTab === 'number') state.npcActiveTab = data.npcActiveTab;
       if (Array.isArray(data.npcTabs)) state.npcTabs = data.npcTabs;
+      if (data.storia && typeof data.storia === 'object') {
+        if (typeof data.storia.content === 'string') state.storia.content = data.storia.content;
+        if (data.storia.markers && typeof data.storia.markers === 'object') state.storia.markers = data.storia.markers;
+      }
     }
   } catch (e) {
     console.warn('[Mercante] Lettura localStorage fallita:', e.message);
@@ -5753,7 +5903,8 @@ function saveToStorage() {
       regiaImmagini: state.regiaImmagini,
       regiaUrls: state.regiaUrls,
       regiaUrlsSfx: state.regiaUrlsSfx,
-      regiaUrlsBardo: state.regiaUrlsBardo
+      regiaUrlsBardo: state.regiaUrlsBardo,
+      storia: { content: state.storia.content, markers: state.storia.markers }
     };
     localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
   } catch (e) {
@@ -5883,6 +6034,7 @@ function render() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
+  else if (state.section === 'storia') { if (isDM()) main.appendChild(renderStoria()); else main.appendChild(renderDadi()); }
   contentWrap.appendChild(main);
 
   if (state.regiaActive) {
@@ -5914,6 +6066,7 @@ function renderMain() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
+  else if (state.section === 'storia') { if (isDM()) main.appendChild(renderStoria()); else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -5935,15 +6088,16 @@ function renderSidebar() {
 
   var sections = [
     {id:'emporio',label:'Emporio',icon:ICON.sword},
+    {id:'bestiario',label:isDM()?'Bestiario':'Pet del Party',icon:isDM()?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 4 6 4 10c0 3 2 5 3 7l1 3h8l1-3c1-2 3-4 3-7 0-4-4-8-8-8z"/><path d="M9 17v3M15 17v3M9 21h6"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'},
+    {id:'mappa',label:'Mappa del Mondo',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>'},
+    {id:'worldbuilding', label:'Worldbuilding', dmOnly: true, icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'},
+    {id:'storia', label:'Storia', dmOnly: true, icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'},
+    {id:'generatore',label:'Generatore NPC',icon:ICON.npc, dmOnly: true},
     {id:'iniziativa',label:'Iniziativa',icon:ICON.swords},
     {id:'caos',label:'Statistiche & Caos',icon:ICON.skullDice},
-    {id:'generatore',label:'Generatore NPC',icon:ICON.npc, dmOnly: true},
-    {id:'bestiario',label:isDM()?'Bestiario':'Pet del Party',icon:isDM()?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 4 6 4 10c0 3 2 5 3 7l1 3h8l1-3c1-2 3-4 3-7 0-4-4-8-8-8z"/><path d="M9 17v3M15 17v3M9 21h6"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'},
-    {id:'worldbuilding', label:'Worldbuilding', dmOnly: true, icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'},
-    {id:'scheda',label:'Scheda PG',playerOnly:true,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'},
+    {id:'bacheca',label:'Bacheca Ricercati',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="7" cy="13" r="1" fill="currentColor"/><circle cx="7" cy="17" r="1" fill="currentColor"/></svg>'},
     {id:'note',label:'Note di Sessione',icon:ICON.scroll},
-    {id:'mappa',label:'Mappa del Mondo',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>'},
-    {id:'bacheca',label:'Bacheca Ricercati',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="7" cy="13" r="1" fill="currentColor"/><circle cx="7" cy="17" r="1" fill="currentColor"/></svg>'}
+    {id:'scheda',label:'Scheda PG',playerOnly:true,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'}
   ];
   sections.forEach(function(s) {
     // Nascondi sezioni dmOnly ai giocatori e sezioni playerOnly al DM
@@ -13993,6 +14147,499 @@ try {
     } catch(e) {}
     console.log('[Mercante] Attesa login.');
   }
+/* ============================================================
+   STORIA DELLA CAMPAGNA
+   ============================================================ */
+var _storiaLeafletMap = null;
+var _storiaFlagLayer  = null;
+var _storiaFlagMarkers = {};
+var _storiaAnchorMode  = false;
+var _storiaSelectedRange = null;
+
+function storiaScheduleSave() {
+  if (window._storiaSaveTimer) clearTimeout(window._storiaSaveTimer);
+  window._storiaSaveTimer = setTimeout(function() {
+    var ed = document.getElementById('storia-editor');
+    if (ed) { state.storia.content = ed.innerHTML; saveToStorage(); }
+  }, 800);
+}
+
+function storiaHighlightNpcs(editor) {
+  var nomes = (state.personaggi || []).map(function(p){ return p.nome; }).filter(Boolean);
+  nomes.sort(function(a,b){ return b.length - a.length; }); // più lunghi prima
+  if (!nomes.length) return;
+
+  // 1. Rimuovi span NPC già presenti
+  Array.from(editor.querySelectorAll('[data-storia-npc]')).forEach(function(s) {
+    var p = s.parentNode; while (s.firstChild) p.insertBefore(s.firstChild, s); p.removeChild(s);
+  });
+  editor.normalize();
+
+  // 2. Processa text-node con TreeWalker
+  var walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, {
+    acceptNode: function(n) {
+      var anc = n.parentNode;
+      while (anc && anc !== editor) {
+        if (anc.classList && anc.classList.contains('storia-map-link')) return NodeFilter.FILTER_REJECT;
+        anc = anc.parentNode;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  }, false);
+
+  var textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+  textNodes.forEach(function(tn) {
+    var text = tn.nodeValue;
+    var matches = [];
+    nomes.forEach(function(nome) {
+      var idx = 0;
+      while (true) {
+        var pos = text.indexOf(nome, idx);
+        if (pos < 0) break;
+        matches.push({ start: pos, end: pos + nome.length, nome: nome });
+        idx = pos + 1;
+      }
+    });
+    if (!matches.length) return;
+    matches.sort(function(a,b){ return a.start - b.start; });
+    var filtered = [], lastEnd = 0;
+    matches.forEach(function(m) {
+      if (m.start >= lastEnd) { filtered.push(m); lastEnd = m.end; }
+    });
+    if (!filtered.length) return;
+
+    var frag = document.createDocumentFragment(), lastPos = 0;
+    filtered.forEach(function(m) {
+      if (m.start > lastPos) frag.appendChild(document.createTextNode(text.slice(lastPos, m.start)));
+      var sp = document.createElement('span');
+      sp.dataset.storiaNpc = m.nome;
+      sp.textContent = text.slice(m.start, m.end);
+      frag.appendChild(sp);
+      lastPos = m.end;
+    });
+    if (lastPos < text.length) frag.appendChild(document.createTextNode(text.slice(lastPos)));
+    tn.parentNode.replaceChild(frag, tn);
+  });
+
+  state.storia.content = editor.innerHTML;
+}
+
+function showStoriaTooltip(e, npc) {
+  var tt = document.getElementById('storia-npc-tooltip');
+  if (!tt) return;
+  tt.innerHTML = '';
+  if (npc.immagine) {
+    var img = document.createElement('img');
+    img.src = npc.immagine; img.className = 'sntt-img';
+    img.onerror = function(){ this.className='sntt-img-ph'; this.alt=npc.nome||''; };
+    tt.appendChild(img);
+  } else {
+    var ph = document.createElement('div');
+    ph.className = 'sntt-img-ph'; ph.textContent = npc.nome||'?';
+    tt.appendChild(ph);
+  }
+  var body = document.createElement('div'); body.className = 'sntt-body';
+  var nomEl = document.createElement('div'); nomEl.className = 'sntt-nome';
+  nomEl.textContent = npc.nome + (npc.ruolo ? ' — ' + npc.ruolo : '');
+  body.appendChild(nomEl);
+  if (npc.background) {
+    var bg = document.createElement('div'); bg.className = 'sntt-bg';
+    bg.textContent = npc.background; body.appendChild(bg);
+  }
+  tt.appendChild(body);
+  tt.style.display = 'block';
+  var x = e.clientX + 14, y = e.clientY - 16;
+  tt.style.left = Math.min(x, window.innerWidth  - 260) + 'px';
+  tt.style.top  = Math.min(y, window.innerHeight - 280) + 'px';
+}
+function hideStoriaTooltip() {
+  var tt = document.getElementById('storia-npc-tooltip'); if (tt) tt.style.display = 'none';
+}
+
+function getStoriaMarkerIcon(selected) {
+  var color = selected ? '#ffd060' : '#e06060';
+  var stroke = selected ? '#a07800' : '#a03030';
+  return L.divIcon({
+    className: '',
+    html: '<div style="width:22px;height:30px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.7));">' +
+      '<svg viewBox="0 0 22 30" width="22" height="30" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M11 1C7.13 1 4 4.13 4 8c0 5.25 7 16 7 16s7-10.75 7-16c0-3.87-3.13-7-7-7z" fill="' + color + '" stroke="' + stroke + '" stroke-width="1"/>' +
+      '<circle cx="11" cy="8" r="3" fill="white" opacity="0.85"/></svg></div>',
+    iconSize: [22, 30], iconAnchor: [11, 28]
+  });
+}
+
+function refreshStoriaMarkers() {
+  if (!_storiaLeafletMap || !_storiaFlagLayer) return;
+  _storiaFlagLayer.clearLayers(); _storiaFlagMarkers = {};
+  Object.keys(state.storia.markers || {}).forEach(function(mid) {
+    var m = state.storia.markers[mid];
+    if (typeof m.lat !== 'number' || typeof m.lng !== 'number') return;
+    var icon = getStoriaMarkerIcon(state.storia.selectedMarker === mid);
+    var mk = L.marker([m.lat, m.lng], { icon: icon });
+    mk.on('click', function() {
+      state.storia.selectedMarker = mid;
+      refreshStoriaMarkers();
+      var panel = document.getElementById('storia-marker-panel');
+      if (panel) { panel.classList.add('open'); renderStoriaMarkerPanel(panel, mid); }
+    });
+    mk.addTo(_storiaFlagLayer);
+    _storiaFlagMarkers[mid] = mk;
+  });
+}
+
+function initStoriaMap() {
+  if (typeof L === 'undefined') return;
+  var mapDiv = document.getElementById('storia-leaflet-map');
+  if (!mapDiv) return;
+  if (_storiaLeafletMap) { try { _storiaLeafletMap.remove(); } catch(e){} _storiaLeafletMap = null; }
+  mapDiv.innerHTML = '';
+
+  if (!state.mappaUrl) {
+    mapDiv.innerHTML = '<div style="padding:1.5rem;color:var(--text-muted);font-family:\'EB Garamond\',serif;">Nessuna mappa attiva. Carica prima una mappa nella sezione <em>Mappa del Mondo</em>.</div>';
+    return;
+  }
+  var img = new Image();
+  img.onload = function() {
+    var w = img.naturalWidth || 1000, h = img.naturalHeight || 700;
+    var bounds = [[0,0],[h,w]];
+    _storiaLeafletMap = L.map(mapDiv, { crs: L.CRS.Simple, minZoom:-3, maxZoom:3, zoomControl:false, attributionControl:false });
+    L.imageOverlay(state.mappaUrl, bounds).addTo(_storiaLeafletMap);
+    _storiaLeafletMap.fitBounds(bounds);
+    _storiaFlagLayer = L.layerGroup().addTo(_storiaLeafletMap);
+    refreshStoriaMarkers();
+
+    _storiaLeafletMap.on('click', function(e) {
+      if (state.storia.mapMode !== 'place') return;
+      var mid = 'sm_' + Date.now();
+      if (!state.storia.markers) state.storia.markers = {};
+      state.storia.markers[mid] = { lat: e.latlng.lat, lng: e.latlng.lng, image: '', text: '' };
+
+      // Se in anchor mode, collega il testo selezionato al marker
+      if (_storiaAnchorMode && _storiaSelectedRange) {
+        var ed = document.getElementById('storia-editor');
+        if (ed && _storiaSelectedRange.toString().trim()) {
+          try {
+            var sel = window.getSelection();
+            sel.removeAllRanges(); sel.addRange(_storiaSelectedRange);
+            var sp = document.createElement('span');
+            sp.className = 'storia-map-link'; sp.dataset.markerId = mid;
+            _storiaSelectedRange.surroundContents(sp);
+            state.storia.content = ed.innerHTML;
+          } catch(err) { console.warn('Anchor error', err); }
+        }
+        _storiaAnchorMode = false; _storiaSelectedRange = null;
+        var ab = document.getElementById('storia-anchor-btn');
+        if (ab) ab.className = 'storia-anchor-btn';
+        state.storia.mapMode = 'move';
+        updateStoriaMapToolbar();
+      }
+
+      refreshStoriaMarkers(); saveToStorage();
+      state.storia.selectedMarker = mid;
+      var panel = document.getElementById('storia-marker-panel');
+      if (panel) { panel.classList.add('open'); renderStoriaMarkerPanel(panel, mid); }
+    });
+  };
+  img.onerror = function() {
+    if (mapDiv) mapDiv.innerHTML = '<div style="padding:1.5rem;color:var(--text-muted);">Impossibile caricare la mappa.</div>';
+  };
+  img.src = state.mappaUrl;
+}
+
+function updateStoriaMapToolbar() {
+  var mv = document.getElementById('storia-move-mode-btn');
+  var pl = document.getElementById('storia-place-mode-btn');
+  if (mv) mv.className = 'storia-map-mode-btn' + (state.storia.mapMode !== 'place' ? ' active' : '');
+  if (pl) pl.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' ? ' active' : '');
+}
+
+function renderStoriaMarkerPanel(panel, mid) {
+  var m = state.storia.markers[mid] || {};
+  panel.innerHTML = '';
+
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'storia-marker-close-btn'; closeBtn.innerHTML = '✕';
+  closeBtn.onclick = function() { panel.classList.remove('open'); state.storia.selectedMarker = null; refreshStoriaMarkers(); };
+  panel.appendChild(closeBtn);
+
+  // Immagine
+  var imgLbl = document.createElement('span'); imgLbl.className = 'storia-marker-field-lbl'; imgLbl.textContent = 'IMMAGINE';
+  panel.appendChild(imgLbl);
+  if (m.image) {
+    var preview = document.createElement('img'); preview.src = m.image; preview.className = 'storia-marker-img-preview';
+    preview.onerror = function(){ this.style.display='none'; }; panel.appendChild(preview);
+  }
+  var imgRow = document.createElement('div');
+  imgRow.style.cssText = 'display:flex;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.4rem;';
+  var imgFileBtn = document.createElement('button');
+  imgFileBtn.className = 'storia-fmt-btn'; imgFileBtn.style.cssText = 'font-size:11px;padding:0.15rem 0.4rem;';
+  imgFileBtn.textContent = '📂 File';
+  imgFileBtn.onclick = function() {
+    var inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
+    inp.onchange = function() {
+      var f = inp.files[0]; if (!f) return;
+      if (f.size > 3*1024*1024) { alert('Immagine troppo grande (max 3 MB)'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) { state.storia.markers[mid].image = ev.target.result; saveToStorage(); renderStoriaMarkerPanel(panel, mid); };
+      reader.readAsDataURL(f);
+    }; inp.click();
+  };
+  imgRow.appendChild(imgFileBtn);
+  var imgUrlBtn = document.createElement('button');
+  imgUrlBtn.className = 'storia-fmt-btn'; imgUrlBtn.style.cssText = 'font-size:11px;padding:0.15rem 0.4rem;';
+  imgUrlBtn.textContent = '🔗 URL';
+  imgUrlBtn.onclick = function() {
+    var url = prompt('URL immagine:', m.image || '');
+    if (url !== null) { state.storia.markers[mid].image = url; saveToStorage(); renderStoriaMarkerPanel(panel, mid); }
+  };
+  imgRow.appendChild(imgUrlBtn);
+  if (m.image) {
+    var delImgBtn = document.createElement('button');
+    delImgBtn.className = 'storia-fmt-btn'; delImgBtn.style.cssText = 'font-size:11px;padding:0.15rem 0.4rem;color:#ffa0a0;';
+    delImgBtn.textContent = '✕';
+    delImgBtn.onclick = function() { state.storia.markers[mid].image=''; saveToStorage(); renderStoriaMarkerPanel(panel, mid); };
+    imgRow.appendChild(delImgBtn);
+  }
+  panel.appendChild(imgRow);
+
+  // Testo
+  var txtLbl = document.createElement('span'); txtLbl.className = 'storia-marker-field-lbl'; txtLbl.textContent = 'NOTE';
+  panel.appendChild(txtLbl);
+  var ta = document.createElement('textarea'); ta.className = 'storia-marker-textarea';
+  ta.value = m.text || ''; ta.placeholder = 'Descrizione del luogo...';
+  ta.oninput = function() { state.storia.markers[mid].text = this.value; saveToStorage(); };
+  panel.appendChild(ta);
+
+  // Elimina
+  var delBtn = document.createElement('button'); delBtn.className = 'storia-marker-del-btn';
+  delBtn.textContent = '🗑 Elimina segnalino';
+  delBtn.onclick = function() {
+    if (!confirm('Eliminare questo segnalino?')) return;
+    delete state.storia.markers[mid]; saveToStorage();
+    panel.classList.remove('open'); state.storia.selectedMarker = null;
+    refreshStoriaMarkers();
+    // Rimuovi i link nel testo
+    var ed = document.getElementById('storia-editor');
+    if (ed) {
+      ed.querySelectorAll('.storia-map-link[data-marker-id="' + mid + '"]').forEach(function(el) {
+        var p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el);
+      });
+      state.storia.content = ed.innerHTML; saveToStorage();
+    }
+  };
+  panel.appendChild(delBtn);
+}
+
+function renderStoria() {
+  if (!isDM()) return document.createElement('div');
+  var wrap = document.createElement('div'); wrap.className = 'storia-wrap';
+
+  /* ---- Toolbar ---- */
+  var toolbar = document.createElement('div'); toolbar.className = 'storia-toolbar';
+
+  var fmts = [
+    { cmd:'bold',             html:'<b>B</b>',  title:'Grassetto (Ctrl+B)' },
+    { cmd:'italic',           html:'<i>I</i>',  title:'Corsivo (Ctrl+I)' },
+    { cmd:'underline',        html:'<u>U</u>',  title:'Sottolineato (Ctrl+U)' },
+    { cmd:'strikeThrough',    html:'<s>S</s>',  title:'Barrato' },
+    { cmd:'insertOrderedList',html:'1.',         title:'Lista numerata' },
+    { cmd:'insertUnorderedList',html:'•',        title:'Lista puntata' },
+    { cmd:'justifyLeft',      html:'⬤⬤⬤',      title:'Allinea sinistra' },
+    { cmd:'justifyCenter',    html:'⊞',          title:'Centra' },
+  ];
+  fmts.forEach(function(f) {
+    var btn = document.createElement('button'); btn.className = 'storia-fmt-btn';
+    btn.innerHTML = f.html; btn.title = f.title;
+    btn.onmousedown = function(e) { e.preventDefault(); document.execCommand(f.cmd, false, null); storiaScheduleSave(); };
+    toolbar.appendChild(btn);
+  });
+
+  var sep1 = document.createElement('div'); sep1.className = 'storia-sep'; toolbar.appendChild(sep1);
+
+  // Highlight (giallo di default, click ripetuto cambia colore)
+  var _hlIdx = 0;
+  var hlColors = ['#ffd700','#90ee90','#87ceeb','#ffb6c1','transparent'];
+  var hlBtn = document.createElement('button'); hlBtn.className = 'storia-fmt-btn'; hlBtn.title = 'Evidenzia';
+  hlBtn.innerHTML = '<span style="background:#ffd700;color:#222;padding:1px 3px;border-radius:2px;font-size:10px;">HL</span>';
+  hlBtn.onmousedown = function(e) {
+    e.preventDefault();
+    document.execCommand('hiliteColor', false, hlColors[_hlIdx % hlColors.length]);
+    _hlIdx++; storiaScheduleSave();
+  };
+  toolbar.appendChild(hlBtn);
+
+  // Colore testo
+  var colorWrap = document.createElement('label'); colorWrap.title = 'Colore testo'; colorWrap.style.cssText='display:flex;align-items:center;cursor:pointer;';
+  var colorInp = document.createElement('input'); colorInp.type = 'color'; colorInp.value = '#e8d5a0';
+  colorInp.style.cssText = 'width:22px;height:22px;padding:0;border:2px solid var(--border-default);border-radius:3px;cursor:pointer;background:none;';
+  colorInp.title = 'Colore testo';
+  colorInp.oninput = function() { document.execCommand('foreColor', false, this.value); storiaScheduleSave(); };
+  colorWrap.appendChild(colorInp); toolbar.appendChild(colorWrap);
+
+  // Dimensione font
+  var fsWrap = document.createElement('select'); fsWrap.className = 'storia-fmt-btn';
+  fsWrap.style.cssText = 'width:56px;padding:0 0.2rem;font-size:11px;';
+  fsWrap.title = 'Dimensione carattere';
+  [['1','Tiny'],['2','Piccolo'],['3','Normale'],['4','Medio'],['5','Grande'],['6','Molto grande'],['7','Enorme']].forEach(function(p) {
+    var op = document.createElement('option'); op.value=p[0]; op.textContent=p[1]; if(p[0]==='3') op.selected=true; fsWrap.appendChild(op);
+  });
+  fsWrap.onchange = function() { document.execCommand('fontSize', false, this.value); storiaScheduleSave(); };
+  toolbar.appendChild(fsWrap);
+
+  var sep2 = document.createElement('div'); sep2.className = 'storia-sep'; toolbar.appendChild(sep2);
+
+  // Pulsante âncora su mappa
+  var anchorBtn = document.createElement('button');
+  anchorBtn.className = 'storia-anchor-btn'; anchorBtn.id = 'storia-anchor-btn';
+  anchorBtn.innerHTML = '📍 Collega a Mappa';
+  anchorBtn.title = 'Seleziona del testo, poi premi questo pulsante e clicca sulla mappa per creare un segnalino collegato';
+  anchorBtn.onclick = function() {
+    _storiaAnchorMode = !_storiaAnchorMode;
+    anchorBtn.className = 'storia-anchor-btn' + (_storiaAnchorMode ? ' active' : '');
+    if (_storiaAnchorMode) {
+      var sel = window.getSelection();
+      _storiaSelectedRange = (sel.rangeCount > 0) ? sel.getRangeAt(0).cloneRange() : null;
+      if (!state.storia.showMap) {
+        state.storia.showMap = true;
+        var mp = wrap.querySelector('.storia-map-panel');
+        if (mp) { mp.classList.add('open'); mapToggle.className = 'storia-map-toggle active'; setTimeout(initStoriaMap, 100); }
+      }
+      state.storia.mapMode = 'place'; updateStoriaMapToolbar();
+    } else {
+      _storiaSelectedRange = null; state.storia.mapMode = 'move'; updateStoriaMapToolbar();
+    }
+  };
+  toolbar.appendChild(anchorBtn);
+
+  // Toggle mappa
+  var mapToggle = document.createElement('button');
+  mapToggle.className = 'storia-map-toggle' + (state.storia.showMap ? ' active' : '');
+  mapToggle.innerHTML = '🗺️ Mappa';
+  mapToggle.onclick = function() {
+    state.storia.showMap = !state.storia.showMap;
+    mapToggle.className = 'storia-map-toggle' + (state.storia.showMap ? ' active' : '');
+    var mp = wrap.querySelector('.storia-map-panel');
+    if (mp) {
+      if (state.storia.showMap) { mp.classList.add('open'); setTimeout(initStoriaMap, 100); }
+      else { mp.classList.remove('open'); if (_storiaLeafletMap) { try { _storiaLeafletMap.remove(); } catch(e){} _storiaLeafletMap = null; } }
+    }
+  };
+  toolbar.appendChild(mapToggle);
+  wrap.appendChild(toolbar);
+
+  /* ---- Area principale ---- */
+  var mainArea = document.createElement('div'); mainArea.className = 'storia-main';
+
+  /* Editor */
+  var editorWrap = document.createElement('div'); editorWrap.className = 'storia-editor-wrap';
+  var editor = document.createElement('div');
+  editor.contentEditable = 'true'; editor.className = 'storia-editor'; editor.id = 'storia-editor';
+  editor.setAttribute('spellcheck', 'false');
+  if (state.storia.content) editor.innerHTML = state.storia.content;
+  else editor.innerHTML = '<p><br></p>';
+
+  editor.oninput = storiaScheduleSave;
+  editor.onblur = function() { storiaHighlightNpcs(editor); };
+
+  editor.addEventListener('mouseover', function(e) {
+    var t = e.target.closest('[data-storia-npc]');
+    if (!t) { hideStoriaTooltip(); return; }
+    var npc = (state.personaggi || []).find(function(p){ return p.nome === t.dataset.storiaNpc; });
+    if (npc) showStoriaTooltip(e, npc); else hideStoriaTooltip();
+  });
+  editor.addEventListener('mouseleave', hideStoriaTooltip);
+
+  editor.addEventListener('click', function(e) {
+    var link = e.target.closest('.storia-map-link');
+    if (!link) return;
+    var mid = link.dataset.markerId;
+    if (!mid || !state.storia.markers[mid]) return;
+    state.storia.showMap = true;
+    var mp = wrap.querySelector('.storia-map-panel');
+    if (mp) {
+      mp.classList.add('open'); mapToggle.className = 'storia-map-toggle active';
+      setTimeout(function() {
+        if (!_storiaLeafletMap) initStoriaMap();
+        setTimeout(function() {
+          var m = state.storia.markers[mid];
+          if (_storiaLeafletMap && m) _storiaLeafletMap.flyTo([m.lat, m.lng], 0);
+          state.storia.selectedMarker = mid; refreshStoriaMarkers();
+          var panel = document.getElementById('storia-marker-panel');
+          if (panel) { panel.classList.add('open'); renderStoriaMarkerPanel(panel, mid); }
+        }, 350);
+      }, 100);
+    }
+  });
+
+  editorWrap.appendChild(editor);
+  mainArea.appendChild(editorWrap);
+
+  /* Pannello NPC */
+  var npcPanel = document.createElement('div'); npcPanel.className = 'storia-npc-panel';
+  var npcHdr = document.createElement('div'); npcHdr.className = 'storia-npc-header'; npcHdr.textContent = 'PERSONAGGI'; npcPanel.appendChild(npcHdr);
+  (state.personaggi || []).filter(function(p){ return p.nome; }).forEach(function(npc) {
+    var item = document.createElement('div'); item.className = 'storia-npc-item';
+    if (npc.immagine) {
+      var av = document.createElement('img'); av.src = npc.immagine; av.className = 'storia-npc-avatar';
+      av.onerror = function(){ this.style.display='none'; }; item.appendChild(av);
+    } else {
+      var ph = document.createElement('div'); ph.className = 'storia-npc-avatar-ph';
+      ph.textContent = npc.nome.charAt(0).toUpperCase(); item.appendChild(ph);
+    }
+    var nm = document.createElement('span'); nm.className = 'storia-npc-nome'; nm.textContent = npc.nome; item.appendChild(nm);
+    item.onmouseenter = function(e) { showStoriaTooltip(e, npc); };
+    item.onmouseleave = hideStoriaTooltip;
+    item.onclick = function() {
+      var ed = document.getElementById('storia-editor');
+      if (!ed) return; ed.focus();
+      document.execCommand('insertText', false, npc.nome); storiaScheduleSave();
+    };
+    npcPanel.appendChild(item);
+  });
+  mainArea.appendChild(npcPanel);
+
+  /* Pannello mappa */
+  var mapPanel = document.createElement('div');
+  mapPanel.className = 'storia-map-panel' + (state.storia.showMap ? ' open' : '');
+  mapPanel.id = 'storia-map-panel';
+
+  var mapTb = document.createElement('div'); mapTb.className = 'storia-map-toolbar';
+  var mapTbLabel = document.createElement('span'); mapTbLabel.textContent = 'MODALITÀ:'; mapTb.appendChild(mapTbLabel);
+  var moveModeBtn = document.createElement('button');
+  moveModeBtn.id = 'storia-move-mode-btn';
+  moveModeBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode !== 'place' ? ' active' : '');
+  moveModeBtn.textContent = 'Naviga';
+  moveModeBtn.onclick = function() {
+    state.storia.mapMode = 'move'; updateStoriaMapToolbar();
+    _storiaAnchorMode = false; _storiaSelectedRange = null;
+    var ab = document.getElementById('storia-anchor-btn'); if (ab) ab.className = 'storia-anchor-btn';
+  };
+  mapTb.appendChild(moveModeBtn);
+  var placeModeBtn = document.createElement('button');
+  placeModeBtn.id = 'storia-place-mode-btn';
+  placeModeBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' ? ' active' : '');
+  placeModeBtn.textContent = '📍 Piazza Segnalino';
+  placeModeBtn.onclick = function() { state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
+  mapTb.appendChild(placeModeBtn);
+  mapPanel.appendChild(mapTb);
+
+  var mapContainer = document.createElement('div'); mapContainer.id = 'storia-map-container';
+  var mapDiv = document.createElement('div'); mapDiv.id = 'storia-leaflet-map'; mapContainer.appendChild(mapDiv);
+  var markerPanel = document.createElement('div'); markerPanel.className = 'storia-marker-panel'; markerPanel.id = 'storia-marker-panel'; mapContainer.appendChild(markerPanel);
+  mapPanel.appendChild(mapContainer);
+  mainArea.appendChild(mapPanel);
+  wrap.appendChild(mainArea);
+
+  // Tooltip NPC (globale nella sezione)
+  var tt = document.createElement('div'); tt.id = 'storia-npc-tooltip'; wrap.appendChild(tt);
+
+  if (state.storia.showMap) setTimeout(initStoriaMap, 100);
+  return wrap;
+}
+
 } catch (err) {
   console.error('[Mercante] Errore:', err);
   document.getElementById('app').innerHTML =
