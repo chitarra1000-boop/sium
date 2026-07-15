@@ -6006,6 +6006,7 @@ function render() {
   document.documentElement.setAttribute('data-theme', state.theme);
   var app = document.getElementById('app');
   app.innerHTML = '';
+  try {
   var shell = document.createElement('div');
   shell.className = 'app-shell';
 
@@ -6049,6 +6050,9 @@ function render() {
 
   // Re-render badge after full render
   renderUserBadge();
+  } catch(_renderErr) {
+    app.innerHTML = '<div style="padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;background:#1a0a0a;min-height:100vh;"><b>ERRORE RENDER:</b><br><pre>' + String(_renderErr) + '\n' + (_renderErr.stack||'') + '</pre></div>';
+  }
 }
 
 function renderMain() {
