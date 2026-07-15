@@ -14560,7 +14560,9 @@ function renderStoria() {
   editor.addEventListener('mouseover', function(e) {
     var t = e.target.closest('[data-storia-npc]');
     if (!t) { hideStoriaTooltip(); return; }
-    var npc = (state.personaggi || []).find(function(p){ return p.nome === t.dataset.storiaNpc; });
+    var _npcNome = t.dataset.storiaNpc;
+    var npc = (state.personaggi || []).find(function(p){ return p && p.nome === _npcNome; });
+    if (!npc) { (state.worldbuilding || []).forEach(function(z){ (z.citta||[]).forEach(function(c){ (c.npcChiave||[]).forEach(function(p){ if(p&&p.nome===_npcNome) npc=p; }); }); }); }
     if (npc) showStoriaTooltip(e, npc); else hideStoriaTooltip();
   });
   editor.addEventListener('mouseleave', hideStoriaTooltip);
@@ -14590,10 +14592,19 @@ function renderStoria() {
   editorWrap.appendChild(editor);
   mainArea.appendChild(editorWrap);
 
-  /* Pannello NPC */
+  /* Pannello NPC — raccoglie archivio generale + NPC nelle città, ordine alfabetico */
+  var _allNpcs = [];
+  (state.personaggi || []).forEach(function(p){ if (p && p.nome) _allNpcs.push(p); });
+  (state.worldbuilding || []).forEach(function(zone) {
+    (zone.citta || []).forEach(function(city) {
+      (city.npcChiave || []).forEach(function(p){ if (p && p.nome) _allNpcs.push(p); });
+    });
+  });
+  _allNpcs.sort(function(a,b){ return a.nome.localeCompare(b.nome, 'it'); });
+
   var npcPanel = document.createElement('div'); npcPanel.className = 'storia-npc-panel';
   var npcHdr = document.createElement('div'); npcHdr.className = 'storia-npc-header'; npcHdr.textContent = 'PERSONAGGI'; npcPanel.appendChild(npcHdr);
-  (state.personaggi || []).filter(function(p){ return p && p.nome; }).forEach(function(npc) {
+  _allNpcs.forEach(function(npc) {
     var item = document.createElement('div'); item.className = 'storia-npc-item';
     if (npc.immagine) {
       var av = document.createElement('img'); av.src = npc.immagine; av.className = 'storia-npc-avatar';
