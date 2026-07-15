@@ -5319,6 +5319,7 @@ function tentaLogin() {
         }
       });
     }
+    fbLoadStoria(state.mappaActiveId || 'default');
     render();
     renderUserBadge();
     return true;
@@ -6058,6 +6059,11 @@ function render() {
 function renderMain() {
   var main = document.querySelector('.main-content');
   if (!main) { render(); return; }
+  // Salva il testo dell'editor storia prima di ricostruire il DOM
+  if (state.section === 'storia') {
+    var _ed = document.getElementById('storia-editor');
+    if (_ed) { state.storia.content = _ed.innerHTML; }
+  }
   main.innerHTML = '';
   if (state.section === 'emporio') main.appendChild(renderEmporio());
   else if (state.section === 'iniziativa') main.appendChild(renderIniziativa());
@@ -13515,8 +13521,11 @@ function renderMappa() {
       state.worldbuilding = []; // svuota mentre carica il worldbuilding della nuova mappa
       // Salva mappa attiva su Firebase
       _db && _db.ref('state/mappa/activeMapId').set(mid);
-      // Aggiorna il worldbuilding alla mappa selezionata
+      // Aggiorna il worldbuilding e la storia alla mappa selezionata
+      storiaFlushSave();
+      state.storia.content = ''; state.storia.markers = {};
       _attachWorldbuildingListener(mid);
+      fbLoadStoria(mid);
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
       if (state.mappaUrl) {
@@ -14136,7 +14145,10 @@ try {
     setupPresence();
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
-    setTimeout(function() { render(); renderUserBadge(); }, 300);
+    setTimeout(function() {
+      fbLoadStoria(state.mappaActiveId || 'default');
+      render(); renderUserBadge();
+    }, 300);
   } else {
     // Nessuna sessione: mostra il login
     document.getElementById('login-overlay').style.display = 'flex';
@@ -14151,6 +14163,10 @@ try {
     } catch(e) {}
     console.log('[Mercante] Attesa login.');
   }
+
+  // Salva storia prima di chiudere/cambiare tab
+  window.addEventListener('beforeunload', function() { storiaFlushSave(); });
+  window.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') storiaFlushSave(); });
 
 } catch (err) {
   console.error('[Mercante] Errore:', err);
@@ -14169,12 +14185,47 @@ var _storiaFlagMarkers = {};
 var _storiaAnchorMode  = false;
 var _storiaSelectedRange = null;
 
+function fbSaveStoria() {
+  if (!_db) return;
+  var mid = state.mappaActiveId || 'default';
+  _db.ref('state/storia/' + mid).set({
+    content: state.storia.content || '',
+    markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
+  });
+}
+
+function fbLoadStoria(mapId) {
+  if (!_db) return;
+  var mid = mapId || 'default';
+  _db.ref('state/storia/' + mid).once('value', function(snap) {
+    var v = snap.val();
+    if (v && typeof v.content === 'string') {
+      state.storia.content = v.content;
+      if (v.markers && typeof v.markers === 'object') state.storia.markers = v.markers;
+    } else {
+      state.storia.content = '';
+      state.storia.markers = {};
+    }
+    saveToStorage();
+    if (state.section === 'storia') {
+      var ed = document.getElementById('storia-editor');
+      if (ed) ed.innerHTML = state.storia.content || '<p><br></p>';
+    }
+  });
+}
+
+function storiaFlushSave() {
+  var ed = document.getElementById('storia-editor');
+  if (ed) {
+    state.storia.content = ed.innerHTML;
+    saveToStorage();
+    fbSaveStoria();
+  }
+}
+
 function storiaScheduleSave() {
   if (window._storiaSaveTimer) clearTimeout(window._storiaSaveTimer);
-  window._storiaSaveTimer = setTimeout(function() {
-    var ed = document.getElementById('storia-editor');
-    if (ed) { state.storia.content = ed.innerHTML; saveToStorage(); }
-  }, 800);
+  window._storiaSaveTimer = setTimeout(storiaFlushSave, 800);
 }
 
 function storiaHighlightNpcs(editor) {
