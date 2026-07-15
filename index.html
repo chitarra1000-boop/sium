@@ -14592,20 +14592,13 @@ function renderStoria() {
   editorWrap.appendChild(editor);
   mainArea.appendChild(editorWrap);
 
-  /* Pannello NPC — archivio generale + NPC archiviati nelle città della mappa attiva.
-     I city-NPC cambiano con la mappa (worldbuilding è per-mappa). Ordine alfabetico. */
+  /* Pannello NPC — archivio generale + NPC archiviati nelle città della mappa attiva, ordine alfabetico. */
   var _allNpcs = [];
-  var _npcNomiCitta = {};
+  (state.personaggi || []).forEach(function(p){ if (p && p.nome) _allNpcs.push(p); });
   (state.worldbuilding || []).forEach(function(zone) {
     (zone.citta || []).forEach(function(city) {
-      (city.npcChiave || []).forEach(function(p){
-        if (p && p.nome) { _allNpcs.push(p); _npcNomiCitta[p.nome] = true; }
-      });
+      (city.npcChiave || []).forEach(function(p){ if (p && p.nome) _allNpcs.push(p); });
     });
-  });
-  // Aggiunge quelli dall'archivio generale che non sono già presenti come NPC di città
-  (state.personaggi || []).forEach(function(p){
-    if (p && p.nome && !_npcNomiCitta[p.nome]) _allNpcs.push(p);
   });
   _allNpcs.sort(function(a,b){ return a.nome.localeCompare(b.nome, 'it'); });
 
