@@ -4883,7 +4883,7 @@ function setupRealtimeListeners() {
     var v = snap.val();
     if (v && Array.isArray(v)) {
       state.personaggi = v;
-      if (state.section === 'generatore') renderMain();
+      if (state.section === 'generatore' || state.section === 'storia') renderMain();
     }
   });
 
