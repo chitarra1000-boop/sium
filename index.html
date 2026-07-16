@@ -14603,35 +14603,51 @@ function renderStoria() {
     }
   };
   toolbar.appendChild(mapToggle);
+  wrap.appendChild(toolbar);
 
-  // Tasto Salva esplicito
+  /* ---- Barra salvataggio ---- */
+  var savebar = document.createElement('div');
+  savebar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.35rem 0.9rem;background:rgba(201,165,92,0.06);border-bottom:1px solid var(--border-subtle);flex-shrink:0;';
   var saveBtn = document.createElement('button');
-  saveBtn.className = 'storia-save-btn';
-  saveBtn.innerHTML = '💾 Salva';
-  saveBtn.title = 'Salva la storia su Firebase';
-  saveBtn.onclick = function() {
+  saveBtn.id = 'storia-save-btn';
+  saveBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(201,165,92,0.2);border:1.5px solid var(--gold);color:var(--gold-bright);border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
+  saveBtn.innerHTML = '💾 Salva Storia';
+  var saveStatus = document.createElement('span');
+  saveStatus.style.cssText = 'font-size:11px;font-family:\'Cinzel\',serif;color:var(--text-faint);letter-spacing:0.06em;';
+  saveStatus.textContent = 'Non salvato';
+
+  function _storiaSaveNow() {
     var ed = document.getElementById('storia-editor');
     if (ed) state.storia.content = ed.innerHTML;
-    saveBtn.innerHTML = '⏳ Salvataggio...';
-    saveBtn.disabled = true;
-    if (!_db) { saveBtn.innerHTML = '❌ Firebase non connesso'; setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 2000); return; }
+    if (!_db) { saveStatus.style.color='#ff9c9c'; saveStatus.textContent='❌ Firebase non connesso — vai su console.firebase.google.com e aggiorna le regole'; return; }
     var mid = state.mappaActiveId || 'default';
+    saveStatus.style.color = 'var(--text-faint)'; saveStatus.textContent = '⏳ Salvataggio...';
+    saveBtn.disabled = true;
     _db.ref('state/storia/' + mid).set({
       content: state.storia.content || '',
       markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
     }, function(err) {
+      saveBtn.disabled = false;
       if (err) {
-        saveBtn.innerHTML = '❌ Errore: ' + err.message;
-        setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 3000);
+        saveStatus.style.color = '#ff9c9c';
+        saveStatus.textContent = '❌ ' + (err.code === 'PERMISSION_DENIED' ? 'Regole Firebase scadute — vai su console.firebase.google.com e aggiorna le regole' : err.message);
       } else {
         saveToStorage();
-        saveBtn.innerHTML = '✅ Salvato!';
-        setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 1500);
+        saveStatus.style.color = '#7dce82';
+        saveStatus.textContent = '✅ Salvato — ' + new Date().toLocaleTimeString('it-IT');
       }
     });
-  };
-  toolbar.appendChild(saveBtn);
-  wrap.appendChild(toolbar);
+  }
+
+  saveBtn.onclick = _storiaSaveNow;
+  // Auto-salvataggio ogni 60 secondi se c'è contenuto
+  window._storiaAutoSaveInterval = setInterval(function() {
+    if (state.section === 'storia' && state.storia.content) _storiaSaveNow();
+  }, 60000);
+
+  savebar.appendChild(saveBtn);
+  savebar.appendChild(saveStatus);
+  wrap.appendChild(savebar);
 
   /* ---- Area principale ---- */
   var mainArea = document.createElement('div'); mainArea.className = 'storia-main';
