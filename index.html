@@ -4955,8 +4955,11 @@ function setupRealtimeListeners() {
       var selEl = document.getElementById('mappa-selector');
       if (selEl) _refreshMappaSelectorOptions(selEl);
     }
-    // Aggancia worldbuilding alla mappa attiva (una volta sola per ID)
-    if (state.mappaActiveId) _attachWorldbuildingListener(state.mappaActiveId);
+    // Aggancia worldbuilding e storia alla mappa attiva (una volta sola per ID)
+    if (state.mappaActiveId) {
+      _attachWorldbuildingListener(state.mappaActiveId);
+      fbLoadStoria(state.mappaActiveId);
+    }
   });
 
   // ---- BACHECA DEI RICERCATI ----
@@ -14215,12 +14218,11 @@ function fbLoadStoria(mapId) {
 }
 
 function storiaFlushSave() {
+  // Sincronizza dal DOM se l'editor è visibile, altrimenti usa state già aggiornato
   var ed = document.getElementById('storia-editor');
-  if (ed) {
-    state.storia.content = ed.innerHTML;
-    saveToStorage();
-    fbSaveStoria();
-  }
+  if (ed) state.storia.content = ed.innerHTML;
+  saveToStorage();
+  fbSaveStoria();
 }
 
 function storiaScheduleSave() {
@@ -14606,7 +14608,7 @@ function renderStoria() {
   else editor.innerHTML = '<p><br></p>';
 
   editor.oninput = storiaScheduleSave;
-  editor.onblur = function() { storiaHighlightNpcs(editor); };
+  editor.onblur = function() { storiaHighlightNpcs(editor); storiaFlushSave(); };
 
   editor.addEventListener('mouseover', function(e) {
     var t = e.target.closest('[data-storia-npc]');
