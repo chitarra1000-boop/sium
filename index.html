@@ -5765,9 +5765,10 @@ var state = {
   /* ===== STORIA DELLA CAMPAGNA ===== */
   storia: {
     content: '',       // HTML del testo
-    markers: {},       // {id: {lat, lng, image, text}}
+    markers: {},       // {id: {lat, lng, image, text, type}}
     showMap: false,
     mapMode: 'move',   // 'move' | 'place'
+    markerType: 'pin', // 'pin' | 'clock' | 'swords'
     selectedMarker: null
   }
 };
@@ -14333,12 +14334,54 @@ function hideStoriaTooltip() {
   var tt = document.getElementById('storia-npc-tooltip'); if (tt) tt.style.display = 'none';
 }
 
-function getStoriaMarkerIcon(selected) {
-  var color = selected ? '#ffd060' : '#e06060';
-  var stroke = selected ? '#a07800' : '#a03030';
+function getStoriaMarkerIcon(selected, type) {
+  var t = type || 'pin';
+  var selColor = selected ? '#ffd060' : null;
+  var selStroke = selected ? '#a07800' : null;
+  var shadow = 'filter:drop-shadow(0 2px 5px rgba(0,0,0,0.7));';
+
+  if (t === 'clock') {
+    var fc = selColor || '#7ec8e3';
+    var sc = selStroke || '#2a7a9a';
+    var html = '<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;' + shadow + '">' +
+      '<svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="12" cy="12" r="10" fill="' + fc + '" stroke="' + sc + '" stroke-width="1.5"/>' +
+      '<circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="0.5" opacity="0.4"/>' +
+      '<line x1="12" y1="12" x2="12" y2="6.5" stroke="' + sc + '" stroke-width="2" stroke-linecap="round"/>' +
+      '<line x1="12" y1="12" x2="15.5" y2="12" stroke="' + sc + '" stroke-width="2" stroke-linecap="round"/>' +
+      '<circle cx="12" cy="12" r="1.2" fill="' + sc + '"/>' +
+      '</svg></div>';
+    return L.divIcon({ className: '', html: html, iconSize: [28, 28], iconAnchor: [14, 14] });
+  }
+
+  if (t === 'swords') {
+    var fc2 = selColor || '#e09060';
+    var sc2 = selStroke || '#8a4020';
+    var html2 = '<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;' + shadow + '">' +
+      '<svg viewBox="0 0 24 24" width="28" height="28" xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="12" cy="12" r="11" fill="' + fc2 + '" stroke="' + sc2 + '" stroke-width="1.2"/>' +
+      '<g stroke="white" stroke-linecap="round">' +
+      '<line x1="6" y1="18" x2="18" y2="6" stroke-width="2"/>' +
+      '<line x1="18" y1="18" x2="6" y2="6" stroke-width="2"/>' +
+      '<line x1="6" y1="8" x2="8" y2="6" stroke-width="1.5"/>' +
+      '<line x1="4" y1="10" x2="6" y2="8" stroke-width="1.5"/>' +
+      '<line x1="18" y1="16" x2="16" y2="18" stroke-width="1.5"/>' +
+      '<line x1="20" y1="14" x2="18" y2="16" stroke-width="1.5"/>' +
+      '<line x1="18" y1="8" x2="16" y2="6" stroke-width="1.5"/>' +
+      '<line x1="20" y1="10" x2="18" y2="8" stroke-width="1.5"/>' +
+      '<line x1="6" y1="16" x2="8" y2="18" stroke-width="1.5"/>' +
+      '<line x1="4" y1="14" x2="6" y2="16" stroke-width="1.5"/>' +
+      '</g>' +
+      '</svg></div>';
+    return L.divIcon({ className: '', html: html2, iconSize: [28, 28], iconAnchor: [14, 14] });
+  }
+
+  // default: pin rosso
+  var color = selColor || '#e06060';
+  var stroke = selStroke || '#a03030';
   return L.divIcon({
     className: '',
-    html: '<div style="width:22px;height:30px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,0.7));">' +
+    html: '<div style="width:22px;height:30px;display:flex;align-items:flex-end;justify-content:center;' + shadow + '">' +
       '<svg viewBox="0 0 22 30" width="22" height="30" xmlns="http://www.w3.org/2000/svg">' +
       '<path d="M11 1C7.13 1 4 4.13 4 8c0 5.25 7 16 7 16s7-10.75 7-16c0-3.87-3.13-7-7-7z" fill="' + color + '" stroke="' + stroke + '" stroke-width="1"/>' +
       '<circle cx="11" cy="8" r="3" fill="white" opacity="0.85"/></svg></div>',
@@ -14352,7 +14395,7 @@ function refreshStoriaMarkers() {
   Object.keys(state.storia.markers || {}).forEach(function(mid) {
     var m = state.storia.markers[mid];
     if (typeof m.lat !== 'number' || typeof m.lng !== 'number') return;
-    var icon = getStoriaMarkerIcon(state.storia.selectedMarker === mid);
+    var icon = getStoriaMarkerIcon(state.storia.selectedMarker === mid, m.type);
     var mk = L.marker([m.lat, m.lng], { icon: icon });
     mk.on('click', function() {
       state.storia.selectedMarker = mid;
@@ -14390,7 +14433,7 @@ function initStoriaMap() {
       if (state.storia.mapMode !== 'place') return;
       var mid = 'sm_' + Date.now();
       if (!state.storia.markers) state.storia.markers = {};
-      state.storia.markers[mid] = { lat: e.latlng.lat, lng: e.latlng.lng, image: '', text: '' };
+      state.storia.markers[mid] = { lat: e.latlng.lat, lng: e.latlng.lng, image: '', text: '', type: state.storia.markerType || 'pin' };
 
       // Se in anchor mode, collega il testo selezionato al marker
       if (_storiaAnchorMode && _storiaSelectedRange) {
@@ -14426,9 +14469,14 @@ function initStoriaMap() {
 
 function updateStoriaMapToolbar() {
   var mv = document.getElementById('storia-move-mode-btn');
-  var pl = document.getElementById('storia-place-mode-btn');
   if (mv) mv.className = 'storia-map-mode-btn' + (state.storia.mapMode !== 'place' ? ' active' : '');
-  if (pl) pl.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' ? ' active' : '');
+  var mt = state.storia.markerType || 'pin';
+  var pinB  = document.getElementById('storia-marker-type-pin');
+  var clkB  = document.getElementById('storia-marker-type-clock');
+  var swdB  = document.getElementById('storia-marker-type-swords');
+  if (pinB)  pinB.className  = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && mt === 'pin'    ? ' active' : '');
+  if (clkB)  clkB.className  = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && mt === 'clock'  ? ' active' : '');
+  if (swdB)  swdB.className  = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && mt === 'swords' ? ' active' : '');
 }
 
 function renderStoriaMarkerPanel(panel, mid) {
@@ -14748,12 +14796,35 @@ function renderStoria() {
     var ab = document.getElementById('storia-anchor-btn'); if (ab) ab.className = 'storia-anchor-btn';
   };
   mapTb.appendChild(moveModeBtn);
-  var placeModeBtn = document.createElement('button');
-  placeModeBtn.id = 'storia-place-mode-btn';
-  placeModeBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' ? ' active' : '');
-  placeModeBtn.textContent = '📍 Piazza Segnalino';
-  placeModeBtn.onclick = function() { state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
-  mapTb.appendChild(placeModeBtn);
+
+  var mapTbSep = document.createElement('span');
+  mapTbSep.textContent = 'SEGNALINO:'; mapTbSep.style.cssText = 'margin-left:0.6rem;font-size:10px;opacity:0.6;letter-spacing:0.05em;';
+  mapTb.appendChild(mapTbSep);
+
+  var pinBtn = document.createElement('button');
+  pinBtn.id = 'storia-marker-type-pin';
+  pinBtn.title = 'Segnalino luogo';
+  pinBtn.innerHTML = '<svg viewBox="0 0 22 28" width="14" height="17" xmlns="http://www.w3.org/2000/svg"><path d="M11 1C7.13 1 4 4.13 4 8c0 5.25 7 14 7 14s7-8.75 7-14c0-3.87-3.13-7-7-7z" fill="currentColor"/><circle cx="11" cy="8" r="2.8" fill="white" opacity="0.7"/></svg>';
+  pinBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && (state.storia.markerType||'pin') === 'pin' ? ' active' : '');
+  pinBtn.onclick = function() { state.storia.markerType = 'pin'; state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
+  mapTb.appendChild(pinBtn);
+
+  var clockBtn = document.createElement('button');
+  clockBtn.id = 'storia-marker-type-clock';
+  clockBtn.title = 'Segnalino orologio';
+  clockBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="12" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  clockBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && state.storia.markerType === 'clock' ? ' active' : '');
+  clockBtn.onclick = function() { state.storia.markerType = 'clock'; state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
+  mapTb.appendChild(clockBtn);
+
+  var swordsBtn = document.createElement('button');
+  swordsBtn.id = 'storia-marker-type-swords';
+  swordsBtn.title = 'Segnalino battaglia';
+  swordsBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="7" x2="7" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="3" y1="9" x2="5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="19" y1="17" x2="17" y2="19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="21" y1="15" x2="19" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="19" y1="5" x2="17" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="19" x2="7" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="19" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  swordsBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && state.storia.markerType === 'swords' ? ' active' : '');
+  swordsBtn.onclick = function() { state.storia.markerType = 'swords'; state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
+  mapTb.appendChild(swordsBtn);
+
   mapPanel.appendChild(mapTb);
 
   var mapContainer = document.createElement('div'); mapContainer.id = 'storia-map-container';
