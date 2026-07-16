@@ -4582,6 +4582,15 @@
   }
   .storia-anchor-btn:hover { border-color:#88b0e8; }
   .storia-anchor-btn.active { background:rgba(60,120,200,0.25); border-color:#aacaff; color:#aacaff; }
+  .storia-save-btn {
+    display:flex; align-items:center; gap:0.3rem;
+    background:rgba(201,165,92,0.15); border:1px solid var(--gold);
+    color:var(--gold-bright); border-radius:5px; padding:0.25rem 0.75rem;
+    cursor:pointer; font-size:11px; font-family:'Cinzel',serif; letter-spacing:0.07em;
+    transition:all 0.15s; flex-shrink:0; margin-left:0.5rem;
+  }
+  .storia-save-btn:hover { background:rgba(201,165,92,0.3); }
+  .storia-save-btn:disabled { opacity:0.7; cursor:default; }
 
   .storia-main { display:flex; flex:1; overflow:hidden; }
 
@@ -14594,6 +14603,34 @@ function renderStoria() {
     }
   };
   toolbar.appendChild(mapToggle);
+
+  // Tasto Salva esplicito
+  var saveBtn = document.createElement('button');
+  saveBtn.className = 'storia-save-btn';
+  saveBtn.innerHTML = '💾 Salva';
+  saveBtn.title = 'Salva la storia su Firebase';
+  saveBtn.onclick = function() {
+    var ed = document.getElementById('storia-editor');
+    if (ed) state.storia.content = ed.innerHTML;
+    saveBtn.innerHTML = '⏳ Salvataggio...';
+    saveBtn.disabled = true;
+    if (!_db) { saveBtn.innerHTML = '❌ Firebase non connesso'; setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 2000); return; }
+    var mid = state.mappaActiveId || 'default';
+    _db.ref('state/storia/' + mid).set({
+      content: state.storia.content || '',
+      markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
+    }, function(err) {
+      if (err) {
+        saveBtn.innerHTML = '❌ Errore: ' + err.message;
+        setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 3000);
+      } else {
+        saveToStorage();
+        saveBtn.innerHTML = '✅ Salvato!';
+        setTimeout(function(){ saveBtn.innerHTML='💾 Salva'; saveBtn.disabled=false; }, 1500);
+      }
+    });
+  };
+  toolbar.appendChild(saveBtn);
   wrap.appendChild(toolbar);
 
   /* ---- Area principale ---- */
