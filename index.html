@@ -6085,10 +6085,11 @@ function render() {
 function renderMain() {
   var main = document.querySelector('.main-content');
   if (!main) { render(); return; }
-  // Salva il testo dell'editor storia prima di ricostruire il DOM
+  // Salva il testo dell'editor storia prima di ricostruire il DOM,
+  // ma solo se la mappa caricata in storia è la stessa attiva (evita di salvare testo vecchio sulla mappa nuova)
   if (state.section === 'storia') {
     var _ed = document.getElementById('storia-editor');
-    if (_ed) { state.storia.content = _ed.innerHTML; }
+    if (_ed && _storiaLoadedMapId === state.mappaActiveId) { state.storia.content = _ed.innerHTML; }
   }
   main.innerHTML = '';
   if (state.section === 'emporio') main.appendChild(renderEmporio());
@@ -14710,20 +14711,35 @@ function renderStoria() {
         saveStatus.style.color = '#ff9c9c';
         saveStatus.textContent = '❌ ' + (err.code === 'PERMISSION_DENIED' ? 'Regole Firebase scadute — vai su console.firebase.google.com e aggiorna le regole' : err.message);
       } else {
+        _storiaLoadedMapId = mid; // conferma associazione
         saveToStorage();
         saveStatus.style.color = '#7dce82';
-        saveStatus.textContent = '✅ Salvato — ' + new Date().toLocaleTimeString('it-IT');
+        var mapNome = (state.mappaList && state.mappaList[mid] && state.mappaList[mid].nome) ? state.mappaList[mid].nome : mid;
+        saveStatus.textContent = '✅ Salvato per "' + mapNome + '" — ' + new Date().toLocaleTimeString('it-IT');
       }
     });
   }
 
   saveBtn.onclick = _storiaSaveNow;
+
+  // Pulsante Associa: salva e linka esplicitamente il testo alla mappa attiva
+  var assocBtn = document.createElement('button');
+  assocBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(100,160,240,0.15);border:1.5px solid rgba(100,160,240,0.5);color:#88b8f0;border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
+  var _assocMapNome = function() { return (state.mappaList && state.mappaList[state.mappaActiveId] && state.mappaList[state.mappaActiveId].nome) ? state.mappaList[state.mappaActiveId].nome : (state.mappaActiveId || 'default'); };
+  assocBtn.innerHTML = '🔗 Associa a "' + _assocMapNome() + '"';
+  assocBtn.onclick = function() {
+    _storiaSaveNow();
+    assocBtn.innerHTML = '✅ Associata a "' + _assocMapNome() + '"';
+    setTimeout(function() { assocBtn.innerHTML = '🔗 Associa a "' + _assocMapNome() + '"'; }, 2500);
+  };
+
   // Auto-salvataggio ogni 60 secondi se c'è contenuto
   window._storiaAutoSaveInterval = setInterval(function() {
     if (state.section === 'storia' && state.storia.content) _storiaSaveNow();
   }, 60000);
 
   savebar.appendChild(saveBtn);
+  savebar.appendChild(assocBtn);
   savebar.appendChild(saveStatus);
   wrap.appendChild(savebar);
 
