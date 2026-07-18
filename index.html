@@ -14880,7 +14880,6 @@ function renderStoria() {
         };
         card.onclick = function() {
           state.storia.content = typeof s.content === 'string' ? s.content : '';
-          state.storia.markers = (s.markers && typeof s.markers === 'object') ? s.markers : {};
           state.storia.currentStoryId = id;
           state.storia.currentStoryName = s.nome || '';
           state.storia.showLibrary = false;
