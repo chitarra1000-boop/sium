@@ -4977,10 +4977,10 @@ function setupRealtimeListeners() {
       var selEl = document.getElementById('mappa-selector');
       if (selEl) _refreshMappaSelectorOptions(selEl);
     }
-    // Aggancia worldbuilding e storia alla mappa attiva (una volta sola per ID)
+    // Aggancia worldbuilding e storia alla mappa attiva
     if (state.mappaActiveId) {
       _attachWorldbuildingListener(state.mappaActiveId);
-      fbLoadStoria(state.mappaActiveId);
+      _attachStoriaListener(state.mappaActiveId);
     }
   });
 
@@ -5344,7 +5344,7 @@ function tentaLogin() {
         }
       });
     }
-    fbLoadStoria(state.mappaActiveId || 'default');
+    _attachStoriaListener(state.mappaActiveId || 'default');
     render();
     renderUserBadge();
     return true;
@@ -6104,7 +6104,7 @@ function renderMain() {
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); // Se la mappa è cambiata dall'ultima volta che storia è stata caricata, ricarica da Firebase
-    if (_storiaLoadedMapId !== state.mappaActiveId) fbLoadStoria(state.mappaActiveId); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
+    if (_storiaLoadedMapId !== state.mappaActiveId) _attachStoriaListener(state.mappaActiveId); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -13553,8 +13553,9 @@ function renderMappa() {
       storiaFlushSave();
       state.storia.content = ''; state.storia.markers = {};
       _storiaLoadedMapId = null;
+      _lastStoriaMapId = null; // forza re-attach listener per nuova mappa
       _attachWorldbuildingListener(mid);
-      fbLoadStoria(mid);
+      _attachStoriaListener(mid);
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
       if (state.mappaUrl) {
@@ -14175,7 +14176,7 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
-      fbLoadStoria(state.mappaActiveId || 'default');
+      _attachStoriaListener(state.mappaActiveId || 'default');
       render(); renderUserBadge();
     }, 300);
   } else {
@@ -14213,11 +14214,44 @@ var _storiaFlagLayer  = null;
 var _storiaFlagMarkers = {};
 var _storiaAnchorMode  = false;
 var _storiaSelectedRange = null;
-var _storiaLoadedMapId = null; // id dell'ultima mappa caricata in storia
+var _storiaLoadedMapId = null;
+var _storiaListenerRef = null;
+var _lastStoriaMapId   = null;
+var _storiaLocalWrite  = false;
+
+function _attachStoriaListener(mapId) {
+  if (!_db) return;
+  var mid = mapId || 'default';
+  if (mid === _lastStoriaMapId) return;
+  _lastStoriaMapId = mid;
+  _storiaLocalWrite = false;
+  if (_storiaListenerRef) { _storiaListenerRef.off(); _storiaListenerRef = null; }
+  _storiaListenerRef = _db.ref('state/storia/' + mid);
+  _storiaListenerRef.on('value', function(snap) {
+    if (_storiaLocalWrite) { _storiaLocalWrite = false; return; }
+    var v = snap.val();
+    if (v && typeof v.content === 'string') {
+      state.storia.content = v.content;
+      if (v.markers && typeof v.markers === 'object') state.storia.markers = v.markers;
+      else state.storia.markers = {};
+    } else {
+      state.storia.content = '';
+      state.storia.markers = {};
+    }
+    _storiaLoadedMapId = mid;
+    saveToStorage();
+    if (state.section === 'storia') {
+      var ed = document.getElementById('storia-editor');
+      if (ed) { ed.innerHTML = state.storia.content || '<p><br></p>'; refreshStoriaMarkers(); }
+      else renderMain();
+    }
+  });
+}
 
 function fbSaveStoria() {
   if (!_db) return;
   var mid = state.mappaActiveId || 'default';
+  _storiaLocalWrite = true;
   _db.ref('state/storia/' + mid).set({
     content: state.storia.content || '',
     markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
