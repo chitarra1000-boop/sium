@@ -4962,13 +4962,8 @@ function setupRealtimeListeners() {
             }
           }
         }
-        // Se la mappa attiva è cambiata, svuota e ricarica storia/worldbuilding
-        if (state.mappaActiveId !== prevMapId) {
-          storiaFlushSave();
-          state.storia.content = '';
-          state.storia.markers = {};
-          var storiaEd = document.getElementById('storia-editor');
-          if (storiaEd) storiaEd.innerHTML = '<p><br></p>';
+        // Se la mappa attiva è cambiata, aggiorna Storia senza toccare il contenuto
+        if (state.mappaActiveId !== prevMapId && prevMapId !== '') {
           if (state.section === 'storia') renderMain();
         }
       } else if (typeof v.url === 'string') {
