@@ -13541,14 +13541,19 @@ function renderMappa() {
     mapSelector.onchange = function() {
       var mid = mapSelector.value;
       if (!mid || !state.mappaList[mid]) return;
+      var prevMapId = state.mappaActiveId;
+      fbSaveStoriaMarkers(prevMapId);
       state.mappaActiveId = mid;
       state.mappaUrl = state.mappaList[mid].url || '';
       state.mappaFlags = state.mappaList[mid].flags || {};
       state.worldbuilding = []; // svuota mentre carica il worldbuilding della nuova mappa
       // Salva mappa attiva su Firebase
       _db && _db.ref('state/mappa/activeMapId').set(mid);
-      // Aggiorna il worldbuilding e la storia alla mappa selezionata
+      // Aggiorna il worldbuilding alla mappa selezionata
       _attachWorldbuildingListener(mid);
+      // Carica i marker della nuova mappa
+      state.storia.markers = {};
+      fbLoadStoriaMarkers(mid, function() { refreshStoriaMarkers(); });
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
       if (state.mappaUrl) {
@@ -14169,6 +14174,12 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
+      // Se ci sono marker in state (da localStorage), salvali subito per la mappa attiva
+      if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
+        fbSaveStoriaMarkers(state.mappaActiveId);
+      } else {
+        fbLoadStoriaMarkers(state.mappaActiveId);
+      }
       render(); renderUserBadge();
     }, 300);
   } else {
@@ -14211,6 +14222,29 @@ function _storiePrivatePath() {
   return 'storie_private/' + user;
 }
 
+function _storiaMarkersPath(mapId) {
+  var user = state.currentUser && state.currentUser.username ? state.currentUser.username : '_guest';
+  return 'storia_markers_private/' + user + '/' + (mapId || 'default');
+}
+
+function fbSaveStoriaMarkers(mapId) {
+  if (!_db || !state.currentUser) return;
+  var mid = mapId || state.mappaActiveId || 'default';
+  _db.ref(_storiaMarkersPath(mid)).set(
+    (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
+  );
+}
+
+function fbLoadStoriaMarkers(mapId, callback) {
+  if (!_db) { if (callback) callback(); return; }
+  var mid = mapId || state.mappaActiveId || 'default';
+  _db.ref(_storiaMarkersPath(mid)).once('value', function(snap) {
+    var v = snap.val();
+    state.storia.markers = (v && typeof v === 'object') ? v : {};
+    if (callback) callback();
+  });
+}
+
 function _salvaStoriaConNome(nome, callback) {
   if (!_db || !state.currentUser) { if (callback) callback(new Error('Firebase non connesso')); return; }
   var ed = document.getElementById('storia-editor');
@@ -14219,7 +14253,6 @@ function _salvaStoriaConNome(nome, callback) {
   _db.ref(_storiePrivatePath() + '/' + id).set({
     nome: nome,
     content: state.storia.content || '',
-    markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null,
     savedAt: Date.now()
   }, function(err) {
     if (!err) {
@@ -14463,7 +14496,7 @@ function initStoriaMap() {
         updateStoriaMapToolbar();
       }
 
-      refreshStoriaMarkers(); saveToStorage();
+      refreshStoriaMarkers(); saveToStorage(); fbSaveStoriaMarkers();
       state.storia.selectedMarker = mid;
       var panel = document.getElementById('storia-marker-panel');
       if (panel) { panel.classList.add('open'); renderStoriaMarkerPanel(panel, mid); }
@@ -14523,7 +14556,7 @@ function renderStoriaMarkerPanel(panel, mid) {
       var f = inp.files[0]; if (!f) return;
       if (f.size > 3*1024*1024) { alert('Immagine troppo grande (max 3 MB)'); return; }
       var reader = new FileReader();
-      reader.onload = function(ev) { state.storia.markers[mid].image = ev.target.result; saveToStorage(); renderStoriaMarkerPanel(panel, mid); };
+      reader.onload = function(ev) { state.storia.markers[mid].image = ev.target.result; saveToStorage(); fbSaveStoriaMarkers(); renderStoriaMarkerPanel(panel, mid); };
       reader.readAsDataURL(f);
     }; inp.click();
   };
@@ -14533,14 +14566,14 @@ function renderStoriaMarkerPanel(panel, mid) {
   imgUrlBtn.textContent = '🔗 URL';
   imgUrlBtn.onclick = function() {
     var url = prompt('URL immagine:', m.image || '');
-    if (url !== null) { state.storia.markers[mid].image = url; saveToStorage(); renderStoriaMarkerPanel(panel, mid); }
+    if (url !== null) { state.storia.markers[mid].image = url; saveToStorage(); fbSaveStoriaMarkers(); renderStoriaMarkerPanel(panel, mid); }
   };
   imgRow.appendChild(imgUrlBtn);
   if (m.image) {
     var delImgBtn = document.createElement('button');
     delImgBtn.className = 'storia-fmt-btn'; delImgBtn.style.cssText = 'font-size:11px;padding:0.15rem 0.4rem;color:#ffa0a0;';
     delImgBtn.textContent = '✕';
-    delImgBtn.onclick = function() { state.storia.markers[mid].image=''; saveToStorage(); renderStoriaMarkerPanel(panel, mid); };
+    delImgBtn.onclick = function() { state.storia.markers[mid].image=''; saveToStorage(); fbSaveStoriaMarkers(); renderStoriaMarkerPanel(panel, mid); };
     imgRow.appendChild(delImgBtn);
   }
   inner.appendChild(imgRow);
@@ -14550,7 +14583,7 @@ function renderStoriaMarkerPanel(panel, mid) {
   inner.appendChild(txtLbl);
   var ta = document.createElement('textarea'); ta.className = 'storia-marker-textarea';
   ta.value = m.text || ''; ta.placeholder = 'Descrizione del luogo...';
-  ta.oninput = function() { state.storia.markers[mid].text = this.value; saveToStorage(); };
+  ta.oninput = function() { state.storia.markers[mid].text = this.value; saveToStorage(); if(window._smSaveTimer) clearTimeout(window._smSaveTimer); window._smSaveTimer=setTimeout(fbSaveStoriaMarkers,1000); };
   inner.appendChild(ta);
 
   // Elimina
@@ -14558,7 +14591,7 @@ function renderStoriaMarkerPanel(panel, mid) {
   delBtn.textContent = '🗑 Elimina segnalino';
   delBtn.onclick = function() {
     if (!confirm('Eliminare questo segnalino?')) return;
-    delete state.storia.markers[mid]; saveToStorage();
+    delete state.storia.markers[mid]; saveToStorage(); fbSaveStoriaMarkers();
     _closePanel();
     var ed = document.getElementById('storia-editor');
     if (ed) {
