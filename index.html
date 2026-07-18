@@ -14219,14 +14219,20 @@ var _storiaListenerRef = null;
 var _lastStoriaMapId   = null;
 var _storiaLocalWrite  = false;
 
+function _storiaPrivatePath(mapId) {
+  var user = state.currentUser && state.currentUser.username ? state.currentUser.username : 'unknown';
+  return 'storia_private/' + user + '/' + (mapId || 'default');
+}
+
 function _attachStoriaListener(mapId) {
   if (!_db) return;
   var mid = mapId || 'default';
-  if (mid === _lastStoriaMapId) return;
-  _lastStoriaMapId = mid;
+  var cacheKey = (state.currentUser ? state.currentUser.username : '') + '/' + mid;
+  if (cacheKey === _lastStoriaMapId) return;
+  _lastStoriaMapId = cacheKey;
   _storiaLocalWrite = false;
   if (_storiaListenerRef) { _storiaListenerRef.off(); _storiaListenerRef = null; }
-  _storiaListenerRef = _db.ref('state/storia/' + mid);
+  _storiaListenerRef = _db.ref(_storiaPrivatePath(mid));
   _storiaListenerRef.on('value', function(snap) {
     if (_storiaLocalWrite) { _storiaLocalWrite = false; return; }
     var v = snap.val();
@@ -14249,10 +14255,10 @@ function _attachStoriaListener(mapId) {
 }
 
 function fbSaveStoria() {
-  if (!_db) return;
+  if (!_db || !state.currentUser) return;
   var mid = state.mappaActiveId || 'default';
   _storiaLocalWrite = true;
-  _db.ref('state/storia/' + mid).set({
+  _db.ref(_storiaPrivatePath(mid)).set({
     content: state.storia.content || '',
     markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
   });
@@ -14736,7 +14742,8 @@ function renderStoria() {
     var mid = state.mappaActiveId || 'default';
     saveStatus.style.color = 'var(--text-faint)'; saveStatus.textContent = '⏳ Salvataggio...';
     saveBtn.disabled = true;
-    _db.ref('state/storia/' + mid).set({
+    _storiaLocalWrite = true;
+    _db.ref(_storiaPrivatePath(mid)).set({
       content: state.storia.content || '',
       markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
     }, function(err) {
