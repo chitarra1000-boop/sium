@@ -14787,7 +14787,6 @@ function renderStoria() {
 
   nuovaBtn.onclick = function() {
     state.storia.content = '';
-    state.storia.markers = {};
     state.storia.currentStoryId = null;
     state.storia.currentStoryName = '';
     state.storia.showLibrary = false;
@@ -14795,7 +14794,6 @@ function renderStoria() {
     saveStatus.textContent = '';
     var ed = document.getElementById('storia-editor');
     if (ed) ed.innerHTML = '<p><br></p>';
-    refreshStoriaMarkers();
   };
 
   libraryBtn.onclick = function() {
