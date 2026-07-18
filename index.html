@@ -6102,7 +6102,8 @@ function renderMain() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
-  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
+  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); // Se la mappa è cambiata dall'ultima volta che storia è stata caricata, ricarica da Firebase
+    if (_storiaLoadedMapId !== state.mappaActiveId) fbLoadStoria(state.mappaActiveId); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -13550,6 +13551,7 @@ function renderMappa() {
       // Aggiorna il worldbuilding e la storia alla mappa selezionata
       storiaFlushSave();
       state.storia.content = ''; state.storia.markers = {};
+      _storiaLoadedMapId = null;
       _attachWorldbuildingListener(mid);
       fbLoadStoria(mid);
       // Ricrea la mappa Leaflet
@@ -14210,6 +14212,7 @@ var _storiaFlagLayer  = null;
 var _storiaFlagMarkers = {};
 var _storiaAnchorMode  = false;
 var _storiaSelectedRange = null;
+var _storiaLoadedMapId = null; // id dell'ultima mappa caricata in storia
 
 function fbSaveStoria() {
   if (!_db) return;
@@ -14233,18 +14236,16 @@ function fbLoadStoria(mapId) {
       state.storia.content = '';
       state.storia.markers = {};
     }
+    _storiaLoadedMapId = mid;
     saveToStorage();
     if (state.section === 'storia') {
       var ed = document.getElementById('storia-editor');
       if (ed) {
         ed.innerHTML = state.storia.content || '<p><br></p>';
+        refreshStoriaMarkers();
       } else {
-        // Editor non ancora nel DOM: ricostruisci l'intera sezione
         renderMain();
-        return;
       }
-      // Aggiorna i marker sulla mappa Leaflet senza ricostruire tutto
-      refreshStoriaMarkers();
     }
   });
 }
