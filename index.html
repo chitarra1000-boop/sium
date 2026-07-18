@@ -4939,6 +4939,7 @@ function setupRealtimeListeners() {
       if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
       else if (!v.maps) state.mappaList = state.mappaList || {};
       if (typeof v.activeMapId === 'string') {
+        var prevMapId = state.mappaActiveId;
         state.mappaActiveId = v.activeMapId;
         var activeMap = state.mappaList[state.mappaActiveId];
         if (activeMap) {
@@ -4960,6 +4961,15 @@ function setupRealtimeListeners() {
               refreshMappaFlags();
             }
           }
+        }
+        // Se la mappa attiva è cambiata, svuota e ricarica storia/worldbuilding
+        if (state.mappaActiveId !== prevMapId) {
+          storiaFlushSave();
+          state.storia.content = '';
+          state.storia.markers = {};
+          var storiaEd = document.getElementById('storia-editor');
+          if (storiaEd) storiaEd.innerHTML = '<p><br></p>';
+          if (state.section === 'storia') renderMain();
         }
       } else if (typeof v.url === 'string') {
         state.mappaUrl = v.url;
@@ -14223,6 +14233,7 @@ function fbLoadStoria(mapId) {
     if (v && typeof v.content === 'string') {
       state.storia.content = v.content;
       if (v.markers && typeof v.markers === 'object') state.storia.markers = v.markers;
+      else state.storia.markers = {};
     } else {
       state.storia.content = '';
       state.storia.markers = {};
@@ -14230,7 +14241,15 @@ function fbLoadStoria(mapId) {
     saveToStorage();
     if (state.section === 'storia') {
       var ed = document.getElementById('storia-editor');
-      if (ed) ed.innerHTML = state.storia.content || '<p><br></p>';
+      if (ed) {
+        ed.innerHTML = state.storia.content || '<p><br></p>';
+      } else {
+        // Editor non ancora nel DOM: ricostruisci l'intera sezione
+        renderMain();
+        return;
+      }
+      // Aggiorna i marker sulla mappa Leaflet senza ricostruire tutto
+      refreshStoriaMarkers();
     }
   });
 }
