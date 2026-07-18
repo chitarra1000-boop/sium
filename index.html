@@ -14247,7 +14247,7 @@ function _attachStoriaListener(mapId) {
 
 function fbSaveStoria() {
   if (!_db || !state.currentUser) return;
-  var mid = state.mappaActiveId || 'default';
+  var mid = _storiaLoadedMapId || state.mappaActiveId || 'default';
   _db.ref(_storiaPrivatePath(mid)).set({
     content: state.storia.content || '',
     markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
