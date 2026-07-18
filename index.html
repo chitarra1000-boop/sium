@@ -4980,7 +4980,6 @@ function setupRealtimeListeners() {
     // Aggancia worldbuilding e storia alla mappa attiva
     if (state.mappaActiveId) {
       _attachWorldbuildingListener(state.mappaActiveId);
-      _attachStoriaListener(state.mappaActiveId);
     }
   });
 
@@ -5344,7 +5343,6 @@ function tentaLogin() {
         }
       });
     }
-    _attachStoriaListener(state.mappaActiveId || 'default');
     render();
     renderUserBadge();
     return true;
@@ -5782,7 +5780,10 @@ var state = {
     showMap: false,
     mapMode: 'move',   // 'move' | 'place'
     markerType: 'pin', // 'pin' | 'clock' | 'swords'
-    selectedMarker: null
+    selectedMarker: null,
+    showLibrary: false,
+    currentStoryId: null,
+    currentStoryName: ''
   }
 };
 
@@ -6085,11 +6086,9 @@ function render() {
 function renderMain() {
   var main = document.querySelector('.main-content');
   if (!main) { render(); return; }
-  // Salva il testo dell'editor storia prima di ricostruire il DOM,
-  // ma solo se la mappa caricata in storia è la stessa attiva (evita di salvare testo vecchio sulla mappa nuova)
   if (state.section === 'storia') {
     var _ed = document.getElementById('storia-editor');
-    if (_ed && _storiaLoadedMapId === state.mappaActiveId) { state.storia.content = _ed.innerHTML; }
+    if (_ed) { state.storia.content = _ed.innerHTML; }
   }
   main.innerHTML = '';
   if (state.section === 'emporio') main.appendChild(renderEmporio());
@@ -6103,8 +6102,7 @@ function renderMain() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
-  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); // Se la mappa è cambiata dall'ultima volta che storia è stata caricata, ricarica da Firebase
-    if (_storiaLoadedMapId !== state.mappaActiveId) _caricaStoria(state.mappaActiveId); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
+  else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -13550,14 +13548,7 @@ function renderMappa() {
       // Salva mappa attiva su Firebase
       _db && _db.ref('state/mappa/activeMapId').set(mid);
       // Aggiorna il worldbuilding e la storia alla mappa selezionata
-      storiaFlushSave();
-      state.storia.content = ''; state.storia.markers = {};
-      _storiaLoadedMapId = null;
-      var _stEd = document.getElementById('storia-editor');
-      if (_stEd) _stEd.innerHTML = '<p><br></p>';
-      refreshStoriaMarkers();
       _attachWorldbuildingListener(mid);
-      _caricaStoria(mid);
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
       if (state.mappaUrl) {
@@ -14178,7 +14169,6 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
-      _attachStoriaListener(state.mappaActiveId || 'default');
       render(); renderUserBadge();
     }, 300);
   } else {
@@ -14216,77 +14206,41 @@ var _storiaFlagLayer  = null;
 var _storiaFlagMarkers = {};
 var _storiaAnchorMode  = false;
 var _storiaSelectedRange = null;
-var _storiaLoadedMapId = null;
-
-function _storiaPrivatePath(mapId) {
+function _storiePrivatePath() {
   var user = state.currentUser && state.currentUser.username ? state.currentUser.username : '_guest';
-  return 'storia_private/' + user + '/' + (mapId || 'default');
+  return 'storie_private/' + user;
 }
 
-function _caricaStoria(mapId) {
-  if (!_db) return;
-  var mid = mapId || state.mappaActiveId || 'default';
-  _db.ref(_storiaPrivatePath(mid)).once('value', function(snap) {
-    var v = snap.val();
-    state.storia.content = (v && typeof v.content === 'string') ? v.content : '';
-    state.storia.markers = (v && v.markers && typeof v.markers === 'object') ? v.markers : {};
-    _storiaLoadedMapId = mid;
-    saveToStorage();
-    if (state.section === 'storia') {
-      var ed = document.getElementById('storia-editor');
-      if (ed) { ed.innerHTML = state.storia.content || '<p><br></p>'; refreshStoriaMarkers(); }
-      else renderMain();
-    }
-  });
-}
-
-function _attachStoriaListener(mapId) {
-  var mid = mapId || state.mappaActiveId || 'default';
-  if (mid !== _storiaLoadedMapId) _caricaStoria(mid);
-}
-
-function fbSaveStoria() {
-  if (!_db || !state.currentUser) return;
-  var mid = _storiaLoadedMapId || state.mappaActiveId || 'default';
-  _db.ref(_storiaPrivatePath(mid)).set({
+function _salvaStoriaConNome(nome, callback) {
+  if (!_db || !state.currentUser) { if (callback) callback(new Error('Firebase non connesso')); return; }
+  var ed = document.getElementById('storia-editor');
+  if (ed) state.storia.content = ed.innerHTML;
+  var id = state.storia.currentStoryId || _db.ref().push().key;
+  _db.ref(_storiePrivatePath() + '/' + id).set({
+    nome: nome,
     content: state.storia.content || '',
-    markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
+    markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null,
+    savedAt: Date.now()
+  }, function(err) {
+    if (!err) {
+      state.storia.currentStoryId = id;
+      state.storia.currentStoryName = nome;
+      saveToStorage();
+    }
+    if (callback) callback(err);
   });
 }
 
-function fbLoadStoria(mapId) {
-  if (!_db) return;
-  var mid = mapId || 'default';
-  _db.ref('state/storia/' + mid).once('value', function(snap) {
-    var v = snap.val();
-    if (v && typeof v.content === 'string') {
-      state.storia.content = v.content;
-      if (v.markers && typeof v.markers === 'object') state.storia.markers = v.markers;
-      else state.storia.markers = {};
-    } else {
-      state.storia.content = '';
-      state.storia.markers = {};
-    }
-    _storiaLoadedMapId = mid;
-    saveToStorage();
-    if (state.section === 'storia') {
-      var ed = document.getElementById('storia-editor');
-      if (ed) {
-        ed.innerHTML = state.storia.content || '<p><br></p>';
-        refreshStoriaMarkers();
-      } else {
-        renderMain();
-      }
-    }
+function _caricaLibreria(callback) {
+  if (!_db || !state.currentUser) { if (callback) callback({}); return; }
+  _db.ref(_storiePrivatePath()).once('value', function(snap) {
+    if (callback) callback(snap.val() || {});
   });
 }
 
 function storiaFlushSave() {
-  // Sincronizza dal DOM se l'editor è visibile, altrimenti usa state già aggiornato
   var ed = document.getElementById('storia-editor');
   if (ed) state.storia.content = ed.innerHTML;
-  saveToStorage();
-  fbSaveStoria();
 }
 
 function storiaScheduleSave() {
@@ -14716,68 +14670,210 @@ function renderStoria() {
 
   /* ---- Barra salvataggio ---- */
   var savebar = document.createElement('div');
-  savebar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.35rem 0.9rem;background:rgba(201,165,92,0.06);border-bottom:1px solid var(--border-subtle);flex-shrink:0;';
+  savebar.style.cssText = 'display:flex;align-items:center;gap:0.75rem;padding:0.35rem 0.9rem;background:rgba(201,165,92,0.06);border-bottom:1px solid var(--border-subtle);flex-shrink:0;flex-wrap:wrap;';
+
   var saveBtn = document.createElement('button');
   saveBtn.id = 'storia-save-btn';
   saveBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(201,165,92,0.2);border:1.5px solid var(--gold);color:var(--gold-bright);border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
-  saveBtn.innerHTML = '💾 Salva Storia';
+  saveBtn.innerHTML = '💾 Salva';
+
+  var libraryBtn = document.createElement('button');
+  libraryBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(100,160,240,0.15);border:1.5px solid rgba(100,160,240,0.5);color:#88b8f0;border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
+  libraryBtn.innerHTML = '📚 Seleziona Storia';
+
+  var nuovaBtn = document.createElement('button');
+  nuovaBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(130,200,130,0.12);border:1.5px solid rgba(130,200,130,0.4);color:#90e090;border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
+  nuovaBtn.innerHTML = '✏️ Nuova';
+
+  var storyNameLabel = document.createElement('span');
+  storyNameLabel.style.cssText = 'font-size:12px;font-family:\'Cinzel\',serif;color:var(--text-faint);letter-spacing:0.06em;flex:1;';
+  storyNameLabel.textContent = state.storia.currentStoryName ? '📖 ' + state.storia.currentStoryName : 'Nessuna storia aperta';
+
   var saveStatus = document.createElement('span');
   saveStatus.style.cssText = 'font-size:11px;font-family:\'Cinzel\',serif;color:var(--text-faint);letter-spacing:0.06em;';
-  saveStatus.textContent = 'Non salvato';
 
-  function _storiaSaveNow() {
-    var ed = document.getElementById('storia-editor');
-    if (ed) state.storia.content = ed.innerHTML;
-    if (!_db) { saveStatus.style.color='#ff9c9c'; saveStatus.textContent='❌ Firebase non connesso — vai su console.firebase.google.com e aggiorna le regole'; return; }
-    var mid = state.mappaActiveId || 'default';
-    saveStatus.style.color = 'var(--text-faint)'; saveStatus.textContent = '⏳ Salvataggio...';
-    saveBtn.disabled = true;
-    _db.ref(_storiaPrivatePath(mid)).set({
-      content: state.storia.content || '',
-      markers: (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
-    }, function(err) {
-      saveBtn.disabled = false;
-      if (err) {
-        saveStatus.style.color = '#ff9c9c';
-        saveStatus.textContent = '❌ ' + (err.code === 'PERMISSION_DENIED' ? 'Regole Firebase scadute — vai su console.firebase.google.com e aggiorna le regole' : err.message);
-      } else {
-        _storiaLoadedMapId = mid; // conferma associazione
-        saveToStorage();
-        saveStatus.style.color = '#7dce82';
-        var mapNome = (state.mappaList && state.mappaList[mid] && state.mappaList[mid].nome) ? state.mappaList[mid].nome : mid;
-        saveStatus.textContent = '✅ Salvato per "' + mapNome + '" — ' + new Date().toLocaleTimeString('it-IT');
-      }
-    });
+  /* Mostra finestra nome */
+  function _mostraInputNome(defaultNome, callback) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:10px;padding:1.5rem 2rem;width:360px;max-width:95%;box-shadow:0 12px 48px rgba(0,0,0,0.8);display:flex;flex-direction:column;gap:1rem;';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-family:\'Cinzel\',serif;font-size:14px;color:var(--gold-bright);letter-spacing:0.08em;';
+    title.textContent = 'Nome della storia';
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.value = defaultNome || '';
+    inp.placeholder = 'Es. La caduta di Chronis...';
+    inp.style.cssText = 'background:var(--bg-input,rgba(0,0,0,0.3));border:1px solid var(--border-default);border-radius:6px;padding:0.5rem 0.75rem;color:var(--text-main);font-size:14px;outline:none;';
+    var btnRow = document.createElement('div'); btnRow.style.cssText = 'display:flex;gap:0.5rem;justify-content:flex-end;';
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Annulla';
+    cancelBtn.style.cssText = 'padding:0.4rem 1rem;border-radius:6px;border:1px solid var(--border-subtle);background:transparent;color:var(--text-faint);cursor:pointer;font-size:13px;';
+    var confirmBtn = document.createElement('button');
+    confirmBtn.textContent = 'Salva';
+    confirmBtn.style.cssText = 'padding:0.4rem 1rem;border-radius:6px;border:1.5px solid var(--gold);background:rgba(201,165,92,0.2);color:var(--gold-bright);cursor:pointer;font-size:13px;font-family:\'Cinzel\',serif;';
+    cancelBtn.onclick = function() { document.body.removeChild(overlay); };
+    confirmBtn.onclick = function() {
+      var nome = inp.value.trim();
+      if (!nome) { inp.style.border='1px solid #ff9c9c'; return; }
+      document.body.removeChild(overlay);
+      callback(nome);
+    };
+    inp.onkeydown = function(e) { if (e.key === 'Enter') confirmBtn.onclick(); if (e.key === 'Escape') cancelBtn.onclick(); };
+    btnRow.appendChild(cancelBtn); btnRow.appendChild(confirmBtn);
+    box.appendChild(title); box.appendChild(inp); box.appendChild(btnRow);
+    overlay.appendChild(box); document.body.appendChild(overlay);
+    setTimeout(function(){ inp.focus(); inp.select(); }, 50);
   }
 
-  saveBtn.onclick = _storiaSaveNow;
-
-  // Pulsante Associa: salva e linka esplicitamente il testo alla mappa attiva
-  var assocBtn = document.createElement('button');
-  assocBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(100,160,240,0.15);border:1.5px solid rgba(100,160,240,0.5);color:#88b8f0;border-radius:6px;padding:0.3rem 1rem;cursor:pointer;font-size:12px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;transition:all 0.15s;';
-  var _assocMapNome = function() { return (state.mappaList && state.mappaList[state.mappaActiveId] && state.mappaList[state.mappaActiveId].nome) ? state.mappaList[state.mappaActiveId].nome : (state.mappaActiveId || 'default'); };
-  assocBtn.innerHTML = '🔗 Associa a "' + _assocMapNome() + '"';
-  assocBtn.onclick = function() {
-    _storiaSaveNow();
-    assocBtn.innerHTML = '✅ Associata a "' + _assocMapNome() + '"';
-    setTimeout(function() { assocBtn.innerHTML = '🔗 Associa a "' + _assocMapNome() + '"'; }, 2500);
+  saveBtn.onclick = function() {
+    var ed = document.getElementById('storia-editor');
+    if (ed) state.storia.content = ed.innerHTML;
+    if (!_db) { saveStatus.style.color='#ff9c9c'; saveStatus.textContent='❌ Firebase non connesso'; return; }
+    function doSave(nome) {
+      saveBtn.disabled = true;
+      saveStatus.style.color='var(--text-faint)'; saveStatus.textContent='⏳ Salvataggio...';
+      _salvaStoriaConNome(nome, function(err) {
+        saveBtn.disabled = false;
+        if (err) {
+          saveStatus.style.color='#ff9c9c';
+          saveStatus.textContent = '❌ ' + (err.code==='PERMISSION_DENIED' ? 'Regole Firebase scadute' : err.message);
+        } else {
+          saveStatus.style.color='#7dce82';
+          saveStatus.textContent = '✅ Salvata — ' + new Date().toLocaleTimeString('it-IT');
+          storyNameLabel.textContent = '📖 ' + nome;
+        }
+      });
+    }
+    if (state.storia.currentStoryId) {
+      doSave(state.storia.currentStoryName);
+    } else {
+      _mostraInputNome('', doSave);
+    }
   };
 
-  // Auto-salvataggio ogni 60 secondi se c'è contenuto
-  window._storiaAutoSaveInterval = setInterval(function() {
-    if (state.section === 'storia' && state.storia.content) _storiaSaveNow();
-  }, 60000);
+  nuovaBtn.onclick = function() {
+    state.storia.content = '';
+    state.storia.markers = {};
+    state.storia.currentStoryId = null;
+    state.storia.currentStoryName = '';
+    state.storia.showLibrary = false;
+    storyNameLabel.textContent = 'Nessuna storia aperta';
+    saveStatus.textContent = '';
+    var ed = document.getElementById('storia-editor');
+    if (ed) ed.innerHTML = '<p><br></p>';
+    refreshStoriaMarkers();
+  };
+
+  libraryBtn.onclick = function() {
+    state.storia.showLibrary = !state.storia.showLibrary;
+    var edWrap = document.getElementById('storia-editor-wrap');
+    var libWrap = document.getElementById('storia-library-wrap');
+    if (edWrap) edWrap.style.display = state.storia.showLibrary ? 'none' : '';
+    if (libWrap) {
+      libWrap.style.display = state.storia.showLibrary ? 'flex' : 'none';
+      if (state.storia.showLibrary) _renderLibreria(libWrap);
+    }
+    libraryBtn.innerHTML = state.storia.showLibrary ? '✏️ Torna all\'editor' : '📚 Seleziona Storia';
+  };
 
   savebar.appendChild(saveBtn);
-  savebar.appendChild(assocBtn);
+  savebar.appendChild(nuovaBtn);
+  savebar.appendChild(libraryBtn);
+  savebar.appendChild(storyNameLabel);
   savebar.appendChild(saveStatus);
   wrap.appendChild(savebar);
 
   /* ---- Area principale ---- */
   var mainArea = document.createElement('div'); mainArea.className = 'storia-main';
 
+  /* Libreria storie */
+  var libWrap = document.createElement('div');
+  libWrap.id = 'storia-library-wrap';
+  libWrap.style.cssText = 'display:' + (state.storia.showLibrary ? 'flex' : 'none') + ';flex-direction:column;flex:1;overflow-y:auto;padding:1rem 1.2rem;gap:0.6rem;';
+
+  function _renderLibreria(container) {
+    container.innerHTML = '';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;color:var(--gold-bright);letter-spacing:0.1em;margin-bottom:0.4rem;';
+    hdr.textContent = 'LE TUE STORIE';
+    container.appendChild(hdr);
+    var loading = document.createElement('div');
+    loading.style.cssText = 'color:var(--text-faint);font-size:13px;';
+    loading.textContent = 'Caricamento...';
+    container.appendChild(loading);
+    _caricaLibreria(function(storie) {
+      container.removeChild(loading);
+      var ids = Object.keys(storie);
+      if (ids.length === 0) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'color:var(--text-faint);font-size:13px;font-style:italic;';
+        empty.textContent = 'Nessuna storia salvata. Scrivi qualcosa e clicca Salva.';
+        container.appendChild(empty); return;
+      }
+      ids.sort(function(a,b){ return (storie[b].savedAt||0)-(storie[a].savedAt||0); });
+      ids.forEach(function(id) {
+        var s = storie[id];
+        var card = document.createElement('div');
+        card.style.cssText = 'display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.9rem;background:rgba(201,165,92,0.07);border:1px solid var(--border-subtle);border-radius:8px;cursor:pointer;transition:background 0.15s;';
+        if (id === state.storia.currentStoryId) card.style.borderColor = 'var(--gold)';
+        card.onmouseenter = function(){ card.style.background='rgba(201,165,92,0.14)'; };
+        card.onmouseleave = function(){ card.style.background='rgba(201,165,92,0.07)'; };
+        var info = document.createElement('div'); info.style.cssText = 'flex:1;min-width:0;';
+        var nome = document.createElement('div');
+        nome.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        nome.textContent = s.nome || 'Senza nome';
+        var data = document.createElement('div');
+        data.style.cssText = 'font-size:10px;color:var(--text-faint);margin-top:2px;';
+        data.textContent = s.savedAt ? new Date(s.savedAt).toLocaleString('it-IT') : '';
+        info.appendChild(nome); info.appendChild(data);
+        var delBtn = document.createElement('button');
+        delBtn.innerHTML = '🗑️';
+        delBtn.title = 'Elimina';
+        delBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:14px;opacity:0.5;padding:0.2rem;border-radius:4px;';
+        delBtn.onmouseenter = function(){ delBtn.style.opacity='1'; };
+        delBtn.onmouseleave = function(){ delBtn.style.opacity='0.5'; };
+        delBtn.onclick = function(e) {
+          e.stopPropagation();
+          if (!confirm('Eliminare "' + (s.nome||'questa storia') + '"?')) return;
+          _db.ref(_storiePrivatePath() + '/' + id).remove(function() {
+            if (state.storia.currentStoryId === id) {
+              state.storia.currentStoryId = null; state.storia.currentStoryName = '';
+              state.storia.content = ''; state.storia.markers = {};
+              storyNameLabel.textContent = 'Nessuna storia aperta';
+            }
+            _renderLibreria(container);
+          });
+        };
+        card.onclick = function() {
+          state.storia.content = typeof s.content === 'string' ? s.content : '';
+          state.storia.markers = (s.markers && typeof s.markers === 'object') ? s.markers : {};
+          state.storia.currentStoryId = id;
+          state.storia.currentStoryName = s.nome || '';
+          state.storia.showLibrary = false;
+          storyNameLabel.textContent = '📖 ' + (s.nome || '');
+          saveStatus.textContent = '';
+          libraryBtn.innerHTML = '📚 Seleziona Storia';
+          var edWrap2 = document.getElementById('storia-editor-wrap');
+          var libWrap2 = document.getElementById('storia-library-wrap');
+          if (libWrap2) libWrap2.style.display = 'none';
+          if (edWrap2) {
+            edWrap2.style.display = '';
+            var ed2 = document.getElementById('storia-editor');
+            if (ed2) { ed2.innerHTML = state.storia.content || '<p><br></p>'; }
+          }
+          refreshStoriaMarkers();
+        };
+        card.appendChild(info); card.appendChild(delBtn);
+        container.appendChild(card);
+      });
+    });
+  }
+  mainArea.appendChild(libWrap);
+
   /* Editor */
-  var editorWrap = document.createElement('div'); editorWrap.className = 'storia-editor-wrap';
+  var editorWrap = document.createElement('div'); editorWrap.className = 'storia-editor-wrap'; editorWrap.id = 'storia-editor-wrap';
+  editorWrap.style.display = state.storia.showLibrary ? 'none' : '';
   var editor = document.createElement('div');
   editor.contentEditable = 'true'; editor.className = 'storia-editor'; editor.id = 'storia-editor';
   editor.setAttribute('spellcheck', 'false');
