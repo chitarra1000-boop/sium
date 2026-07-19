@@ -14217,49 +14217,41 @@ function _storiePrivatePath() {
   return 'storie_private/' + user;
 }
 
-function _storiaMarkersLsKey(mapId, user) {
-  var u = user || (state.currentUser && state.currentUser.username) || '_guest';
-  return 'storia_markers__' + u + '__' + (mapId || 'default');
+function _storiaMarkersLsKey(mid) {
+  var u = (state.currentUser && state.currentUser.username) || '_guest';
+  return 'storia_markers__' + u + '__' + (mid || 'default');
 }
-function _storiaMarkersFbPath(mapId, user) {
-  var u = user || (state.currentUser && state.currentUser.username) || '_guest';
-  return 'storia_private/' + u + '/' + (mapId || 'default') + '/markers';
+function _storiaMarkersFbPath(mid) {
+  var u = (state.currentUser && state.currentUser.username) || '_guest';
+  return 'state/storia_markers/' + u + '/' + (mid || 'default');
 }
 
 function fbSaveStoriaMarkers(mapId) {
   var mid = mapId || state.mappaActiveId || 'default';
   var markers = (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null;
-  // 1. localStorage — sincrono, istantaneo
   try {
     if (markers) localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(markers));
     else localStorage.removeItem(_storiaMarkersLsKey(mid));
   } catch(e) {}
-  // 2. Firebase — asincrono, cross-device
-  if (_db && state.currentUser) {
-    _db.ref(_storiaMarkersFbPath(mid)).set(markers);
-  }
+  if (_db) _db.ref(_storiaMarkersFbPath(mid)).set(markers);
 }
 
 function fbLoadStoriaMarkers(mapId, callback) {
   var mid = mapId || state.mappaActiveId || 'default';
-  // 1. Carica subito da localStorage (sincrono) → render immediato
   try {
     var raw = localStorage.getItem(_storiaMarkersLsKey(mid));
     var loc = raw ? JSON.parse(raw) : null;
     state.storia.markers = (loc && typeof loc === 'object') ? loc : {};
   } catch(e) { state.storia.markers = {}; }
   if (callback) callback();
-  // 2. Aggiorna da Firebase in background (cross-device)
   if (_db) {
     _db.ref(_storiaMarkersFbPath(mid)).once('value', function(snap) {
       var v = snap.val();
       if (v && typeof v === 'object' && Object.keys(v).length > 0) {
-        // Firebase ha dati → aggiorna state e localStorage
         state.storia.markers = v;
         try { localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(v)); } catch(e) {}
         refreshStoriaMarkers();
       } else if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
-        // Firebase vuoto ma localStorage ha marker → carica su Firebase
         _db.ref(_storiaMarkersFbPath(mid)).set(state.storia.markers);
       }
     });
@@ -15047,6 +15039,21 @@ function renderStoria() {
   swordsBtn.className = 'storia-map-mode-btn' + (state.storia.mapMode === 'place' && state.storia.markerType === 'swords' ? ' active' : '');
   swordsBtn.onclick = function() { state.storia.markerType = 'swords'; state.storia.mapMode = 'place'; updateStoriaMapToolbar(); };
   mapTb.appendChild(swordsBtn);
+
+  var savePinSep = document.createElement('span'); savePinSep.style.cssText='flex:1;'; mapTb.appendChild(savePinSep);
+  var savePinBtn = document.createElement('button');
+  savePinBtn.id = 'storia-save-pin-btn';
+  savePinBtn.title = 'Salva tutti i pin sulla mappa';
+  savePinBtn.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;background:rgba(201,165,92,0.2);border:1.5px solid var(--gold);color:var(--gold-bright);border-radius:6px;padding:0.25rem 0.75rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;letter-spacing:0.06em;white-space:nowrap;';
+  savePinBtn.innerHTML = '💾 Salva Pin';
+  savePinBtn.onclick = function() {
+    fbSaveStoriaMarkers();
+    savePinBtn.innerHTML = '✅ Salvati';
+    savePinBtn.style.color = '#7dce82';
+    savePinBtn.style.borderColor = '#7dce82';
+    setTimeout(function() { savePinBtn.innerHTML = '💾 Salva Pin'; savePinBtn.style.color=''; savePinBtn.style.borderColor=''; }, 2000);
+  };
+  mapTb.appendChild(savePinBtn);
 
   mapPanel.appendChild(mapTb);
 
