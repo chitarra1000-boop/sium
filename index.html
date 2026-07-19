@@ -14217,30 +14217,53 @@ function _storiePrivatePath() {
   return 'storie_private/' + user;
 }
 
-function _storiaMarkersLsKey(mapId) {
-  var user = state.currentUser && state.currentUser.username ? state.currentUser.username : '_guest';
-  return 'storia_markers__' + user + '__' + (mapId || 'default');
+function _storiaMarkersLsKey(mapId, user) {
+  var u = user || (state.currentUser && state.currentUser.username) || '_guest';
+  return 'storia_markers__' + u + '__' + (mapId || 'default');
+}
+function _storiaMarkersFbPath(mapId, user) {
+  var u = user || (state.currentUser && state.currentUser.username) || '_guest';
+  return 'storia_private/' + u + '/' + (mapId || 'default') + '/markers';
 }
 
 function fbSaveStoriaMarkers(mapId) {
-  // Salva su localStorage (sincrono, affidabile)
   var mid = mapId || state.mappaActiveId || 'default';
+  var markers = (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null;
+  // 1. localStorage — sincrono, istantaneo
   try {
-    var markers = state.storia.markers && Object.keys(state.storia.markers).length > 0 ? state.storia.markers : null;
     if (markers) localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(markers));
     else localStorage.removeItem(_storiaMarkersLsKey(mid));
   } catch(e) {}
+  // 2. Firebase — asincrono, cross-device
+  if (_db && state.currentUser) {
+    _db.ref(_storiaMarkersFbPath(mid)).set(markers);
+  }
 }
 
 function fbLoadStoriaMarkers(mapId, callback) {
-  // Carica da localStorage (sincrono)
   var mid = mapId || state.mappaActiveId || 'default';
+  // 1. Carica subito da localStorage (sincrono) → render immediato
   try {
     var raw = localStorage.getItem(_storiaMarkersLsKey(mid));
-    var v = raw ? JSON.parse(raw) : null;
-    state.storia.markers = (v && typeof v === 'object') ? v : {};
+    var loc = raw ? JSON.parse(raw) : null;
+    state.storia.markers = (loc && typeof loc === 'object') ? loc : {};
   } catch(e) { state.storia.markers = {}; }
   if (callback) callback();
+  // 2. Aggiorna da Firebase in background (cross-device)
+  if (_db) {
+    _db.ref(_storiaMarkersFbPath(mid)).once('value', function(snap) {
+      var v = snap.val();
+      if (v && typeof v === 'object' && Object.keys(v).length > 0) {
+        // Firebase ha dati → aggiorna state e localStorage
+        state.storia.markers = v;
+        try { localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(v)); } catch(e) {}
+        refreshStoriaMarkers();
+      } else if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
+        // Firebase vuoto ma localStorage ha marker → carica su Firebase
+        _db.ref(_storiaMarkersFbPath(mid)).set(state.storia.markers);
+      }
+    });
+  }
 }
 
 function _salvaStoriaConNome(nome, callback) {
