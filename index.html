@@ -4983,6 +4983,18 @@ function setupRealtimeListeners() {
     }
   });
 
+  // ---- STORIA MARKERS (privati per DM, per mappa) ----
+  var _smListenerUser = state.currentUser && state.currentUser.username;
+  if (_smListenerUser) {
+    _db.ref('state/storia_markers/' + _smListenerUser).on('value', function(snap) {
+      window._storiaMarkersCache = snap.val() || {};
+      var mid = state.mappaActiveId || 'default';
+      state.storia.markers = (window._storiaMarkersCache[mid] && typeof window._storiaMarkersCache[mid] === 'object')
+        ? window._storiaMarkersCache[mid] : {};
+      refreshStoriaMarkers();
+    });
+  }
+
   // ---- BACHECA DEI RICERCATI ----
   _db.ref('state/bacheca/items').on('value', function(snap) {
     var v = snap.val();
@@ -5343,7 +5355,6 @@ function tentaLogin() {
         }
       });
     }
-    fbLoadStoriaMarkers(state.mappaActiveId);
     render();
     renderUserBadge();
     return true;
@@ -13552,8 +13563,9 @@ function renderMappa() {
       _db && _db.ref('state/mappa/activeMapId').set(mid);
       // Aggiorna il worldbuilding alla mappa selezionata
       _attachWorldbuildingListener(mid);
-      // Carica i marker della nuova mappa (sincrono da localStorage)
-      fbLoadStoriaMarkers(mid);
+      // Carica i marker della nuova mappa dalla cache Firebase
+      state.storia.markers = (window._storiaMarkersCache && window._storiaMarkersCache[mid] && typeof window._storiaMarkersCache[mid] === 'object')
+        ? window._storiaMarkersCache[mid] : {};
       refreshStoriaMarkers();
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
@@ -14175,7 +14187,6 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
-      fbLoadStoriaMarkers(state.mappaActiveId);
       render(); renderUserBadge();
     }, 300);
   } else {
@@ -14218,45 +14229,18 @@ function _storiePrivatePath() {
   return 'storie_private/' + user;
 }
 
-function _storiaMarkersLsKey(mid) {
-  var u = (state.currentUser && state.currentUser.username) || '_guest';
-  return 'storia_markers__' + u + '__' + (mid || 'default');
-}
-function _storiaMarkersFbPath(mid) {
-  var u = (state.currentUser && state.currentUser.username) || '_guest';
-  return 'state/storia_markers/' + u + '/' + (mid || 'default');
-}
-
 function fbSaveStoriaMarkers(mapId) {
+  if (!_db || !state.currentUser) return;
   var mid = mapId || state.mappaActiveId || 'default';
+  var u = state.currentUser.username;
   var markers = (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null;
-  try {
-    if (markers) localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(markers));
-    else localStorage.removeItem(_storiaMarkersLsKey(mid));
-  } catch(e) {}
-  if (_db) _db.ref(_storiaMarkersFbPath(mid)).set(markers);
+  _db.ref('state/storia_markers/' + u + '/' + mid).set(markers);
 }
 
-function fbLoadStoriaMarkers(mapId, callback) {
+function fbLoadStoriaMarkers(mapId) {
   var mid = mapId || state.mappaActiveId || 'default';
-  try {
-    var raw = localStorage.getItem(_storiaMarkersLsKey(mid));
-    var loc = raw ? JSON.parse(raw) : null;
-    state.storia.markers = (loc && typeof loc === 'object') ? loc : {};
-  } catch(e) { state.storia.markers = {}; }
-  if (callback) callback();
-  if (_db) {
-    _db.ref(_storiaMarkersFbPath(mid)).once('value', function(snap) {
-      var v = snap.val();
-      if (v && typeof v === 'object' && Object.keys(v).length > 0) {
-        state.storia.markers = v;
-        try { localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(v)); } catch(e) {}
-        refreshStoriaMarkers();
-      } else if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
-        _db.ref(_storiaMarkersFbPath(mid)).set(state.storia.markers);
-      }
-    });
-  }
+  state.storia.markers = (window._storiaMarkersCache && window._storiaMarkersCache[mid] && typeof window._storiaMarkersCache[mid] === 'object')
+    ? window._storiaMarkersCache[mid] : {};
 }
 
 function _salvaStoriaConNome(nome, callback) {
