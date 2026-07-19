@@ -14236,7 +14236,14 @@ function fbLoadStoriaMarkers(mapId, callback) {
   var mid = mapId || state.mappaActiveId || 'default';
   _db.ref(_storiaMarkersPath(mid)).once('value', function(snap) {
     var v = snap.val();
-    state.storia.markers = (v && typeof v === 'object') ? v : {};
+    if (v && typeof v === 'object' && Object.keys(v).length > 0) {
+      state.storia.markers = v;
+    } else if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
+      // Firebase vuoto ma localStorage ha marker: salva su Firebase per la prossima volta
+      fbSaveStoriaMarkers(mid);
+    } else {
+      state.storia.markers = {};
+    }
     if (callback) callback();
   });
 }
