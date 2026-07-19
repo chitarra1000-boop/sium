@@ -4701,6 +4701,292 @@
     font-size:11px; margin-top:0.2rem; font-family:'Cinzel',serif; letter-spacing:0.05em;
   }
 
+  /* =========================================================
+     CYBERPUNK EMPORIO — LABORATORIO CIBERNETICO
+  ========================================================= */
+  :root {
+    --cyber-cyan: #00f5ff;
+    --cyber-purple: #bf5fff;
+    --cyber-pink: #ff2d78;
+    --cyber-green: #00ff9d;
+    --cyber-bg: #03030f;
+    --cyber-panel: rgba(0,10,30,0.82);
+    --cyber-border: rgba(0,245,255,0.35);
+    --cyber-glow: 0 0 18px rgba(0,245,255,0.45);
+    --cyber-glow-purple: 0 0 18px rgba(191,95,255,0.45);
+  }
+
+  .cyber-wrap {
+    background: var(--cyber-bg);
+    min-height: 100vh;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--cyber-cyan);
+    position: relative;
+    overflow-x: hidden;
+  }
+  .cyber-wrap::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0,245,255,0.02) 3px,
+      rgba(0,245,255,0.02) 4px
+    );
+    pointer-events:none; z-index:0;
+  }
+  .cyber-header {
+    background: linear-gradient(180deg, rgba(0,15,40,0.98) 0%, rgba(3,3,15,0.95) 100%);
+    border-bottom: 1px solid var(--cyber-border);
+    box-shadow: var(--cyber-glow);
+    position: relative; z-index: 2;
+    padding: 1.5rem 2rem;
+  }
+  .cyber-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem; font-weight: 900;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 20px var(--cyber-cyan), 0 0 40px rgba(0,245,255,0.4);
+  }
+  .cyber-subtitle {
+    font-size: 11px; letter-spacing: 0.25em;
+    color: var(--cyber-purple);
+    text-transform: uppercase;
+    text-shadow: 0 0 8px var(--cyber-purple);
+  }
+  .cyber-back-btn {
+    background: none; border: 1px solid var(--cyber-border);
+    color: var(--cyber-cyan); font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 0.1em;
+    padding: 0.4rem 1rem; cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    box-shadow: 0 0 8px rgba(0,245,255,0.2);
+  }
+  .cyber-back-btn:hover {
+    background: rgba(0,245,255,0.1);
+    box-shadow: var(--cyber-glow);
+    color: #fff;
+  }
+  .cyber-search-bar {
+    background: rgba(0,245,255,0.04);
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-cyan);
+    font-family: 'Courier New', monospace;
+    font-size: 14px; padding: 0.6rem 1rem;
+    outline: none; width: 100%; box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .cyber-search-bar:focus {
+    border-color: var(--cyber-cyan);
+    box-shadow: var(--cyber-glow);
+  }
+  .cyber-search-bar::placeholder { color: rgba(0,245,255,0.3); }
+  .cyber-add-btn {
+    background: linear-gradient(135deg, rgba(191,95,255,0.15), rgba(0,245,255,0.1));
+    border: 1px solid var(--cyber-purple);
+    color: var(--cyber-purple);
+    font-family: 'Courier New', monospace;
+    font-size: 13px; letter-spacing: 0.1em;
+    padding: 0.55rem 1.2rem; cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+    box-shadow: 0 0 10px rgba(191,95,255,0.2);
+  }
+  .cyber-add-btn:hover {
+    background: rgba(191,95,255,0.25);
+    box-shadow: var(--cyber-glow-purple);
+    color: #e0aaff;
+  }
+  .cyber-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    position: relative; z-index: 1;
+  }
+  .cyber-card {
+    background: linear-gradient(135deg, rgba(0,20,50,0.85) 0%, rgba(10,0,30,0.85) 100%);
+    border: 1px solid var(--cyber-border);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    backdrop-filter: blur(8px);
+  }
+  .cyber-card::before {
+    content:'';
+    position:absolute; top:0; left:0; right:0;
+    height:2px;
+    background: linear-gradient(90deg, transparent, var(--cyber-cyan), transparent);
+    opacity:0.7;
+  }
+  .cyber-card::after {
+    content:'';
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 7px,
+      rgba(0,245,255,0.015) 7px, rgba(0,245,255,0.015) 8px
+    );
+    pointer-events:none;
+    animation: scanlines 8s linear infinite;
+  }
+  @keyframes scanlines {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+  }
+  .cyber-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,245,255,0.7);
+    box-shadow: var(--cyber-glow), inset 0 0 30px rgba(0,245,255,0.05);
+  }
+  .cyber-card-head {
+    padding: 1rem 1rem 0.5rem;
+    border-bottom: 1px solid rgba(0,245,255,0.15);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .cyber-card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: #00f5ff;
+    text-shadow: 0 0 8px rgba(0,245,255,0.6);
+    text-shadow: 0 0 10px var(--cyber-cyan);
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+  }
+  .cyber-rarity-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.25rem 0.6rem;
+    border: 2px solid; white-space: nowrap; flex-shrink: 0;
+  }
+  .cyber-rarity-comune { border-color: #4af; color: #4af; }
+  .cyber-rarity-non-comune { border-color: #0f9; color: #0f9; }
+  .cyber-rarity-raro { border-color: #bf5fff; color: #bf5fff; box-shadow: 0 0 6px rgba(191,95,255,0.4); }
+  .cyber-rarity-molto-raro { border-color: #ff2d78; color: #ff2d78; box-shadow: 0 0 6px rgba(255,45,120,0.4); }
+  .cyber-rarity-leggendario { border-color: #ffd700; color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+  .cyber-card-body { padding: 0.75rem 1rem; }
+  .cyber-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: #bf5fff; margin-top: 0.7rem; margin-bottom: 0.2rem;
+    text-shadow: 0 0 8px rgba(191,95,255,0.8);
+  }
+  .cyber-value {
+    font-size: 14px; color: #00f5ff; line-height: 1.5; font-weight: 500;
+  }
+  .cyber-img-wrap {
+    width: 100%; height: 140px; overflow: hidden; position: relative;
+    background: rgba(0,10,30,0.6);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cyber-img-wrap img { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; }
+  .cyber-img-placeholder {
+    font-size: 3rem; color: rgba(0,245,255,0.2);
+    text-shadow: 0 0 20px rgba(0,245,255,0.3);
+  }
+  .cyber-card-foot {
+    padding: 0.6rem 1rem;
+    border-top: 1px solid rgba(0,245,255,0.12);
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(0,0,20,0.4);
+  }
+  .cyber-price {
+    font-size: 14px; font-weight: 700;
+    color: var(--cyber-green);
+    text-shadow: 0 0 10px var(--cyber-green);
+    letter-spacing: 0.05em;
+  }
+  .cyber-edit-btn {
+    background: rgba(191,95,255,0.1); border: 1px solid rgba(191,95,255,0.4);
+    color: var(--cyber-purple); cursor: pointer; padding: 0.3rem 0.6rem;
+    font-size: 12px; transition: all 0.2s; margin-right: 0.3rem;
+  }
+  .cyber-edit-btn:hover { background: rgba(191,95,255,0.25); box-shadow: 0 0 8px rgba(191,95,255,0.4); }
+  .cyber-del-btn {
+    background: rgba(255,45,120,0.08); border: 1px solid rgba(255,45,120,0.35);
+    color: var(--cyber-pink); cursor: pointer; padding: 0.3rem 0.6rem;
+    font-size: 12px; transition: all 0.2s;
+  }
+  .cyber-del-btn:hover { background: rgba(255,45,120,0.2); box-shadow: 0 0 8px rgba(255,45,120,0.4); }
+
+  /* CYBER FORM / MODAL */
+  .cyber-modal-backdrop {
+    position:fixed; inset:0; z-index:9000;
+    background: rgba(0,0,15,0.88);
+    display:flex; align-items:center; justify-content:center;
+    padding: 1rem;
+  }
+  .cyber-modal-panel {
+    background: linear-gradient(135deg, rgba(0,15,40,0.97) 0%, rgba(10,0,30,0.97) 100%);
+    border: 1px solid var(--cyber-border);
+    box-shadow: var(--cyber-glow), 0 0 60px rgba(191,95,255,0.2);
+    width: 100%; max-width: 560px; max-height: 90vh;
+    overflow-y: auto; position: relative;
+    animation: cyberFadeIn 0.2s ease;
+  }
+  @keyframes cyberFadeIn {
+    from { opacity:0; transform:translateY(16px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .cyber-modal-panel::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, var(--cyber-cyan), var(--cyber-purple), var(--cyber-pink));
+  }
+  .cyber-modal-head {
+    padding: 1.2rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--cyber-border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cyber-modal-title {
+    font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 700;
+    color: var(--cyber-cyan); text-shadow: 0 0 12px var(--cyber-cyan);
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+  .cyber-modal-close {
+    background: none; border: 1px solid rgba(255,45,120,0.4);
+    color: var(--cyber-pink); cursor: pointer; padding: 0.3rem 0.6rem;
+    font-size: 14px; transition: all 0.2s; line-height: 1;
+  }
+  .cyber-modal-close:hover { background: rgba(255,45,120,0.15); box-shadow: 0 0 8px rgba(255,45,120,0.4); }
+  .cyber-modal-body { padding: 1.2rem 1.5rem; }
+  .cyber-field-label {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--cyber-purple); margin-bottom: 0.3rem; display: block;
+    text-shadow: 0 0 5px var(--cyber-purple);
+  }
+  .cyber-field {
+    background: rgba(0,245,255,0.04); border: 1px solid rgba(0,245,255,0.25);
+    color: var(--cyber-cyan); font-family: 'Courier New', monospace;
+    font-size: 13px; padding: 0.5rem 0.75rem;
+    width: 100%; box-sizing: border-box; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .cyber-field:focus { border-color: var(--cyber-cyan); box-shadow: 0 0 10px rgba(0,245,255,0.25); }
+  .cyber-field option { background: #03030f; }
+  .cyber-field-group { margin-bottom: 0.9rem; }
+  .cyber-save-btn {
+    background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(0,200,220,0.1));
+    border: 1px solid var(--cyber-cyan);
+    color: var(--cyber-cyan); font-family: 'Courier New', monospace;
+    font-size: 14px; letter-spacing: 0.15em;
+    padding: 0.65rem 2rem; cursor: pointer; text-transform: uppercase;
+    transition: all 0.2s; width: 100%; margin-top: 0.5rem;
+    box-shadow: 0 0 12px rgba(0,245,255,0.2);
+  }
+  .cyber-save-btn:hover { background: rgba(0,245,255,0.2); box-shadow: var(--cyber-glow); color: #fff; }
+  .cyber-empty {
+    text-align: center; padding: 4rem 2rem; color: rgba(0,245,255,0.35);
+    font-size: 13px; letter-spacing: 0.1em;
+  }
+  .cyber-empty .cyber-rune { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+  .cyber-tipo-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: #00f5ff; border: 1px solid rgba(0,245,255,0.5);
+    padding: 0.2rem 0.5rem; display: inline-block; margin-bottom: 0.4rem;
+  }
+
 </style>
 </head>
 <body>
@@ -4869,6 +5155,15 @@ function setupRealtimeListeners() {
     if (v && Array.isArray(v)) {
       state.armi = v;
       if (state.section === 'emporio') updateResults();
+    }
+  });
+
+  // ---- IMPIANTI CIBERNETICI ----
+  _db.ref('state/impianti').on('value', function(snap) {
+    var v = snap.val();
+    if (v && Array.isArray(v)) {
+      state.impiantiCibernetici = v;
+      if (state.section === 'emporio' && state.emporioCyber) renderMain();
     }
   });
 
@@ -5272,6 +5567,10 @@ function fbSaveArmi() {
   _db.ref('state/armi').set(state.armi, function() {
     setTimeout(function() { _localWrite.armi = false; }, 200);
   });
+}
+function fbSaveImpianti() {
+  if (!_db) return;
+  _db.ref('state/impianti').set(state.impiantiCibernetici.length > 0 ? state.impiantiCibernetici : null);
 }
 function fbSaveNotes() { fbSave('state/notes', state.notes); }
 
@@ -5701,6 +6000,13 @@ var state = {
   search: '',
   showForm: false,
   editingId: null,
+  emporioCyber: false,
+  impiantiCibernetici: [],
+  cyberSearch: '',
+  cyberFilterTipo: '',
+  cyberFilterRarita: '',
+  cyberEditingId: null,
+  cyberShowForm: false,
   combatants: [makeEmptyCombatant()],
   round: 1,
   activeIndex: 0,
@@ -6042,6 +6348,7 @@ function getFilteredArmi() {
   });
 }
 
+
 function render() {
   document.documentElement.setAttribute('data-theme', state.theme);
   var app = document.getElementById('app');
@@ -6209,10 +6516,12 @@ function renderSidebar() {
 }
 
 function renderEmporio() {
+  if (state.emporioCyber) return renderEmporioCyber();
   var wrap = document.createElement('div');
 
   var header = document.createElement('header');
   header.className = 'border-b';
+  header.style.cssText = 'position:relative;overflow:visible;';
   var hc = document.createElement('div');
   hc.className = 'container-main';
   hc.style.cssText = 'padding-top:2.25rem;padding-bottom:2.25rem;';
@@ -6238,6 +6547,7 @@ function renderEmporio() {
   btnLoad.innerHTML = ICON.folder + ' Carica da Chiavetta';
   btnLoad.onclick = loadArmi;
   rightHead.appendChild(btnLoad);
+
   top.appendChild(rightHead);
 
   hc.appendChild(top);
@@ -6251,6 +6561,38 @@ function renderEmporio() {
   hc.appendChild(notice);
   header.appendChild(hc);
   wrap.appendChild(header);
+
+  // --- TOGGLE BAR (stessa logica bestiario) ---
+  var cyberBar = document.createElement('div');
+  cyberBar.style.cssText = 'background:var(--bg-card);border-bottom:1px solid var(--border-subtle);';
+  var cyberBarInner = document.createElement('div');
+  cyberBarInner.className = 'container-main';
+  cyberBarInner.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding-top:0;padding-bottom:0;';
+
+  var cyberBarLeft = document.createElement('div');
+  cyberBarLeft.style.cssText = 'display:flex;align-items:center;gap:0;';
+
+  var tabNorm = document.createElement('button');
+  tabNorm.type = 'button';
+  tabNorm.style.cssText = 'padding:0.7rem 1.25rem;font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;border:none;border-bottom:2px solid var(--border-gold);background:transparent;color:var(--gold);cursor:default;white-space:nowrap;';
+  tabNorm.textContent = '⚔ Emporio';
+  cyberBarLeft.appendChild(tabNorm);
+
+  cyberBarInner.appendChild(cyberBarLeft);
+
+  if (isDM()) {
+    var cyberToggle = document.createElement('button');
+    cyberToggle.type = 'button';
+    cyberToggle.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.4rem 1rem;background:rgba(0,180,255,0.08);border:1px solid rgba(0,180,255,0.35);color:#1af;font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;margin:0.4rem 0;';
+    cyberToggle.innerHTML = '<span style="font-size:1.5rem;line-height:1;">🕷</span> Laboratorio Cibernetico';
+    cyberToggle.onmouseenter = function(){ this.style.background='rgba(0,180,255,0.18)'; this.style.borderColor='rgba(0,180,255,0.7)'; this.style.boxShadow='0 0 12px rgba(0,180,255,0.4)'; };
+    cyberToggle.onmouseleave = function(){ this.style.background='rgba(0,180,255,0.08)'; this.style.borderColor='rgba(0,180,255,0.35)'; this.style.boxShadow=''; };
+    cyberToggle.onclick = function(){ state.emporioCyber = true; renderMain(); };
+    cyberBarInner.appendChild(cyberToggle);
+  }
+
+  cyberBar.appendChild(cyberBarInner);
+  wrap.appendChild(cyberBar);
 
   var section = document.createElement('section');
   section.className = 'container-main';
@@ -6328,6 +6670,326 @@ function renderEmporio() {
 
   setTimeout(function() { updateResults(); }, 0);
   return wrap;
+}
+
+// ---- CYBERPUNK EMPORIO ----
+var TIPI_CYBER = ['Cervello','Testa','Organi Interni','Braccia','Gambe','Pelle','Altro'];
+var RARITA_CYBER = ['Comune','Non comune','Raro','Molto raro','Leggendario'];
+var INSTALLAZIONE_CYBER = ['Semplice','Chirurgica','Specializzata','Pericolosa'];
+
+function _cyberRarityClass(r) {
+  var map = {'Comune':'comune','Non comune':'non-comune','Raro':'raro','Molto raro':'molto-raro','Leggendario':'leggendario'};
+  return 'cyber-rarity-' + (map[r] || 'comune');
+}
+
+function renderEmporioCyber() {
+  var wrap = document.createElement('div');
+  wrap.className = 'cyber-wrap';
+
+  // Header
+  var hdr = document.createElement('div');
+  hdr.className = 'cyber-header';
+  var hdrRow = document.createElement('div');
+  hdrRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;';
+
+  var hdrLeft = document.createElement('div');
+  hdrLeft.innerHTML = '<div class="cyber-subtitle">// EMPORIO — LABORATORIO CIBERNETICO //</div>' +
+    '<div class="cyber-title">&#9658; IMPIANTI_CIB</div>';
+
+  var hdrRight = document.createElement('div');
+  hdrRight.style.cssText = 'display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;';
+
+  var addBtn = document.createElement('button');
+  addBtn.className = 'cyber-add-btn';
+  addBtn.textContent = '+ NUOVO IMPIANTO';
+  addBtn.onclick = function() { state.cyberShowForm = true; state.cyberEditingId = null; renderMain(); };
+  if (isDM()) hdrRight.appendChild(addBtn);
+
+  var backBtn = document.createElement('button');
+  backBtn.className = 'cyber-back-btn';
+  backBtn.textContent = '&#8592; TORNA EMPORIO';
+  backBtn.onclick = function() { state.emporioCyber = false; renderMain(); };
+  hdrRight.appendChild(backBtn);
+
+  hdrRow.appendChild(hdrLeft);
+  hdrRow.appendChild(hdrRight);
+  hdr.appendChild(hdrRow);
+
+  // Search + filtri
+  var searchWrap = document.createElement('div');
+  searchWrap.style.cssText = 'padding:0 2rem 1rem;position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;';
+
+  var srch = document.createElement('input');
+  srch.type = 'text';
+  srch.className = 'cyber-search-bar';
+  srch.style.cssText = 'flex:1;min-width:200px;';
+  srch.placeholder = '> RICERCA_IMPIANTI :: digita per filtrare...';
+  srch.value = state.cyberSearch || '';
+  srch.oninput = function(){ state.cyberSearch = this.value; renderMain(); };
+  searchWrap.appendChild(srch);
+
+  var selStyle = 'background:#050518;border:1px solid rgba(0,245,255,0.35);color:#00f5ff;font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.55rem 0.75rem;cursor:pointer;outline:none;min-width:150px;';
+
+  var selTipo = document.createElement('select');
+  selTipo.style.cssText = selStyle;
+  [{v:'',l:'— TUTTI I TIPI —'}].concat(TIPI_CYBER.map(function(t){return{v:t,l:t.toUpperCase()};})).forEach(function(o){
+    var opt = document.createElement('option');
+    opt.value = o.v; opt.textContent = o.l;
+    if ((state.cyberFilterTipo||'') === o.v) opt.selected = true;
+    selTipo.appendChild(opt);
+  });
+  selTipo.onchange = function(){ state.cyberFilterTipo = this.value; renderMain(); };
+  searchWrap.appendChild(selTipo);
+
+  var selRar = document.createElement('select');
+  selRar.style.cssText = selStyle;
+  [{v:'',l:'— TUTTE LE RARITÀ —'}].concat(RARITA_CYBER.map(function(r){return{v:r,l:r.toUpperCase()};})).forEach(function(o){
+    var opt = document.createElement('option');
+    opt.value = o.v; opt.textContent = o.l;
+    if ((state.cyberFilterRarita||'') === o.v) opt.selected = true;
+    selRar.appendChild(opt);
+  });
+  selRar.onchange = function(){ state.cyberFilterRarita = this.value; renderMain(); };
+  searchWrap.appendChild(selRar);
+
+  hdr.appendChild(searchWrap);
+  wrap.appendChild(hdr);
+
+  // Counter + filtro
+  var all = state.impiantiCibernetici || [];
+  var q = (state.cyberSearch || '').toLowerCase();
+  var ft = state.cyberFilterTipo || '';
+  var fr = state.cyberFilterRarita || '';
+  var filtered = all.filter(function(im){
+    if (q && !(im.nome||'').toLowerCase().includes(q) && !(im.tipoImpianto||'').toLowerCase().includes(q) && !(im.effetto||'').toLowerCase().includes(q)) return false;
+    if (ft && (im.tipoImpianto||'') !== ft) return false;
+    if (fr && (im.rarita||'') !== fr) return false;
+    return true;
+  });
+
+  var counterDiv = document.createElement('div');
+  counterDiv.style.cssText = 'padding:0.5rem 2rem;font-size:11px;color:rgba(0,245,255,0.4);letter-spacing:0.15em;position:relative;z-index:1;';
+  counterDiv.textContent = '// ' + filtered.length + ' IMPIANTI TROVATI — DATABASE_SIZE:' + all.length;
+  wrap.appendChild(counterDiv);
+
+  // Grid
+  if (filtered.length === 0) {
+    var empty = document.createElement('div');
+    empty.className = 'cyber-empty';
+    empty.innerHTML = '<div class="cyber-rune">&#9881;</div><div>NESSUN IMPIANTO NEL DATABASE</div>' +
+      (isDM() ? '<div style="margin-top:1rem;color:rgba(191,95,255,0.5);">> aggiungi il primo impianto per iniziare</div>' : '');
+    wrap.appendChild(empty);
+  } else {
+    var grid = document.createElement('div');
+    grid.className = 'cyber-grid';
+    filtered.forEach(function(im){ grid.appendChild(renderCyberCard(im)); });
+    wrap.appendChild(grid);
+  }
+
+  // Form modal
+  if (state.cyberShowForm) {
+    wrap.appendChild(renderCyberForm());
+  }
+
+  return wrap;
+}
+
+function renderCyberCard(im) {
+  var card = document.createElement('div');
+  card.className = 'cyber-card';
+
+  // Image
+  if (im.immagine) {
+    var imgW = document.createElement('div');
+    imgW.className = 'cyber-img-wrap';
+    var img = document.createElement('img');
+    img.src = im.immagine; img.alt = im.nome || '';
+    img.onerror = function(){ imgW.innerHTML = '<div class="cyber-img-placeholder">&#9881;</div>'; };
+    imgW.appendChild(img);
+    card.appendChild(imgW);
+  }
+
+  // Head
+  var head = document.createElement('div');
+  head.className = 'cyber-card-head';
+  var nameDiv = document.createElement('div');
+  nameDiv.innerHTML = '<div class="cyber-tipo-tag">' + escapeHtml(im.tipoImpianto||'?') + '</div>' +
+    '<div class="cyber-card-name">' + escapeHtml(im.nome||'Senza nome') + '</div>';
+  var rarTag = document.createElement('span');
+  rarTag.className = 'cyber-rarity-tag ' + _cyberRarityClass(im.rarita);
+  rarTag.textContent = im.rarita || '?';
+  head.appendChild(nameDiv);
+  head.appendChild(rarTag);
+  card.appendChild(head);
+
+  // Body
+  var body = document.createElement('div');
+  body.className = 'cyber-card-body';
+
+  if (im.effetto) {
+    body.innerHTML += '<div class="cyber-label">// EFFETTO</div><div class="cyber-value">' + escapeHtml(im.effetto) + '</div>';
+  }
+  if (im.descrizione) {
+    body.innerHTML += '<div class="cyber-label">// DESCRIZIONE</div><div class="cyber-value" style="color:rgba(0,245,255,0.6);font-size:12px;">' + escapeHtml(im.descrizione) + '</div>';
+  }
+  if (im.installazione) {
+    body.innerHTML += '<div class="cyber-label">// INSTALLAZIONE</div><div class="cyber-value" style="color:rgba(191,95,255,0.85);font-size:12px;">' + escapeHtml(im.installazione) + '</div>';
+  }
+  card.appendChild(body);
+
+  // Footer
+  var foot = document.createElement('div');
+  foot.className = 'cyber-card-foot';
+  var priceDiv = document.createElement('div');
+  priceDiv.className = 'cyber-price';
+  priceDiv.textContent = (im.costo ? im.costo + ' ' + (im.valuta||'mo') : '— PREZZO N/D');
+  foot.appendChild(priceDiv);
+
+  if (isDM()) {
+    var btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:0.3rem;';
+    var editBtn = document.createElement('button');
+    editBtn.className = 'cyber-edit-btn';
+    editBtn.innerHTML = ICON.edit;
+    editBtn.title = 'Modifica';
+    editBtn.onclick = function(){ state.cyberEditingId = im.id; state.cyberShowForm = true; renderMain(); };
+    var delBtn = document.createElement('button');
+    delBtn.className = 'cyber-del-btn';
+    delBtn.innerHTML = ICON.trash;
+    delBtn.title = 'Elimina';
+    delBtn.onclick = function(){
+      if (confirm('Eliminare questo impianto?')) {
+        state.impiantiCibernetici = (state.impiantiCibernetici||[]).filter(function(x){ return x.id !== im.id; });
+        fbSaveImpianti();
+        notify('Impianto eliminato.');
+        renderMain();
+      }
+    };
+    btnWrap.appendChild(editBtn);
+    btnWrap.appendChild(delBtn);
+    foot.appendChild(btnWrap);
+  }
+  card.appendChild(foot);
+  return card;
+}
+
+function renderCyberForm() {
+  var editing = null;
+  if (state.cyberEditingId) {
+    (state.impiantiCibernetici||[]).forEach(function(x){ if(x.id===state.cyberEditingId) editing=x; });
+  }
+  var form = {
+    nome: editing ? editing.nome : '',
+    tipoImpianto: editing ? editing.tipoImpianto : TIPI_CYBER[0],
+    rarita: editing ? editing.rarita : RARITA_CYBER[0],
+    costo: editing ? editing.costo : 0,
+    valuta: editing ? editing.valuta : 'mo',
+    effetto: editing ? editing.effetto : '',
+    descrizione: editing ? editing.descrizione : '',
+    immagine: editing ? editing.immagine : '',
+    installazione: editing ? editing.installazione : INSTALLAZIONE_CYBER[0]
+  };
+
+  var backdrop = document.createElement('div');
+  backdrop.className = 'cyber-modal-backdrop';
+  backdrop.onclick = function(e){ if(e.target===backdrop){ state.cyberShowForm=false; state.cyberEditingId=null; renderMain(); } };
+
+  var panel = document.createElement('div');
+  panel.className = 'cyber-modal-panel';
+  panel.onclick = function(e){ e.stopPropagation(); };
+
+  var mhead = document.createElement('div');
+  mhead.className = 'cyber-modal-head';
+  mhead.innerHTML = '<div class="cyber-modal-title">' + (editing ? '&#9998; MODIFICA IMPIANTO' : '&#43; NUOVO IMPIANTO') + '</div>';
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'cyber-modal-close';
+  closeBtn.innerHTML = ICON.x;
+  closeBtn.onclick = function(){ state.cyberShowForm=false; state.cyberEditingId=null; renderMain(); };
+  mhead.appendChild(closeBtn);
+  panel.appendChild(mhead);
+
+  var mbody = document.createElement('div');
+  mbody.className = 'cyber-modal-body';
+
+  function cyberField(labelTxt, key, type, opts) {
+    var g = document.createElement('div');
+    g.className = 'cyber-field-group';
+    var lbl = document.createElement('label');
+    lbl.className = 'cyber-field-label';
+    lbl.textContent = '// ' + labelTxt;
+    g.appendChild(lbl);
+    var el;
+    if (type === 'select') {
+      el = document.createElement('select');
+      el.className = 'cyber-field';
+      (opts||[]).forEach(function(o){
+        var opt = document.createElement('option');
+        opt.value = o; opt.textContent = o;
+        if (form[key] === o) opt.selected = true;
+        el.appendChild(opt);
+      });
+    } else if (type === 'textarea') {
+      el = document.createElement('textarea');
+      el.className = 'cyber-field';
+      el.rows = 3;
+      el.value = form[key];
+      el.style.resize = 'vertical';
+    } else {
+      el = document.createElement('input');
+      el.type = type || 'text';
+      el.className = 'cyber-field';
+      el.value = form[key];
+    }
+    el.onchange = function(){ form[key] = type==='number' ? (Number(this.value)||0) : this.value; };
+    el.oninput = function(){ form[key] = type==='number' ? (Number(this.value)||0) : this.value; };
+    g.appendChild(el);
+    return g;
+  }
+
+  mbody.appendChild(cyberField('NOME IMPIANTO', 'nome', 'text'));
+  mbody.appendChild(cyberField('TIPO', 'tipoImpianto', 'select', TIPI_CYBER));
+
+  var row2 = document.createElement('div');
+  row2.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
+  row2.appendChild(cyberField('RARITÀ', 'rarita', 'select', RARITA_CYBER));
+  row2.appendChild(cyberField('INSTALLAZIONE', 'installazione', 'select', INSTALLAZIONE_CYBER));
+  mbody.appendChild(row2);
+
+  var row3 = document.createElement('div');
+  row3.style.cssText = 'display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
+  row3.appendChild(cyberField('COSTO', 'costo', 'number'));
+  row3.appendChild(cyberField('VALUTA', 'valuta', 'select', VALUTE.map(function(v){return v.code;})));
+  mbody.appendChild(row3);
+
+  mbody.appendChild(cyberField('EFFETTO', 'effetto', 'textarea'));
+  mbody.appendChild(cyberField('DESCRIZIONE', 'descrizione', 'textarea'));
+  mbody.appendChild(cyberField('URL IMMAGINE', 'immagine', 'text'));
+
+  var saveBtn = document.createElement('button');
+  saveBtn.className = 'cyber-save-btn';
+  saveBtn.textContent = editing ? '> SALVA MODIFICHE' : '> INSTALLA NEL DATABASE';
+  saveBtn.onclick = function() {
+    if (!form.nome.trim()) { notify('Inserisci il nome dell\'impianto.', 'err'); return; }
+    if (editing) {
+      state.impiantiCibernetici = (state.impiantiCibernetici||[]).map(function(x){
+        return x.id === editing.id ? Object.assign({}, form, {id: editing.id}) : x;
+      });
+    } else {
+      var newId = 'cy_' + Date.now();
+      if (!state.impiantiCibernetici) state.impiantiCibernetici = [];
+      state.impiantiCibernetici.push(Object.assign({}, form, {id: newId}));
+    }
+    fbSaveImpianti();
+    notify(editing ? 'Impianto aggiornato.' : 'Impianto aggiunto al database.');
+    state.cyberShowForm = false;
+    state.cyberEditingId = null;
+    renderMain();
+  };
+  mbody.appendChild(saveBtn);
+
+  panel.appendChild(mbody);
+  backdrop.appendChild(panel);
+  return backdrop;
 }
 
 function makeSelectFilter(labelText, value, options, onChange, defaultLabel, displayFn) {
@@ -15056,6 +15718,5 @@ function renderStoria() {
   return wrap;
 }
 </script>
-
 </body>
 </html>
