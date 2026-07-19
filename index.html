@@ -5902,8 +5902,8 @@ function loadFromStorage() {
       if (Array.isArray(data.npcTabs)) state.npcTabs = data.npcTabs;
       if (data.storia && typeof data.storia === 'object') {
         if (typeof data.storia.content === 'string') state.storia.content = data.storia.content;
-        if (data.storia.markers && typeof data.storia.markers === 'object') state.storia.markers = data.storia.markers;
       }
+      if (typeof data.worldbuildingMapId === 'string' && data.worldbuildingMapId) state.mappaActiveId = data.worldbuildingMapId;
     }
   } catch (e) {
     console.warn('[Mercante] Lettura localStorage fallita:', e.message);
@@ -13551,9 +13551,9 @@ function renderMappa() {
       _db && _db.ref('state/mappa/activeMapId').set(mid);
       // Aggiorna il worldbuilding alla mappa selezionata
       _attachWorldbuildingListener(mid);
-      // Carica i marker della nuova mappa
-      state.storia.markers = {};
-      fbLoadStoriaMarkers(mid, function() { refreshStoriaMarkers(); });
+      // Carica i marker della nuova mappa (sincrono da localStorage)
+      fbLoadStoriaMarkers(mid);
+      refreshStoriaMarkers();
       // Ricrea la mappa Leaflet
       if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
       if (state.mappaUrl) {
@@ -14174,9 +14174,8 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
-      fbLoadStoriaMarkers(state.mappaActiveId, function() {
-        render(); renderUserBadge();
-      });
+      fbLoadStoriaMarkers(state.mappaActiveId);
+      render(); renderUserBadge();
     }, 300);
   } else {
     // Nessuna sessione: mostra il login
@@ -14218,34 +14217,30 @@ function _storiePrivatePath() {
   return 'storie_private/' + user;
 }
 
-function _storiaMarkersPath(mapId) {
+function _storiaMarkersLsKey(mapId) {
   var user = state.currentUser && state.currentUser.username ? state.currentUser.username : '_guest';
-  return 'storia_private/' + user + '/' + (mapId || 'default') + '/markers';
+  return 'storia_markers__' + user + '__' + (mapId || 'default');
 }
 
 function fbSaveStoriaMarkers(mapId) {
-  if (!_db || !state.currentUser) return;
+  // Salva su localStorage (sincrono, affidabile)
   var mid = mapId || state.mappaActiveId || 'default';
-  _db.ref(_storiaMarkersPath(mid)).set(
-    (state.storia.markers && Object.keys(state.storia.markers).length > 0) ? state.storia.markers : null
-  );
+  try {
+    var markers = state.storia.markers && Object.keys(state.storia.markers).length > 0 ? state.storia.markers : null;
+    if (markers) localStorage.setItem(_storiaMarkersLsKey(mid), JSON.stringify(markers));
+    else localStorage.removeItem(_storiaMarkersLsKey(mid));
+  } catch(e) {}
 }
 
 function fbLoadStoriaMarkers(mapId, callback) {
-  if (!_db) { if (callback) callback(); return; }
+  // Carica da localStorage (sincrono)
   var mid = mapId || state.mappaActiveId || 'default';
-  _db.ref(_storiaMarkersPath(mid)).once('value', function(snap) {
-    var v = snap.val();
-    if (v && typeof v === 'object' && Object.keys(v).length > 0) {
-      state.storia.markers = v;
-    } else if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
-      // Firebase vuoto ma localStorage ha marker: salva su Firebase per la prossima volta
-      fbSaveStoriaMarkers(mid);
-    } else {
-      state.storia.markers = {};
-    }
-    if (callback) callback();
-  });
+  try {
+    var raw = localStorage.getItem(_storiaMarkersLsKey(mid));
+    var v = raw ? JSON.parse(raw) : null;
+    state.storia.markers = (v && typeof v === 'object') ? v : {};
+  } catch(e) { state.storia.markers = {}; }
+  if (callback) callback();
 }
 
 function _salvaStoriaConNome(nome, callback) {
