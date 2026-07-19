@@ -14174,13 +14174,9 @@ try {
     setupRealtimeListeners();
     // Piccolo delay per permettere a Firebase di caricare i dati iniziali
     setTimeout(function() {
-      // Se ci sono marker in state (da localStorage), salvali subito per la mappa attiva
-      if (state.storia.markers && Object.keys(state.storia.markers).length > 0) {
-        fbSaveStoriaMarkers(state.mappaActiveId);
-      } else {
-        fbLoadStoriaMarkers(state.mappaActiveId);
-      }
-      render(); renderUserBadge();
+      fbLoadStoriaMarkers(state.mappaActiveId, function() {
+        render(); renderUserBadge();
+      });
     }, 300);
   } else {
     // Nessuna sessione: mostra il login
@@ -14224,7 +14220,7 @@ function _storiePrivatePath() {
 
 function _storiaMarkersPath(mapId) {
   var user = state.currentUser && state.currentUser.username ? state.currentUser.username : '_guest';
-  return 'storia_markers_private/' + user + '/' + (mapId || 'default');
+  return 'storia_private/' + user + '/' + (mapId || 'default') + '/markers';
 }
 
 function fbSaveStoriaMarkers(mapId) {
