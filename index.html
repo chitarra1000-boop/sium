@@ -5162,6 +5162,13 @@ function setupRealtimeListeners() {
     if (state.section === 'emporio' && state.emporioTab === 'veicoli') renderMain();
   });
 
+  // ---- ARMI DA FUOCO ----
+  _db.ref('state/armiFuoco').on('value', function(snap) {
+    var v = snap.val();
+    state.armiDaFuoco = (v && Array.isArray(v)) ? v : [];
+    if (state.section === 'emporio' && state.emporioTab === 'armifuoco') renderMain();
+  });
+
   // ---- NOTE ----
   _db.ref('state/notes').on('value', function(snap) {
     var v = snap.val();
@@ -5588,6 +5595,10 @@ function fbSaveVeicoli() {
 function fbSaveVeicoliParty() {
   if (!_db) return;
   _db.ref('state/veicoliParty').set(state.veicoliParty.length > 0 ? state.veicoliParty : null);
+}
+function fbSaveArmiFuoco() {
+  if (!_db) return;
+  _db.ref('state/armiFuoco').set(state.armiDaFuoco.length > 0 ? state.armiDaFuoco : null);
 }
 function fbSaveNotes() { fbSave('state/notes', state.notes); }
 
@@ -6038,6 +6049,11 @@ var state = {
   veicoliPartySearch: '',
   veicoliPartyShowForm: false,
   veicoliPartyEditingId: null,
+  armiDaFuoco: [],
+  armiDaFuocoSelectedId: null,
+  armiDaFuocoSearch: '',
+  armiDaFuocoShowForm: false,
+  armiDaFuocoEditingId: null,
   combatants: [makeEmptyCombatant()],
   round: 1,
   activeIndex: 0,
@@ -6566,6 +6582,7 @@ function renderEmporio() {
   if (state.emporioTab === 'cyber') return renderEmporioCyber();
   if (state.emporioTab === 'droghe') return renderEmporioDroghe();
   if (state.emporioTab === 'veicoli') return renderEmporioVeicoli();
+  if (state.emporioTab === 'armifuoco') return renderEmporioArmiFuoco();
   var wrap = document.createElement('div');
 
   var header = document.createElement('header');
@@ -6628,6 +6645,7 @@ function renderEmporio() {
     {id:'veicoli', icon:'🚗', label:'Veicoli', color:'#f5a623'},
     {id:'droghe', icon:'💊', label:'Droghe', color:'#7fff7f'},
     {id:'cyber', icon:'🕷', label:'Laboratorio Cibernetico', color:'#1af'},
+    {id:'armifuoco', icon:'🔫', label:'Armi da Fuoco', color:'#e53030'},
   ];
   emporioTabs.forEach(function(t) {
     var btn = document.createElement('button');
@@ -6735,6 +6753,8 @@ function _cyberRarityClass(r) {
 // SEZIONE DROGHE
 // ============================================================
 var TIPI_DROGA = ['Stimolante','Sedativo','Allucinogeno','Potenziante','Veleno','Altro'];
+var TIPI_ARMA_FUOCO = ['Fucile d\'assalto','Pistola','Fucile a pompa','Mitragliatrice leggera','Lanciarazzi','Fucile da cecchino','Arpione','Lanciagranate','Lanciafiamme','Mitragliatrice pesante','Mitraglietta','Fucile da caccia'];
+var MUNIZIONI_ARMA = ['Proiettili','Cartucce','Dardi','Munizioni d\'assalto','Carburante','Granate','Razzi','Arpioni'];
 
 function renderEmporioDroghe() {
   var ACCENT = '#7fff7f';
@@ -7486,6 +7506,272 @@ function renderVeicoloPartyForm() {
     fbSaveVeicoliParty();
     notify(editing?'Veicolo party aggiornato.':'Veicolo aggiunto al Party.');
     state.veicoliPartyShowForm=false; state.veicoliPartyEditingId=null; renderMain();
+  };
+  mbody.appendChild(saveBtn);
+  panel.appendChild(mbody);
+  backdrop.appendChild(panel);
+  return backdrop;
+}
+
+/* ============================================================
+   ARMI DA FUOCO
+   ============================================================ */
+function renderEmporioArmiFuoco() {
+  var ACCENT = '#e53030';
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'background:#0d0000;min-height:100vh;font-family:\'Courier New\',monospace;color:'+ACCENT+';display:flex;flex-direction:column;';
+
+  /* --- HEADER --- */
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'background:linear-gradient(180deg,rgba(25,2,2,0.98),rgba(13,0,0,0.95));border-bottom:2px solid rgba(229,48,48,0.3);padding:1.25rem 2rem;flex-shrink:0;';
+  var hdrRow = document.createElement('div');
+  hdrRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:0.75rem;';
+  var hdrLeft = document.createElement('div');
+  hdrLeft.innerHTML = '<div style="font-size:14px;font-weight:700;letter-spacing:0.15em;color:'+ACCENT+';margin-bottom:0.3rem;">// EMPORIO — ARSENALE //</div><div style="font-family:\'Cinzel\',serif;font-size:1.8rem;font-weight:900;letter-spacing:0.25em;color:'+ACCENT+';">🔫 ARMI DA FUOCO</div>';
+  var hdrRight = document.createElement('div');
+  hdrRight.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;';
+  if (isDM()) {
+    var addBtn = document.createElement('button');
+    addBtn.style.cssText = 'background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;font-weight:700;letter-spacing:0.1em;padding:0.5rem 1.1rem;cursor:pointer;text-transform:uppercase;';
+    addBtn.textContent = '+ NUOVA ARMA';
+    addBtn.onclick = function(){ state.armiDaFuocoShowForm=true; state.armiDaFuocoEditingId=null; renderMain(); };
+    hdrRight.appendChild(addBtn);
+  }
+  var backBtn = document.createElement('button');
+  backBtn.style.cssText = 'background:rgba(229,48,48,0.08);border:2px solid rgba(229,48,48,0.5);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;font-weight:700;letter-spacing:0.1em;padding:0.5rem 1.1rem;cursor:pointer;text-transform:uppercase;';
+  backBtn.innerHTML = '← TORNA EMPORIO';
+  backBtn.onclick = function(){ state.emporioTab='normale'; renderMain(); };
+  hdrRight.appendChild(backBtn);
+  hdrRow.appendChild(hdrLeft); hdrRow.appendChild(hdrRight);
+  hdr.appendChild(hdrRow);
+  var srch = document.createElement('input');
+  srch.type='text'; srch.placeholder='> RICERCA ARMI...'; srch.value=state.armiDaFuocoSearch||'';
+  srch.style.cssText='width:100%;box-sizing:border-box;background:rgba(229,48,48,0.04);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;padding:0.5rem 1rem;outline:none;';
+  srch.oninput=function(){ state.armiDaFuocoSearch=this.value; renderMain(); };
+  hdr.appendChild(srch);
+  wrap.appendChild(hdr);
+
+  var all = state.armiDaFuoco||[];
+  var q = (state.armiDaFuocoSearch||'').toLowerCase();
+  var filtered = q ? all.filter(function(a){ return (a.nome||'').toLowerCase().includes(q)||(a.tipo||'').toLowerCase().includes(q)||(a.descrizione||'').toLowerCase().includes(q); }) : all;
+
+  if (filtered.length === 0) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(229,48,48,0.3);font-size:18px;letter-spacing:0.1em;padding:4rem;text-align:center;';
+    empty.innerHTML = '🔫<br><br>NESSUNA ARMA NEL DATABASE'+(isDM()?'<div style="margin-top:1rem;font-size:13px;">> aggiungi la prima arma per iniziare</div>':'');
+    wrap.appendChild(empty);
+    if (state.armiDaFuocoShowForm) wrap.appendChild(renderArmaFuocoForm());
+    return wrap;
+  }
+
+  if (!state.armiDaFuocoSelectedId || !filtered.find(function(a){ return a.id===state.armiDaFuocoSelectedId; }))
+    state.armiDaFuocoSelectedId = filtered[0].id;
+  var selected = filtered.find(function(a){ return a.id===state.armiDaFuocoSelectedId; }) || filtered[0];
+
+  /* --- MAIN AREA (sezione 1 + sezione 2) --- */
+  var mainArea = document.createElement('div');
+  mainArea.style.cssText = 'flex:1;display:flex;overflow:hidden;min-height:300px;';
+
+  /* Sezione 1 — immagine grande */
+  var sec1 = document.createElement('div');
+  sec1.style.cssText = 'flex:1;min-width:0;position:relative;background:#080000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
+
+  function renderSec1(arma) {
+    sec1.innerHTML = '';
+    var imgs = _vehicleImages(arma);
+    if (imgs.length > 0) {
+      var car = _buildVehicleCarousel(imgs);
+      if (car) {
+        car.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+        var ci = car.querySelector('img');
+        if (ci) ci.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.15s;';
+        sec1.appendChild(car);
+      }
+    } else {
+      var ph = document.createElement('div');
+      ph.style.cssText = 'font-size:5rem;opacity:0.12;';
+      ph.textContent = '🔫';
+      sec1.appendChild(ph);
+    }
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.88));padding:1.5rem 1.5rem 0.9rem;pointer-events:none;';
+    overlay.innerHTML = '<div style="font-family:\'Cinzel\',serif;font-size:1.4rem;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.9);">'+escapeHtml(arma.nome||'Senza nome')+'</div>'+(arma.tipo?'<div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.9);margin-top:0.2rem;">'+escapeHtml(arma.tipo)+'</div>':'');
+    sec1.appendChild(overlay);
+  }
+  renderSec1(selected);
+  mainArea.appendChild(sec1);
+
+  var divLine = document.createElement('div');
+  divLine.style.cssText = 'width:2px;background:rgba(229,48,48,0.2);flex-shrink:0;';
+  mainArea.appendChild(divLine);
+
+  /* Sezione 2 — dettagli */
+  var sec2 = document.createElement('div');
+  sec2.style.cssText = 'width:320px;flex-shrink:0;background:#0d0000;overflow-y:auto;padding:1.25rem 1.5rem;';
+
+  function renderSec2(arma) {
+    sec2.innerHTML = '';
+    function row(lbl, val) {
+      if (!val) return;
+      var d = document.createElement('div'); d.style.cssText = 'margin-bottom:0.85rem;';
+      var l = document.createElement('div'); l.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; l.textContent = lbl;
+      var v = document.createElement('div'); v.style.cssText = 'font-size:14px;color:#ffb3b3;line-height:1.5;'; v.textContent = val;
+      d.appendChild(l); d.appendChild(v); sec2.appendChild(d);
+    }
+    row('// TIPO', arma.tipo);
+    row('// MUNIZIONI', arma.munizioni);
+    if (arma.descrizione) {
+      var dl = document.createElement('div'); dl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; dl.textContent = '// DESCRIZIONE'; sec2.appendChild(dl);
+      var dv = document.createElement('div'); dv.style.cssText = 'font-size:13px;color:#ffcccc;line-height:1.65;margin-bottom:0.85rem;white-space:pre-wrap;'; dv.textContent = arma.descrizione; sec2.appendChild(dv);
+    }
+    if (arma.costo) row('// PREZZO', arma.costo+' '+(arma.valuta||'mo'));
+    if (isDM()) {
+      var br = document.createElement('div'); br.style.cssText = 'display:flex;gap:0.5rem;margin-top:1rem;border-top:1px solid rgba(229,48,48,0.15);padding-top:1rem;';
+      var eb = document.createElement('button'); eb.style.cssText = 'flex:1;background:rgba(229,48,48,0.1);border:1px solid rgba(229,48,48,0.4);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;padding:0.4rem;cursor:pointer;'; eb.textContent='✎ MODIFICA';
+      eb.onclick=function(){ state.armiDaFuocoEditingId=arma.id; state.armiDaFuocoShowForm=true; renderMain(); };
+      var db2 = document.createElement('button'); db2.style.cssText = 'background:rgba(255,80,80,0.1);border:1px solid rgba(255,80,80,0.4);color:#ff8080;font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;padding:0.4rem 0.65rem;cursor:pointer;'; db2.textContent='✕';
+      db2.onclick=function(){ if(confirm('Eliminare '+escapeHtml(arma.nome||'questa arma')+'?')){ state.armiDaFuoco=state.armiDaFuoco.filter(function(x){return x.id!==arma.id;}); fbSaveArmiFuoco(); renderMain(); } };
+      br.appendChild(eb); br.appendChild(db2); sec2.appendChild(br);
+    }
+  }
+  renderSec2(selected);
+  mainArea.appendChild(sec2);
+  wrap.appendChild(mainArea);
+
+  /* --- SEZIONE 3 — carousel thumbnail --- */
+  var carWrap = document.createElement('div');
+  carWrap.style.cssText = 'flex-shrink:0;height:130px;border-top:2px solid rgba(229,48,48,0.25);background:#080000;display:flex;align-items:center;';
+  var prevBtn = document.createElement('button');
+  prevBtn.style.cssText = 'flex-shrink:0;width:48px;height:100%;background:rgba(229,48,48,0.08);border:none;border-right:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
+  prevBtn.textContent = '‹';
+  carWrap.appendChild(prevBtn);
+
+  var strip = document.createElement('div');
+  strip.style.cssText = 'flex:1;display:flex;align-items:center;gap:0.75rem;overflow-x:auto;padding:0 1rem;height:100%;scrollbar-width:thin;scrollbar-color:rgba(229,48,48,0.3) transparent;';
+
+  var thumbEls = [];
+  filtered.forEach(function(arma) {
+    var isSel = arma.id === selected.id;
+    var t = document.createElement('div');
+    t.style.cssText = 'flex-shrink:0;width:90px;height:90px;border:2px solid '+(isSel?ACCENT:'rgba(229,48,48,0.2)')+';cursor:pointer;position:relative;overflow:hidden;background:#100000;transition:border-color 0.15s;';
+    t.title = arma.nome||'';
+    var imgs = _vehicleImages(arma);
+    if (imgs.length > 0) {
+      var ti = document.createElement('img'); ti.src=imgs[0]; ti.alt=''; ti.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; ti.onerror=function(){ti.style.display='none';}; t.appendChild(ti);
+    } else {
+      t.style.display='flex'; t.style.alignItems='center'; t.style.justifyContent='center'; t.innerHTML='<span style="font-size:1.5rem;opacity:0.25;">🔫</span>';
+    }
+    var nl = document.createElement('div'); nl.style.cssText='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.72);color:#ffb3b3;font-size:9px;font-family:\'Courier New\',monospace;font-weight:700;padding:0.12rem 0.2rem;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; nl.textContent=arma.nome||'?'; t.appendChild(nl);
+    (function(a, el) {
+      el.onclick = function() {
+        state.armiDaFuocoSelectedId = a.id;
+        thumbEls.forEach(function(te){ te.style.borderColor='rgba(229,48,48,0.2)'; });
+        el.style.borderColor = ACCENT;
+        renderSec1(a); renderSec2(a);
+      };
+    })(arma, t);
+    strip.appendChild(t); thumbEls.push(t);
+  });
+
+  prevBtn.onclick = function(){
+    var idx=filtered.findIndex(function(a){return a.id===state.armiDaFuocoSelectedId;});
+    var ni=((idx-1)+filtered.length)%filtered.length;
+    thumbEls[ni].onclick(); thumbEls[ni].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  };
+  carWrap.appendChild(strip);
+
+  var nextBtn = document.createElement('button');
+  nextBtn.style.cssText = 'flex-shrink:0;width:48px;height:100%;background:rgba(229,48,48,0.08);border:none;border-left:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
+  nextBtn.textContent = '›';
+  nextBtn.onclick = function(){
+    var idx=filtered.findIndex(function(a){return a.id===state.armiDaFuocoSelectedId;});
+    var ni=(idx+1)%filtered.length;
+    thumbEls[ni].onclick(); thumbEls[ni].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  };
+  carWrap.appendChild(nextBtn);
+  wrap.appendChild(carWrap);
+
+  if (state.armiDaFuocoShowForm) wrap.appendChild(renderArmaFuocoForm());
+  return wrap;
+}
+
+function renderArmaFuocoForm() {
+  var ACCENT='#e53030';
+  var editing=null;
+  if (state.armiDaFuocoEditingId) (state.armiDaFuoco||[]).forEach(function(x){ if(x.id===state.armiDaFuocoEditingId) editing=x; });
+  var _ei = editing ? (editing.immagini&&editing.immagini.length?editing.immagini.slice():(editing.immagine?[editing.immagine]:[])) : [];
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_ARMA_FUOCO[0],munizioni:editing?editing.munizioni:MUNIZIONI_ARMA[0],costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',descrizione:editing?editing.descrizione:'',immagini:_ei};
+
+  var backdrop=document.createElement('div');
+  backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  backdrop.onclick=function(e){ if(e.target===backdrop){state.armiDaFuocoShowForm=false;state.armiDaFuocoEditingId=null;renderMain();} };
+
+  var panel=document.createElement('div');
+  panel.style.cssText='background:#0d0000;border:2px solid rgba(229,48,48,0.5);padding:0;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;';
+  panel.onclick=function(e){e.stopPropagation();};
+
+  var mhead=document.createElement('div');
+  mhead.style.cssText='padding:1rem 1.5rem;border-bottom:1px solid rgba(229,48,48,0.2);display:flex;justify-content:space-between;align-items:center;';
+  mhead.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:16px;font-weight:700;color:'+ACCENT+';letter-spacing:0.1em;">'+(editing?'✎ MODIFICA ARMA':'🔫 NUOVA ARMA')+'</div>';
+  var closeB=document.createElement('button'); closeB.style.cssText='background:none;border:none;color:'+ACCENT+';font-size:20px;cursor:pointer;'; closeB.textContent='✕';
+  closeB.onclick=function(){state.armiDaFuocoShowForm=false;state.armiDaFuocoEditingId=null;renderMain();};
+  mhead.appendChild(closeB); panel.appendChild(mhead);
+
+  var mbody=document.createElement('div');
+  mbody.style.cssText='padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.9rem;';
+
+  var fStyle='width:100%;background:rgba(229,48,48,0.05);border:1px solid rgba(229,48,48,0.3);color:#ffb3b3;font-family:\'Courier New\',monospace;font-size:14px;padding:0.5rem 0.75rem;outline:none;box-sizing:border-box;';
+  function aField(lbl,key,type,opts){
+    var g=document.createElement('div');
+    var l=document.createElement('label'); l.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;'; l.textContent='// '+lbl; g.appendChild(l);
+    var el;
+    if(type==='select'){
+      el=document.createElement('select'); el.style.cssText=fStyle;
+      (opts||[]).forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(form[key]===o)opt.selected=true; el.appendChild(opt); });
+    } else if(type==='textarea'){
+      el=document.createElement('textarea'); el.style.cssText=fStyle+'resize:vertical;'; el.rows=4; el.value=form[key];
+    } else {
+      el=document.createElement('input'); el.type=type||'text'; el.style.cssText=fStyle; el.value=form[key];
+    }
+    el.onchange=el.oninput=function(){ form[key]=type==='number'?(Number(this.value)||0):this.value; };
+    g.appendChild(el); return g;
+  }
+
+  mbody.appendChild(aField('NOME ARMA','nome','text'));
+  var rTM=document.createElement('div'); rTM.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
+  rTM.appendChild(aField('TIPO','tipo','select',TIPI_ARMA_FUOCO));
+  rTM.appendChild(aField('MUNIZIONI','munizioni','select',MUNIZIONI_ARMA));
+  mbody.appendChild(rTM);
+  var rCP=document.createElement('div'); rCP.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
+  rCP.appendChild(aField('COSTO','costo','number'));
+  rCP.appendChild(aField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
+  mbody.appendChild(rCP);
+  mbody.appendChild(aField('DESCRIZIONE','descrizione','textarea'));
+
+  /* Image editor riutilizza helper veicoli ma con colore rosso */
+  var imgEditor = _buildVehicleImageEditor(form, ACCENT);
+  /* Override colors to red theme */
+  imgEditor.querySelectorAll&&imgEditor.querySelectorAll('button').forEach&&imgEditor.querySelectorAll('button').forEach(function(b){
+    b.style.borderColor='rgba(229,48,48,0.45)'; b.style.color=ACCENT; b.style.background='rgba(229,48,48,0.08)';
+  });
+  mbody.appendChild(imgEditor);
+
+  var saveBtn=document.createElement('button');
+  saveBtn.style.cssText='width:100%;background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.75rem;cursor:pointer;text-transform:uppercase;margin-top:0.5rem;';
+  saveBtn.textContent=editing?'> SALVA MODIFICHE':'> AGGIUNGI ALL\'ARSENALE';
+  saveBtn.onclick=function(){
+    if(!form.nome.trim()){notify('Inserisci il nome dell\'arma.','err');return;}
+    var saved=Object.assign({},form,{immagini:form.immagini||[]}); delete saved.immagine;
+    if(!state.armiDaFuoco) state.armiDaFuoco=[];
+    if(editing){
+      state.armiDaFuoco=state.armiDaFuoco.map(function(x){return x.id===editing.id?Object.assign({},saved,{id:editing.id}):x;});
+    } else {
+      state.armiDaFuoco.push(Object.assign({},saved,{id:'af_'+Date.now()}));
+      state.armiDaFuocoSelectedId=state.armiDaFuoco[state.armiDaFuoco.length-1].id;
+    }
+    fbSaveArmiFuoco();
+    notify(editing?'Arma aggiornata.':'Arma aggiunta all\'arsenale.');
+    state.armiDaFuocoShowForm=false; state.armiDaFuocoEditingId=null; renderMain();
   };
   mbody.appendChild(saveBtn);
   panel.appendChild(mbody);
