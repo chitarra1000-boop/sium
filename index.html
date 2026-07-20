@@ -6730,6 +6730,27 @@ function renderEmporioDroghe() {
   srch.oninput=function(){ state.drogheSearch=this.value; renderMain(); };
   srchWrap.appendChild(srch);
   hdr.appendChild(srchWrap);
+
+  // Regole dipendenza
+  var dipBox = document.createElement('div');
+  dipBox.style.cssText = 'margin:0 2rem 1.2rem;padding:1rem 1.25rem;background:rgba(255,204,0,0.06);border:2px solid rgba(255,204,0,0.45);';
+  dipBox.innerHTML =
+    '<div style="font-size:14px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#ffcc00;margin-bottom:0.7rem;">⚠ REGOLE DI DIPENDENZA</div>' +
+    '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-bottom:0.4rem;">Livelli di dipendenza:</div>' +
+    '<ul style="margin:0 0 0.8rem;padding-left:1.4rem;list-style:disc;">' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;"><strong>Livello 1</strong> — 1 dose a settimana</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;"><strong>Livello 2</strong> — 1 dose al giorno</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;"><strong>Livello 3</strong> — 3 dosi al giorno</li>' +
+    '</ul>' +
+    '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-bottom:0.4rem;">Come funziona la progressione:</div>' +
+    '<ul style="margin:0;padding-left:1.4rem;list-style:disc;">' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Prima assunzione: il soggetto effettua il <strong>TS indicato sulla scheda</strong>. Se fallisce, passa al livello 1.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Livello 1 → 2: se assume una seconda dose nella stessa settimana, ripete il TS. Se fallisce, passa al livello 2.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Livello 2 → 3: se assume una seconda dose nello stesso giorno, ripete il TS. Se fallisce, passa al livello 3.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;">Livello 3: assumere 4 dosi in un giorno provoca <strong>overdose</strong> — il soggetto sviene per il resto della giornata.</li>' +
+    '</ul>';
+  hdr.appendChild(dipBox);
+
   wrap.appendChild(hdr);
 
   // Filter & list
@@ -6773,37 +6794,23 @@ function renderDrogaCard(d, ACCENT) {
   }
 
   var head=document.createElement('div');
-  head.style.cssText='padding:1rem 1.2rem 0.6rem;border-bottom:1px solid rgba(127,255,127,0.15);display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;';
-  var nameCol=document.createElement('div');
-  if (d.tipo) {
-    var tipoTag=document.createElement('div');
-    tipoTag.style.cssText='font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7fff7f;border:1px solid rgba(127,255,127,0.4);padding:0.2rem 0.5rem;display:inline-block;margin-bottom:0.4rem;';
-    tipoTag.textContent=d.tipo;
-    nameCol.appendChild(tipoTag);
-  }
+  head.style.cssText='padding:1rem 1.2rem 0.7rem;border-bottom:1px solid rgba(127,255,127,0.15);';
   var nameDiv=document.createElement('div');
   nameDiv.style.cssText='font-family:\'Cinzel\',serif;font-size:20px;font-weight:700;color:#7fff7f;line-height:1.2;';
   nameDiv.textContent=d.nome||'Senza nome';
-  nameCol.appendChild(nameDiv);
-  head.appendChild(nameCol);
-  if (d.rarita) {
-    var rar=document.createElement('span');
-    rar.style.cssText='font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:0.3rem 0.6rem;border:2px solid rgba(127,255,127,0.5);color:#a0ffa0;white-space:nowrap;flex-shrink:0;';
-    rar.textContent=d.rarita;
-    head.appendChild(rar);
+  head.appendChild(nameDiv);
+  if (d.tsDipendenza) {
+    var tsTag=document.createElement('div');
+    tsTag.style.cssText='margin-top:0.4rem;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#ffcc00;display:inline-block;border:1px solid rgba(255,204,0,0.5);padding:0.2rem 0.6rem;';
+    tsTag.textContent='TS DIPENDENZA: '+d.tsDipendenza;
+    head.appendChild(tsTag);
   }
   card.appendChild(head);
 
   var body=document.createElement('div');
   body.style.cssText='padding:0.8rem 1.2rem;';
-  if (d.effetto) {
-    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-top:0.5rem;margin-bottom:0.25rem;">// EFFETTO</div><div style="font-size:16px;color:#b8ffb8;line-height:1.5;">'+escapeHtml(d.effetto)+'</div>';
-  }
-  if (d.durata) {
-    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-top:0.7rem;margin-bottom:0.25rem;">// DURATA</div><div style="font-size:16px;color:#b8ffb8;">'+escapeHtml(d.durata)+'</div>';
-  }
-  if (d.note) {
-    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-top:0.7rem;margin-bottom:0.25rem;">// NOTE</div><div style="font-size:14px;color:#90e890;line-height:1.5;">'+escapeHtml(d.note)+'</div>';
+  if (d.descrizione) {
+    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:16px;color:#b8ffb8;line-height:1.5;">'+escapeHtml(d.descrizione)+'</div>';
   }
   card.appendChild(body);
 
@@ -6834,7 +6841,7 @@ function renderDrogaCard(d, ACCENT) {
 function renderDrogaForm(ACCENT) {
   var editing=null;
   if (state.drogheEditingId) (state.droghe||[]).forEach(function(x){ if(x.id===state.drogheEditingId) editing=x; });
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_DROGA[0],rarita:editing?editing.rarita:RARITA[0],costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',effetto:editing?editing.effetto:'',durata:editing?editing.durata:'',note:editing?editing.note:'',immagine:editing?editing.immagine:''};
+  var form={nome:editing?editing.nome:'',descrizione:editing?editing.descrizione:'',tsDipendenza:editing?editing.tsDipendenza:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',immagine:editing?editing.immagine:''};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -6877,17 +6884,12 @@ function renderDrogaForm(ACCENT) {
   }
 
   mbody.appendChild(dField('NOME SOSTANZA','nome','text'));
-  mbody.appendChild(dField('TIPO','tipo','select',TIPI_DROGA));
-  var r2=document.createElement('div'); r2.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
-  r2.appendChild(dField('RARITÀ','rarita','select',RARITA));
-  r2.appendChild(dField('DURATA EFFETTO','durata','text'));
-  mbody.appendChild(r2);
+  mbody.appendChild(dField('DESCRIZIONE','descrizione','textarea'));
+  mbody.appendChild(dField('TS CONTRO DIPENDENZA (es. CD 12 Costituzione)','tsDipendenza','text'));
   var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
-  r3.appendChild(dField('COSTO','costo','number'));
+  r3.appendChild(dField('PREZZO','costo','number'));
   r3.appendChild(dField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
   mbody.appendChild(r3);
-  mbody.appendChild(dField('EFFETTO','effetto','textarea'));
-  mbody.appendChild(dField('NOTE','note','textarea'));
   mbody.appendChild(dField('URL IMMAGINE','immagine','text'));
 
   var saveBtn=document.createElement('button');
@@ -7018,6 +7020,7 @@ function renderVeicoloCard(v) {
   body.style.cssText='padding:0.8rem 1.2rem;';
   if (v.velocita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.5rem;margin-bottom:0.25rem;">// VELOCITÀ</div><div style="font-size:16px;color:#ffd080;line-height:1.5;">'+escapeHtml(v.velocita)+'</div>';
   if (v.capacita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// CAPACITÀ</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.capacita)+'</div>';
+  if (v.pf) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// PF</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.pf)+'</div>';
   if (v.descrizione) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:14px;color:#e8c070;line-height:1.5;">'+escapeHtml(v.descrizione)+'</div>';
   card.appendChild(body);
 
@@ -7047,7 +7050,7 @@ function renderVeicoloCard(v) {
 function renderVeicoloForm() {
   var editing=null;
   if (state.veicoliEditingId) (state.veicoli||[]).forEach(function(x){ if(x.id===state.veicoliEditingId) editing=x; });
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagine:editing?editing.immagine:''};
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagine:editing?editing.immagine:''};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -7091,9 +7094,10 @@ function renderVeicoloForm() {
 
   mbody.appendChild(vField('NOME VEICOLO','nome','text'));
   mbody.appendChild(vField('TIPO','tipo','select',TIPI_VEICOLO));
-  var r2=document.createElement('div'); r2.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;';
+  var r2=document.createElement('div'); r2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;';
   r2.appendChild(vField('VELOCITÀ','velocita','text'));
   r2.appendChild(vField('CAPACITÀ','capacita','text'));
+  r2.appendChild(vField('PF (Punti Ferita)','pf','text'));
   mbody.appendChild(r2);
   var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
   r3.appendChild(vField('COSTO','costo','number'));
@@ -7201,8 +7205,10 @@ function renderEmporioCyber() {
   rulesBox.innerHTML =
     '<div style="font-size:14px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#ffb800;margin-bottom:0.6rem;">⚠ PROTOCOLLO DI INSTALLAZIONE</div>' +
     '<ul style="margin:0;padding-left:1.4rem;list-style:disc;">' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.4rem;">Per accedere ad un potenziamento di <strong>tipo 2</strong> bisogna prima avere quello di <strong>tipo 1</strong>.</li>' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;">Quando si fa un potenziamento di tipo 2, tutti i vantaggi del tipo 1 <strong>vanno persi</strong>. Lo stesso vale per i potenziamenti di tipo 3 e tipo 4.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.5rem;">Per accedere ad un potenziamento di <strong>tipo 2</strong> bisogna prima avere quello di <strong>tipo 1</strong>.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.5rem;">Quando si fa un potenziamento di tipo 2, tutti i vantaggi del tipo 1 <strong>vanno persi</strong>. Lo stesso vale per i potenziamenti di tipo 3 e tipo 4.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.5rem;">Il pagamento si divide in <strong>due metà</strong>: la prima metà prima dell\'installazione, la seconda al termine. In caso di installazione fallita la seconda metà <strong>non viene addebitata</strong>, ma la prima è trattenuta.</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;">Chi installa effettua un <strong>tiro su Medicina</strong>: CD 5 (Semplice) · CD 10 (Chirurgica) · CD 15 (Specializzata) · CD 20 (Pericolosa).</li>' +
     '</ul>';
   hdr.appendChild(rulesBox);
 
