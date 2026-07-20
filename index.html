@@ -7518,6 +7518,32 @@ function renderVeicoloPartyForm() {
    ============================================================ */
 function renderEmporioArmiFuoco() {
   var ACCENT = '#e53030';
+  /* SVG pistola realistica come placeholder */
+  var GUN_SVG = '<svg viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;opacity:0.18;">'
+    +'<g fill="rgba(229,48,48,0.9)" stroke="rgba(229,48,48,1)" stroke-width="1">'
+    /* canna */
+    +'<rect x="8" y="58" width="88" height="13" rx="2"/>'
+    /* slide / carrello */
+    +'<rect x="62" y="42" width="110" height="36" rx="5"/>'
+    /* tacca di mira */
+    +'<rect x="80" y="36" width="12" height="8" rx="1"/>'
+    +'<rect x="155" y="36" width="16" height="8" rx="1"/>'
+    /* estrattore slot */
+    +'<rect x="90" y="45" width="42" height="10" rx="2" fill="rgba(8,0,0,0.7)" stroke="rgba(229,48,48,0.9)" stroke-width="1.5"/>'
+    /* grip */
+    +'<path d="M130 78 L122 138 Q120 145 112 145 L94 145 Q86 145 87 136 L97 78 Z"/>'
+    /* guardia grilletto */
+    +'<path d="M108 78 Q116 100 130 100 L136 100 L136 78" fill="none" stroke="rgba(229,48,48,0.9)" stroke-width="3"/>'
+    /* grilletto */
+    +'<line x1="116" y1="76" x2="120" y2="95" stroke="rgba(229,48,48,1)" stroke-width="2.5" stroke-linecap="round"/>'
+    /* cane */
+    +'<path d="M168 42 L174 30 L180 30 L178 42 Z"/>'
+    /* bocca canna */
+    +'<rect x="4" y="62" width="7" height="5" rx="1" fill="rgba(8,0,0,0.8)" stroke="rgba(229,48,48,0.9)" stroke-width="1.2"/>'
+    /* caricatore */
+    +'<rect x="90" y="138" width="30" height="10" rx="2" fill="rgba(229,48,48,0.6)"/>'
+    +'</g></svg>';
+
   var wrap = document.createElement('div');
   wrap.style.cssText = 'background:#0d0000;min-height:100vh;font-family:\'Courier New\',monospace;color:'+ACCENT+';display:flex;flex-direction:column;';
 
@@ -7527,7 +7553,8 @@ function renderEmporioArmiFuoco() {
   var hdrRow = document.createElement('div');
   hdrRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:0.75rem;';
   var hdrLeft = document.createElement('div');
-  hdrLeft.innerHTML = '<div style="font-size:14px;font-weight:700;letter-spacing:0.15em;color:'+ACCENT+';margin-bottom:0.3rem;">// EMPORIO — ARSENALE //</div><div style="font-family:\'Cinzel\',serif;font-size:1.8rem;font-weight:900;letter-spacing:0.25em;color:'+ACCENT+';">🔫 ARMI DA FUOCO</div>';
+  hdrLeft.innerHTML = '<div style="font-size:14px;font-weight:700;letter-spacing:0.15em;color:'+ACCENT+';margin-bottom:0.3rem;">// EMPORIO — ARSENALE //</div>'
+    +'<div style="font-family:\'Cinzel\',serif;font-size:1.8rem;font-weight:900;letter-spacing:0.25em;color:'+ACCENT+';">ARMI DA FUOCO</div>';
   var hdrRight = document.createElement('div');
   hdrRight.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;';
   if (isDM()) {
@@ -7558,7 +7585,7 @@ function renderEmporioArmiFuoco() {
   if (filtered.length === 0) {
     var empty = document.createElement('div');
     empty.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(229,48,48,0.3);font-size:18px;letter-spacing:0.1em;padding:4rem;text-align:center;';
-    empty.innerHTML = '🔫<br><br>NESSUNA ARMA NEL DATABASE'+(isDM()?'<div style="margin-top:1rem;font-size:13px;">> aggiungi la prima arma per iniziare</div>':'');
+    empty.innerHTML = '<div style="width:180px;height:120px;margin:0 auto 1.5rem;">'+GUN_SVG+'</div>NESSUNA ARMA NEL DATABASE'+(isDM()?'<div style="margin-top:1rem;font-size:13px;">> aggiungi la prima arma per iniziare</div>':'');
     wrap.appendChild(empty);
     if (state.armiDaFuocoShowForm) wrap.appendChild(renderArmaFuocoForm());
     return wrap;
@@ -7589,8 +7616,8 @@ function renderEmporioArmiFuoco() {
       }
     } else {
       var ph = document.createElement('div');
-      ph.style.cssText = 'font-size:5rem;opacity:0.12;';
-      ph.textContent = '🔫';
+      ph.style.cssText = 'width:320px;max-width:70%;';
+      ph.innerHTML = GUN_SVG;
       sec1.appendChild(ph);
     }
     var overlay = document.createElement('div');
@@ -7638,55 +7665,106 @@ function renderEmporioArmiFuoco() {
   mainArea.appendChild(sec2);
   wrap.appendChild(mainArea);
 
-  /* --- SEZIONE 3 — carousel thumbnail --- */
+  /* --- SEZIONE 3 — carousel schede con auto-scroll --- */
+  var CARD_W = 160;
   var carWrap = document.createElement('div');
-  carWrap.style.cssText = 'flex-shrink:0;height:130px;border-top:2px solid rgba(229,48,48,0.25);background:#080000;display:flex;align-items:center;';
+  carWrap.style.cssText = 'flex-shrink:0;height:200px;border-top:2px solid rgba(229,48,48,0.25);background:#080000;display:flex;align-items:stretch;';
+
   var prevBtn = document.createElement('button');
-  prevBtn.style.cssText = 'flex-shrink:0;width:48px;height:100%;background:rgba(229,48,48,0.08);border:none;border-right:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
+  prevBtn.style.cssText = 'flex-shrink:0;width:44px;background:rgba(229,48,48,0.08);border:none;border-right:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
   prevBtn.textContent = '‹';
   carWrap.appendChild(prevBtn);
 
   var strip = document.createElement('div');
-  strip.style.cssText = 'flex:1;display:flex;align-items:center;gap:0.75rem;overflow-x:auto;padding:0 1rem;height:100%;scrollbar-width:thin;scrollbar-color:rgba(229,48,48,0.3) transparent;';
+  strip.style.cssText = 'flex:1;display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:10px 12px;scrollbar-width:thin;scrollbar-color:rgba(229,48,48,0.3) transparent;';
 
-  var thumbEls = [];
+  var cardEls = [];
   filtered.forEach(function(arma) {
     var isSel = arma.id === selected.id;
-    var t = document.createElement('div');
-    t.style.cssText = 'flex-shrink:0;width:90px;height:90px;border:2px solid '+(isSel?ACCENT:'rgba(229,48,48,0.2)')+';cursor:pointer;position:relative;overflow:hidden;background:#100000;transition:border-color 0.15s;';
-    t.title = arma.nome||'';
+    var card = document.createElement('div');
+    card.style.cssText = 'flex-shrink:0;width:'+CARD_W+'px;margin-right:10px;border:2px solid '+(isSel?ACCENT:'rgba(229,48,48,0.18)')+';cursor:pointer;background:'+(isSel?'rgba(229,48,48,0.07)':'#0a0000')+';display:flex;flex-direction:column;overflow:hidden;transition:border-color 0.15s,background 0.15s;';
+
+    /* immagine card */
+    var imgBox = document.createElement('div');
+    imgBox.style.cssText = 'height:105px;flex-shrink:0;position:relative;background:#040000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
     var imgs = _vehicleImages(arma);
     if (imgs.length > 0) {
-      var ti = document.createElement('img'); ti.src=imgs[0]; ti.alt=''; ti.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; ti.onerror=function(){ti.style.display='none';}; t.appendChild(ti);
+      var ci = document.createElement('img'); ci.src=imgs[0]; ci.alt=''; ci.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; ci.onerror=function(){ci.style.display='none'; imgBox.innerHTML=GUN_SVG;}; imgBox.appendChild(ci);
     } else {
-      t.style.display='flex'; t.style.alignItems='center'; t.style.justifyContent='center'; t.innerHTML='<span style="font-size:1.5rem;opacity:0.25;">🔫</span>';
+      imgBox.innerHTML = GUN_SVG;
     }
-    var nl = document.createElement('div'); nl.style.cssText='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.72);color:#ffb3b3;font-size:9px;font-family:\'Courier New\',monospace;font-weight:700;padding:0.12rem 0.2rem;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; nl.textContent=arma.nome||'?'; t.appendChild(nl);
+    /* bordo inferiore immagine */
+    var imgBorder = document.createElement('div'); imgBorder.style.cssText='position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,'+ACCENT+',transparent);opacity:'+(isSel?'1':'0.3')+';'; imgBox.appendChild(imgBorder);
+    card.appendChild(imgBox);
+
+    /* info card */
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between;';
+    var nomDiv = document.createElement('div'); nomDiv.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; nomDiv.textContent=arma.nome||'?'; info.appendChild(nomDiv);
+    var tipDiv = document.createElement('div'); tipDiv.style.cssText='font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+ACCENT+';margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; tipDiv.textContent=arma.tipo||''; info.appendChild(tipDiv);
+    if (arma.munizioni) { var munDiv=document.createElement('div'); munDiv.style.cssText='font-size:9px;color:rgba(229,48,48,0.5);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; munDiv.textContent=arma.munizioni; info.appendChild(munDiv); }
+    card.appendChild(info);
+
     (function(a, el) {
       el.onclick = function() {
         state.armiDaFuocoSelectedId = a.id;
-        thumbEls.forEach(function(te){ te.style.borderColor='rgba(229,48,48,0.2)'; });
+        cardEls.forEach(function(ce){
+          ce.style.borderColor='rgba(229,48,48,0.18)';
+          ce.style.background='#0a0000';
+          var ib=ce.querySelector('div[data-imgborder]'); if(ib) ib.style.opacity='0.3';
+        });
         el.style.borderColor = ACCENT;
+        el.style.background = 'rgba(229,48,48,0.07)';
         renderSec1(a); renderSec2(a);
+        el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
       };
-    })(arma, t);
-    strip.appendChild(t); thumbEls.push(t);
+    })(arma, card);
+    imgBorder.setAttribute('data-imgborder','1');
+    strip.appendChild(card); cardEls.push(card);
   });
+
+  /* Mouse wheel → scroll orizzontale */
+  strip.addEventListener('wheel', function(e) {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      strip.scrollLeft += e.deltaY;
+    }
+  }, {passive: false});
+
+  /* Auto-scroll lento */
+  var autoScrollId = null;
+  var autoScrollPaused = false;
+  function startAutoScroll() {
+    if (autoScrollId) return;
+    autoScrollId = setInterval(function() {
+      if (autoScrollPaused) return;
+      var maxScroll = strip.scrollWidth - strip.clientWidth;
+      if (maxScroll <= 0) return;
+      strip.scrollLeft += 0.6;
+      if (strip.scrollLeft >= maxScroll) strip.scrollLeft = 0;
+    }, 30);
+  }
+  strip.addEventListener('mouseenter', function(){ autoScrollPaused=true; });
+  strip.addEventListener('mouseleave', function(){ autoScrollPaused=false; });
+  strip.addEventListener('touchstart', function(){ autoScrollPaused=true; }, {passive:true});
+  /* Pulisci il timer quando il wrap viene rimosso dal DOM */
+  wrap.addEventListener('remove-autoscroll', function(){ clearInterval(autoScrollId); });
+  setTimeout(startAutoScroll, 600);
 
   prevBtn.onclick = function(){
     var idx=filtered.findIndex(function(a){return a.id===state.armiDaFuocoSelectedId;});
     var ni=((idx-1)+filtered.length)%filtered.length;
-    thumbEls[ni].onclick(); thumbEls[ni].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    cardEls[ni].onclick();
   };
   carWrap.appendChild(strip);
 
   var nextBtn = document.createElement('button');
-  nextBtn.style.cssText = 'flex-shrink:0;width:48px;height:100%;background:rgba(229,48,48,0.08);border:none;border-left:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
+  nextBtn.style.cssText = 'flex-shrink:0;width:44px;background:rgba(229,48,48,0.08);border:none;border-left:1px solid rgba(229,48,48,0.18);color:'+ACCENT+';font-size:26px;font-weight:900;cursor:pointer;';
   nextBtn.textContent = '›';
   nextBtn.onclick = function(){
     var idx=filtered.findIndex(function(a){return a.id===state.armiDaFuocoSelectedId;});
     var ni=(idx+1)%filtered.length;
-    thumbEls[ni].onclick(); thumbEls[ni].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    cardEls[ni].onclick();
   };
   carWrap.appendChild(nextBtn);
   wrap.appendChild(carWrap);
