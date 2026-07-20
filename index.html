@@ -5199,6 +5199,12 @@ function setupRealtimeListeners() {
     }
   });
 
+  _db.ref('state/incantesimiAggiuntivi').on('value', function(snap) {
+    var v = snap.val();
+    state.incantesimiAggiuntivi = (v && Array.isArray(v)) ? v : [];
+    if (state.section === 'bestiario' && state.bestTab === 'incantesimi') renderMain();
+  });
+
   // ---- WORLDBUILDING: agganciato dentro il listener mappa (vedi sotto) ----
 
   // ---- DICE ROLLS ----
@@ -5340,6 +5346,10 @@ function fbSaveBestiario() {
 function fbSavePet() {
   if (!_db) return;
   _db.ref('state/pet').set(state.pet.length > 0 ? state.pet : null);
+}
+function fbSaveIncantesimiAggiuntivi() {
+  if (!_db) return;
+  _db.ref('state/incantesimiAggiuntivi').set(state.incantesimiAggiuntivi.length > 0 ? state.incantesimiAggiuntivi : null);
 }
 
 /* ===== SCHEDA PERSONAGGIO — Firebase ===== */
@@ -6080,6 +6090,10 @@ var state = {
   bestEditingId: null,
   bestShowForm: false,
   bestTab: 'bestiario',
+  incantesimiAggiuntivi: [],
+  incSearch: '',
+  incShowForm: false,
+  incEditingId: null,
   pet: [],
   petSearch: '',
 
@@ -6742,13 +6756,13 @@ function renderEmporioDroghe() {
       '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;"><strong>Livello 2</strong> — 1 dose al giorno</li>' +
       '<li style="font-size:15px;color:#ffe08a;line-height:1.6;"><strong>Livello 3</strong> — 3 dosi al giorno</li>' +
     '</ul>' +
-    '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-bottom:0.4rem;">Come funziona la progressione:</div>' +
-    '<ul style="margin:0;padding-left:1.4rem;list-style:disc;">' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Prima assunzione: il soggetto effettua il <strong>TS indicato sulla scheda</strong>. Se fallisce, passa al livello 1.</li>' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Livello 1 → 2: se assume una seconda dose nella stessa settimana, ripete il TS. Se fallisce, passa al livello 2.</li>' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;">Livello 2 → 3: se assume una seconda dose nello stesso giorno, ripete il TS. Se fallisce, passa al livello 3.</li>' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;">Livello 3: assumere 4 dosi in un giorno provoca <strong>overdose</strong> — il soggetto sviene per il resto della giornata.</li>' +
-    '</ul>';
+    '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-top:0.4rem;margin-bottom:0.5rem;">Progressione della dipendenza:</div>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Consumare dosi entro i limiti del proprio <strong>Tasso di Fabbisogno</strong> non richiede alcun Tiro Salvezza e non fa salire il livello di dipendenza.</p>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Se si consumano dosi <strong>oltre il proprio Tasso di Fabbisogno</strong>, bisogna effettuare un Tiro Salvezza (su <strong>Costituzione</strong> per le droghe fisiche, su <strong>Saggezza</strong> per quelle psicologiche). Se si fallisce, la dipendenza sale di 1 livello. Un <strong>1 naturale</strong> sul dado fallisce sempre, indipendentemente dai modificatori.</p>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0;">Raggiunto il <strong>Livello 3</strong> (il massimo), assumere la droga non conferisce più alcun beneficio: serve unicamente a soddisfare il fabbisogno ed evitare l\'astinenza.</p>' +
+    '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-top:1rem;margin-bottom:0.5rem;">🧪 Disintossicazione:</div>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Gli incantesimi e gli effetti base che neutralizzano i veleni riescono ad <strong>annullare gli effetti attivi</strong> di una droga, ma <strong>non possono liberare il personaggio dalla sua dipendenza</strong>.</p>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0;">Per disintossicarsi magicamente serve una magia più potente: lanciare <strong>Ristorare Superiore</strong> (o un incantesimo di potenza simile) riduce il livello di dipendenza della creatura esattamente di <strong>1</strong>.</p>';
   hdr.appendChild(dipBox);
 
   wrap.appendChild(hdr);
@@ -11665,7 +11679,7 @@ function renderBestiario() {
   tabInner.style.cssText='display:flex;gap:0;padding-top:0;padding-bottom:0;';
   var myPetCount = isDM() ? state.pet.length : state.pet.filter(function(p){ return state.currentUser && (p.proprietario||'').toLowerCase()===state.currentUser.username.toLowerCase(); }).length;
   var tabDefs = isDM()
-    ? [{id:'bestiario',label:'⚔ Bestiario',count:state.bestiario.length},{id:'pet',label:'🐾 Pet del Party',count:state.pet.length}]
+    ? [{id:'bestiario',label:'⚔ Bestiario',count:state.bestiario.length},{id:'pet',label:'🐾 Pet del Party',count:state.pet.length},{id:'incantesimi',label:'✨ Incantesimi Aggiuntivi',count:state.incantesimiAggiuntivi.length}]
     : [{id:'pet',label:'🐾 I miei Pet',count:myPetCount}];
   tabDefs.forEach(function(t){
     var tb=document.createElement('button'); tb.type='button';
@@ -11706,6 +11720,10 @@ function renderBestiario() {
     var grid=document.createElement('div'); grid.id='bestiario-grid'; main.appendChild(grid); wrap.appendChild(main);
     setTimeout(function(){ updateBestiarioGrid(); },0);
 
+  /* ===== TAB INCANTESIMI AGGIUNTIVI ===== */
+  } else if (state.bestTab === 'incantesimi') {
+    wrap.appendChild(renderIncantesimiAggiuntivi());
+
   /* ===== TAB PET ===== */
   } else {
     var secP=document.createElement('section'); secP.className='container-main';
@@ -11739,6 +11757,234 @@ function renderBestiario() {
   fc.innerHTML='<div class="filigree-divider mb-5"></div><div class="flex flex-wrap items-center justify-between gap-3"><div class="font-display tracking-widest font-semibold" style="font-size:11px;color:var(--gold-dim);">⚜ BESTIARIO SINCRONIZZATO VIA FIREBASE ⚜</div></div>';
   footer.appendChild(fc); wrap.appendChild(footer);
   return wrap;
+}
+
+// ============================================================
+// INCANTESIMI AGGIUNTIVI
+// ============================================================
+var SCUOLE_MAGIA = ['Abiurazione','Ammaliamento','Divinazione','Evocazione','Illusione','Invocazione','Necromanzia','Trasmutazione'];
+
+function renderIncantesimiAggiuntivi() {
+  var frag = document.createElement('div');
+
+  // Search bar
+  var pg = document.createElement('div'); pg.className = 'panel-glass'; pg.style.cssText = 'margin:1.5rem;';
+  var row = document.createElement('div'); row.className = 'flex flex-wrap items-end gap-4';
+  var sw = document.createElement('div'); sw.style.cssText = 'flex:1 1 200px;min-width:180px;';
+  sw.innerHTML = '<label class="field-label">Cerca incantesimo</label>';
+  var swW = document.createElement('div'); swW.className = 'search-wrap'; swW.innerHTML = ICON.search;
+  var swI = document.createElement('input'); swI.type = 'text'; swI.className = 'field';
+  swI.placeholder = 'nome, scuola, descrizione...'; swI.value = state.incSearch || '';
+  swI.oninput = function(){ state.incSearch = this.value; renderMain(); };
+  swW.appendChild(swI); sw.appendChild(swW); row.appendChild(sw);
+  if (isDM()) {
+    var abW = document.createElement('div');
+    var ab = document.createElement('button'); ab.className = 'btn-gold';
+    ab.innerHTML = ICON.plus + ' Nuovo Incantesimo';
+    ab.onclick = function(){ state.incEditingId = null; state.incShowForm = true; renderMain(); };
+    abW.appendChild(ab); row.appendChild(abW);
+  }
+  pg.appendChild(row); frag.appendChild(pg);
+
+  // Filter & sort
+  var all = (state.incantesimiAggiuntivi || []).slice().sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||'','it'); });
+  var q = (state.incSearch || '').toLowerCase();
+  var filtered = q ? all.filter(function(s){ return (s.nome||'').toLowerCase().includes(q)||(s.scuola||'').toLowerCase().includes(q)||(s.descrizione||'').toLowerCase().includes(q); }) : all;
+
+  var counter = document.createElement('div'); counter.className = 'container-main';
+  counter.style.cssText = 'padding-bottom:0.5rem;font-size:11px;color:var(--text-faint);letter-spacing:0.1em;';
+  counter.textContent = filtered.length + ' incantesim' + (filtered.length===1?'o':'i');
+  frag.appendChild(counter);
+
+  if (filtered.length === 0) {
+    var empty = document.createElement('div'); empty.className = 'empty-state panel-glass'; empty.style.cssText = 'margin:1.5rem;';
+    empty.innerHTML = '<div class="rune">✨</div><h2>Nessun incantesimo</h2><p>' + (isDM() ? 'Aggiungi il primo incantesimo.' : 'Nessun incantesimo aggiuntivo disponibile.') + '</p>';
+    frag.appendChild(empty);
+  } else {
+    var grid = document.createElement('div'); grid.className = 'container-main pb-20';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.25rem;padding-top:0.5rem;padding-bottom:4rem;';
+    filtered.forEach(function(s){ grid.appendChild(renderIncantatesimoCard(s)); });
+    frag.appendChild(grid);
+  }
+
+  if (state.incShowForm) frag.appendChild(renderIncantesimoForm());
+  return frag;
+}
+
+function renderIncantatesimoCard(s) {
+  var card = document.createElement('div'); card.className = 'panel-glass'; card.style.cssText = 'padding:0;overflow:hidden;';
+
+  // Head
+  var head = document.createElement('div');
+  head.style.cssText = 'padding:1rem 1.2rem 0.7rem;border-bottom:1px solid var(--border-subtle);';
+  // Level badge + name
+  var topRow = document.createElement('div'); topRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;';
+  var nameCol = document.createElement('div');
+  var lvlBadge = document.createElement('span');
+  lvlBadge.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);border:1px solid var(--border-gold);padding:0.15rem 0.5rem;display:inline-block;margin-bottom:0.4rem;';
+  lvlBadge.textContent = s.livello == 0 ? 'Trucchetto' : 'Livello ' + s.livello;
+  nameCol.appendChild(lvlBadge);
+  var nameDiv = document.createElement('div'); nameDiv.style.cssText = 'font-family:\'Cinzel\',serif;font-size:18px;font-weight:700;color:var(--text-primary);line-height:1.2;';
+  nameDiv.textContent = s.nome || 'Senza nome';
+  nameCol.appendChild(nameDiv);
+  topRow.appendChild(nameCol);
+  // Tags right
+  var tagsCol = document.createElement('div'); tagsCol.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:0.3rem;flex-shrink:0;';
+  if (s.concentrazione) { var tc = document.createElement('span'); tc.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8bc4ff;border:1px solid rgba(139,196,255,0.4);padding:0.15rem 0.45rem;white-space:nowrap;'; tc.textContent = 'CONC.'; tagsCol.appendChild(tc); }
+  if (s.rituale) { var tr = document.createElement('span'); tr.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c8a8ff;border:1px solid rgba(200,168,255,0.4);padding:0.15rem 0.45rem;white-space:nowrap;'; tr.textContent = 'RITUALE'; tagsCol.appendChild(tr); }
+  topRow.appendChild(tagsCol);
+  head.appendChild(topRow);
+  // Scuola + componenti
+  var subRow = document.createElement('div'); subRow.style.cssText = 'display:flex;align-items:center;gap:0.75rem;margin-top:0.4rem;flex-wrap:wrap;';
+  if (s.scuola) { var sc = document.createElement('span'); sc.style.cssText = 'font-size:12px;color:var(--text-muted);font-style:italic;'; sc.textContent = s.scuola; subRow.appendChild(sc); }
+  if (s.componenti && s.componenti.length) { var cp = document.createElement('span'); cp.style.cssText = 'font-size:12px;font-weight:700;color:var(--gold-dim);letter-spacing:0.1em;'; cp.textContent = s.componenti.join(', '); subRow.appendChild(cp); }
+  if (subRow.children.length) head.appendChild(subRow);
+  card.appendChild(head);
+
+  // Body
+  var body = document.createElement('div'); body.style.cssText = 'padding:0.8rem 1.2rem;';
+  function statLine(lbl, val) {
+    if (!val) return;
+    var d = document.createElement('div'); d.style.cssText = 'display:flex;gap:0.5rem;margin-bottom:0.3rem;align-items:baseline;';
+    d.innerHTML = '<span style="font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;min-width:110px;">' + lbl + '</span><span style="font-size:14px;color:var(--text-primary);">' + escapeHtml(String(val)) + '</span>';
+    body.appendChild(d);
+  }
+  statLine('Gittata', s.gittata);
+  statLine('Tempo di lancio', s.tempoDiLancio);
+  statLine('Durata', s.durata);
+  if (s.valMateria) statLine('Materiali', s.valMateria + (s.consumaMateria ? ' (consumato)' : ''));
+  if (s.descrizione) {
+    var sep = document.createElement('div'); sep.style.cssText = 'border-top:1px solid var(--border-subtle);margin:0.6rem 0;'; body.appendChild(sep);
+    var desc = document.createElement('div'); desc.style.cssText = 'font-size:14px;color:var(--text-secondary);line-height:1.65;white-space:pre-wrap;'; desc.textContent = s.descrizione; body.appendChild(desc);
+  }
+  if (s.altiLivelli) {
+    var alSep = document.createElement('div'); alSep.style.cssText = 'border-top:1px solid var(--border-subtle);margin:0.6rem 0;'; body.appendChild(alSep);
+    var alLbl = document.createElement('div'); alLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.3rem;'; alLbl.textContent = 'A livelli superiori'; body.appendChild(alLbl);
+    var alTxt = document.createElement('div'); alTxt.style.cssText = 'font-size:14px;color:var(--text-secondary);line-height:1.65;white-space:pre-wrap;'; alTxt.textContent = s.altiLivelli; body.appendChild(alTxt);
+  }
+  card.appendChild(body);
+
+  // Footer DM actions
+  if (isDM()) {
+    var foot = document.createElement('div'); foot.style.cssText = 'padding:0.5rem 1.2rem;border-top:1px solid var(--border-subtle);background:var(--bg-base);display:flex;justify-content:flex-end;gap:0.4rem;';
+    var editB = document.createElement('button'); editB.className = 'btn-dark'; editB.style.cssText = 'padding:0.3rem 0.7rem;font-size:12px;'; editB.innerHTML = ICON.edit || '✎'; editB.textContent = '✎ Modifica';
+    editB.onclick = function(){ state.incEditingId = s.id; state.incShowForm = true; renderMain(); };
+    var delB = document.createElement('button'); delB.className = 'btn-blood'; delB.style.cssText = 'padding:0.3rem 0.7rem;font-size:12px;'; delB.innerHTML = ICON.trash || '✕'; delB.textContent = '✕';
+    delB.onclick = function(){ if(confirm('Eliminare "' + (s.nome||'questo incantesimo') + '"?')){ state.incantesimiAggiuntivi = state.incantesimiAggiuntivi.filter(function(x){return x.id!==s.id;}); fbSaveIncantesimiAggiuntivi(); renderMain(); } };
+    foot.appendChild(editB); foot.appendChild(delB); card.appendChild(foot);
+  }
+  return card;
+}
+
+function renderIncantesimoForm() {
+  var editing = null;
+  if (state.incEditingId) (state.incantesimiAggiuntivi||[]).forEach(function(x){ if(x.id===state.incEditingId) editing=x; });
+  var form = {
+    nome: editing?editing.nome:'', livello: editing!=null?editing.livello:0,
+    scuola: editing?editing.scuola:'', gittata: editing?editing.gittata:'',
+    tempoDiLancio: editing?editing.tempoDiLancio:'', durata: editing?editing.durata:'',
+    valMateria: editing?editing.valMateria:'', rituale: editing?!!editing.rituale:false,
+    concentrazione: editing?!!editing.concentrazione:false,
+    componenti: editing?(editing.componenti||[]):[],
+    consumaMateria: editing?!!editing.consumaMateria:false,
+    descrizione: editing?editing.descrizione:'', altiLivelli: editing?editing.altiLivelli:''
+  };
+
+  var backdrop = document.createElement('div');
+  backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  backdrop.onclick = function(e){ if(e.target===backdrop){ state.incShowForm=false; state.incEditingId=null; renderMain(); } };
+
+  var panel = document.createElement('div');
+  panel.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-gold);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;';
+  panel.onclick = function(e){ e.stopPropagation(); };
+
+  var mhead = document.createElement('div');
+  mhead.style.cssText = 'padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;';
+  var htitle = document.createElement('div'); htitle.style.cssText = 'font-family:\'Cinzel\',serif;font-size:16px;font-weight:700;color:var(--gold);';
+  htitle.textContent = editing ? '✎ Modifica Incantesimo' : '+ Nuovo Incantesimo';
+  var closeB = document.createElement('button'); closeB.className='btn-dark'; closeB.style.cssText='padding:0.25rem 0.6rem;'; closeB.textContent='✕';
+  closeB.onclick = function(){ state.incShowForm=false; state.incEditingId=null; renderMain(); };
+  mhead.appendChild(htitle); mhead.appendChild(closeB); panel.appendChild(mhead);
+
+  var mbody = document.createElement('div'); mbody.style.cssText = 'padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.9rem;';
+
+  function iField(lbl, key, type, opts) {
+    var g = document.createElement('div');
+    var l = document.createElement('label'); l.className='field-label'; l.textContent=lbl; g.appendChild(l);
+    var el;
+    if (type==='select') {
+      el=document.createElement('select'); el.className='field';
+      (opts||[]).forEach(function(o){ var op=document.createElement('option'); op.value=o; op.textContent=o; if(String(form[key])===String(o)) op.selected=true; el.appendChild(op); });
+    } else if (type==='textarea') {
+      el=document.createElement('textarea'); el.className='field'; el.rows=3; el.value=form[key]; el.style.resize='vertical';
+    } else {
+      el=document.createElement('input'); el.type=type||'text'; el.className='field'; el.value=form[key];
+    }
+    if (type!=='checkbox') el.onchange=el.oninput=function(){ form[key]=type==='number'?(Number(this.value)||0):this.value; };
+    g.appendChild(el); return g;
+  }
+
+  mbody.appendChild(iField('Nome','nome','text'));
+
+  var r1=document.createElement('div'); r1.style.cssText='display:grid;grid-template-columns:1fr 2fr;gap:0.75rem;';
+  // Livello select
+  var lvlG=document.createElement('div'); var lvlL=document.createElement('label'); lvlL.className='field-label'; lvlL.textContent='Livello'; lvlG.appendChild(lvlL);
+  var lvlS=document.createElement('select'); lvlS.className='field';
+  for(var i=0;i<=9;i++){ var op=document.createElement('option'); op.value=i; op.textContent=i===0?'0 — Trucchetto':String(i); if(form.livello===i) op.selected=true; lvlS.appendChild(op); }
+  lvlS.onchange=function(){ form.livello=Number(this.value); };
+  lvlG.appendChild(lvlS); r1.appendChild(lvlG);
+  r1.appendChild(iField('Scuola di Magia','scuola','text'));
+  mbody.appendChild(r1);
+
+  var r2=document.createElement('div'); r2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;';
+  r2.appendChild(iField('Gittata','gittata','text'));
+  r2.appendChild(iField('Tempo di Lancio','tempoDiLancio','text'));
+  r2.appendChild(iField('Durata','durata','text'));
+  mbody.appendChild(r2);
+
+  // Componenti checkboxes
+  var compG=document.createElement('div'); var compL=document.createElement('label'); compL.className='field-label'; compL.textContent='Componenti'; compG.appendChild(compL);
+  var compRow=document.createElement('div'); compRow.style.cssText='display:flex;gap:1.25rem;align-items:center;';
+  ['V','S','M'].forEach(function(c){
+    var cWrap=document.createElement('label'); cWrap.style.cssText='display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:14px;color:var(--text-primary);font-weight:700;';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.value=c; cb.checked=(form.componenti||[]).indexOf(c)>=0;
+    cb.onchange=function(){ if(this.checked){ if(form.componenti.indexOf(c)<0) form.componenti.push(c); } else { form.componenti=form.componenti.filter(function(x){return x!==c;}); } };
+    cWrap.appendChild(cb); cWrap.appendChild(document.createTextNode(c)); compRow.appendChild(cWrap);
+  });
+  compG.appendChild(compRow); mbody.appendChild(compG);
+
+  mbody.appendChild(iField('Valore Materiali (es. 100 mo di diamante)','valMateria','text'));
+
+  // Bool flags
+  var boolRow=document.createElement('div'); boolRow.style.cssText='display:flex;gap:1.5rem;flex-wrap:wrap;';
+  [{key:'rituale',lbl:'Rituale'},{key:'concentrazione',lbl:'Concentrazione'},{key:'consumaMateria',lbl:'Consuma Materiali'}].forEach(function(b){
+    var bWrap=document.createElement('label'); bWrap.style.cssText='display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:14px;color:var(--text-primary);';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!form[b.key];
+    cb.onchange=function(){ form[b.key]=this.checked; };
+    bWrap.appendChild(cb); bWrap.appendChild(document.createTextNode(b.lbl)); boolRow.appendChild(bWrap);
+  });
+  mbody.appendChild(boolRow);
+
+  mbody.appendChild(iField('Descrizione','descrizione','textarea'));
+  mbody.appendChild(iField('A livelli superiori','altiLivelli','textarea'));
+
+  var saveBtn=document.createElement('button'); saveBtn.className='btn-gold'; saveBtn.style.cssText='width:100%;margin-top:0.5rem;';
+  saveBtn.textContent = editing ? 'Salva Modifiche' : 'Aggiungi Incantesimo';
+  saveBtn.onclick=function(){
+    if(!form.nome.trim()){ notify('Inserisci il nome dell\'incantesimo.','err'); return; }
+    if(editing){
+      state.incantesimiAggiuntivi=state.incantesimiAggiuntivi.map(function(x){ return x.id===editing.id?Object.assign({},form,{id:editing.id}):x; });
+    } else {
+      if(!state.incantesimiAggiuntivi) state.incantesimiAggiuntivi=[];
+      state.incantesimiAggiuntivi.push(Object.assign({},form,{id:'inc_'+Date.now()}));
+    }
+    fbSaveIncantesimiAggiuntivi();
+    notify(editing?'Incantesimo aggiornato.':'Incantesimo aggiunto.');
+    state.incShowForm=false; state.incEditingId=null; renderMain();
+  };
+  mbody.appendChild(saveBtn);
+  panel.appendChild(mbody); backdrop.appendChild(panel);
+  return backdrop;
 }
 
 function renderWorldbuilding() {
