@@ -823,6 +823,8 @@
 
   .weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.5rem; }
   @media (max-width: 640px) { .weapon-grid { grid-template-columns: 1fr; } }
+  .card--wide { grid-column: span 2; }
+  @media (max-width: 700px) { .card--wide { grid-column: span 1; } }
 
   .toast {
     position: fixed;
@@ -4795,6 +4797,8 @@
     padding: 2rem;
     position: relative; z-index: 1;
   }
+  .cyber-grid .card--wide { grid-column: span 2; }
+  @media (max-width: 700px) { .cyber-grid .card--wide { grid-column: span 1; } }
   .cyber-card {
     background: linear-gradient(135deg, rgba(0,25,60,0.95) 0%, rgba(12,0,35,0.95) 100%);
     border: 2px solid rgba(0,245,255,0.35);
@@ -6311,6 +6315,14 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 function nl2br(s) { return s ? s.replace(/\n/g,'<br>') : ''; }
+function _textScore() {
+  var score = 0;
+  for (var i = 0; i < arguments.length; i++) {
+    var t = arguments[i] || '';
+    score += t.length + (t.match(/\n/g) || []).length * 28;
+  }
+  return score;
+}
 
 var toastTimer = null;
 function notify(msg, kind) {
@@ -6830,6 +6842,9 @@ function renderDrogaCard(d, ACCENT) {
   if (d.descrizione) {
     body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:16px;color:#b8ffb8;line-height:1.5;">'+nl2br(escapeHtml(d.descrizione))+'</div>';
   }
+  var _ds = _textScore(d.descrizione);
+  if (_ds > 500) card.classList.add('card--wide');
+  if (_ds > 1100) { body.style.maxHeight='480px'; body.style.overflowY='auto'; }
   card.appendChild(body);
 
   var foot=document.createElement('div');
@@ -7036,10 +7051,13 @@ function renderVeicoloCard(v) {
 
   var body=document.createElement('div');
   body.style.cssText='padding:0.8rem 1.2rem;';
-  if (v.velocita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.5rem;margin-bottom:0.25rem;">// VELOCITÀ</div><div style="font-size:16px;color:#ffd080;line-height:1.5;">'+escapeHtml(v.velocita)+'</div>';
-  if (v.capacita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// CAPACITÀ</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.capacita)+'</div>';
+  if (v.velocita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.5rem;margin-bottom:0.25rem;">// VELOCITÀ</div><div style="font-size:16px;color:#ffd080;line-height:1.5;">'+nl2br(escapeHtml(v.velocita))+'</div>';
+  if (v.capacita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// CAPACITÀ</div><div style="font-size:16px;color:#ffd080;">'+nl2br(escapeHtml(v.capacita))+'</div>';
   if (v.pf) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// PF</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.pf)+'</div>';
   if (v.descrizione) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:14px;color:#e8c070;line-height:1.5;">'+nl2br(escapeHtml(v.descrizione))+'</div>';
+  var _vs = _textScore(v.velocita, v.capacita, v.descrizione);
+  if (_vs > 500) card.classList.add('card--wide');
+  if (_vs > 1100) { body.style.maxHeight='480px'; body.style.overflowY='auto'; }
   card.appendChild(body);
 
   var foot=document.createElement('div');
@@ -7312,6 +7330,9 @@ function renderCyberCard(im) {
   if (im.installazione) {
     body.innerHTML += '<div class="cyber-label">// INSTALLAZIONE</div><div class="cyber-value" style="color:rgba(191,95,255,0.85);font-size:12px;">' + escapeHtml(im.installazione) + '</div>';
   }
+  var _cs = _textScore(im.effetto, im.descrizione);
+  if (_cs > 500) card.classList.add('card--wide');
+  if (_cs > 1100) { body.style.maxHeight='480px'; body.style.overflowY='auto'; }
   card.appendChild(body);
 
   // Footer
