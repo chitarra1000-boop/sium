@@ -6310,6 +6310,7 @@ function escapeHtml(s) {
   if (s === null || s === undefined) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function nl2br(s) { return s ? s.replace(/\n/g,'<br>') : ''; }
 
 var toastTimer = null;
 function notify(msg, kind) {
@@ -6827,7 +6828,7 @@ function renderDrogaCard(d, ACCENT) {
   var body=document.createElement('div');
   body.style.cssText='padding:0.8rem 1.2rem;';
   if (d.descrizione) {
-    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:16px;color:#b8ffb8;line-height:1.5;">'+escapeHtml(d.descrizione)+'</div>';
+    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#50c850;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:16px;color:#b8ffb8;line-height:1.5;">'+nl2br(escapeHtml(d.descrizione))+'</div>';
   }
   card.appendChild(body);
 
@@ -7038,7 +7039,7 @@ function renderVeicoloCard(v) {
   if (v.velocita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.5rem;margin-bottom:0.25rem;">// VELOCITÀ</div><div style="font-size:16px;color:#ffd080;line-height:1.5;">'+escapeHtml(v.velocita)+'</div>';
   if (v.capacita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// CAPACITÀ</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.capacita)+'</div>';
   if (v.pf) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// PF</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.pf)+'</div>';
-  if (v.descrizione) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:14px;color:#e8c070;line-height:1.5;">'+escapeHtml(v.descrizione)+'</div>';
+  if (v.descrizione) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:14px;color:#e8c070;line-height:1.5;">'+nl2br(escapeHtml(v.descrizione))+'</div>';
   card.appendChild(body);
 
   var foot=document.createElement('div');
@@ -7303,10 +7304,10 @@ function renderCyberCard(im) {
   body.className = 'cyber-card-body';
 
   if (im.effetto) {
-    body.innerHTML += '<div class="cyber-label">// EFFETTO</div><div class="cyber-value">' + escapeHtml(im.effetto) + '</div>';
+    body.innerHTML += '<div class="cyber-label">// EFFETTO</div><div class="cyber-value">' + nl2br(escapeHtml(im.effetto)) + '</div>';
   }
   if (im.descrizione) {
-    body.innerHTML += '<div class="cyber-label">// DESCRIZIONE</div><div class="cyber-value" style="color:rgba(0,245,255,0.6);font-size:12px;">' + escapeHtml(im.descrizione) + '</div>';
+    body.innerHTML += '<div class="cyber-label">// DESCRIZIONE</div><div class="cyber-value" style="color:rgba(0,245,255,0.6);font-size:12px;">' + nl2br(escapeHtml(im.descrizione)) + '</div>';
   }
   if (im.installazione) {
     body.innerHTML += '<div class="cyber-label">// INSTALLAZIONE</div><div class="cyber-value" style="color:rgba(191,95,255,0.85);font-size:12px;">' + escapeHtml(im.installazione) + '</div>';
@@ -7601,7 +7602,7 @@ function renderWeaponCard(w) {
   body.innerHTML =
     '<div class="type-chip mb-2">' + escapeHtml(w.tipo) + '</div>' +
     '<h3 class="font-display font-bold text-lg mb-2" style="color:var(--gold-bright);line-height:1.25;margin:0 0 0.5rem;">' + escapeHtml(w.nome) + '</h3>' +
-    '<p style="font-size:14px;line-height:1.55;color:var(--text-main);flex:1;margin:0 0 1rem;">' + (w.descrizione ? escapeHtml(w.descrizione) : '<em style="color:var(--text-muted)">Nessuna descrizione.</em>') + '</p>';
+    '<p style="font-size:14px;line-height:1.55;color:var(--text-main);flex:1;margin:0 0 1rem;">' + (w.descrizione ? nl2br(escapeHtml(w.descrizione)) : '<em style="color:var(--text-muted)">Nessuna descrizione.</em>') + '</p>';
 
   var foot = document.createElement('div');
   foot.className = 'flex items-center justify-between pt-3 border-t';
@@ -11209,7 +11210,7 @@ function renderPetCard(p) {
   }
   if (p.tratti) {
     var trD=document.createElement('div'); trD.style.cssText='font-family:\'EB Garamond\',serif;font-size:13px;color:var(--text-muted);white-space:pre-wrap;border:1px solid var(--border-subtle);border-radius:3px;padding:0.4rem 0.5rem;margin-bottom:0.4rem;background:var(--bg-base);max-height:80px;overflow-y:auto;';
-    trD.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.2rem;">✦ Tratti</div>'+escapeHtml(p.tratti);
+    trD.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.2rem;">✦ Tratti</div>'+nl2br(escapeHtml(p.tratti));
     body.appendChild(trD);
   }
   /* Footer */
