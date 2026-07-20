@@ -6968,6 +6968,127 @@ function renderDrogaForm(ACCENT) {
 // ============================================================
 var TIPI_VEICOLO = ['Terrestre','Acquatico','Aereo','Spaziale','Altro'];
 
+/* ---- helpers immagini veicoli ---- */
+function _vehicleImages(v) {
+  if (v.immagini && v.immagini.length > 0) return v.immagini;
+  if (v.immagine) return [v.immagine];
+  return [];
+}
+
+function _buildVehicleCarousel(immagini) {
+  if (!immagini || immagini.length === 0) return null;
+  var idx = 0;
+  var outerWrap = document.createElement('div');
+  outerWrap.style.cssText = 'position:relative;width:100%;background:#0d0800;border-bottom:1px solid rgba(245,166,35,0.2);';
+  var imgEl = document.createElement('img');
+  imgEl.alt = ''; imgEl.style.cssText = 'width:100%;height:200px;object-fit:cover;display:block;transition:opacity 0.15s;';
+  imgEl.src = immagini[0];
+  imgEl.onerror = function(){ this.style.display='none'; };
+  outerWrap.appendChild(imgEl);
+  if (immagini.length > 1) {
+    var counter = document.createElement('div');
+    counter.style.cssText = 'position:absolute;top:7px;right:8px;background:rgba(0,0,0,0.72);color:#f5a623;font-family:\'Courier New\',monospace;font-size:11px;font-weight:700;padding:0.15rem 0.45rem;border:1px solid rgba(245,166,35,0.5);pointer-events:none;';
+    counter.textContent = '1 / '+immagini.length;
+    function goTo(i) {
+      idx = ((i % immagini.length) + immagini.length) % immagini.length;
+      imgEl.style.opacity = '0';
+      setTimeout(function(){ imgEl.src = immagini[idx]; imgEl.style.opacity = '1'; }, 130);
+      counter.textContent = (idx+1)+' / '+immagini.length;
+    }
+    var prev = document.createElement('button');
+    prev.style.cssText = 'position:absolute;left:0;top:0;height:100%;width:36px;background:rgba(0,0,0,0.45);border:none;color:#f5a623;font-size:22px;font-weight:900;cursor:pointer;line-height:1;';
+    prev.textContent = '‹'; prev.onclick = function(e){ e.stopPropagation(); goTo(idx-1); };
+    var next = document.createElement('button');
+    next.style.cssText = 'position:absolute;right:0;top:0;height:100%;width:36px;background:rgba(0,0,0,0.45);border:none;color:#f5a623;font-size:22px;font-weight:900;cursor:pointer;line-height:1;';
+    next.textContent = '›'; next.onclick = function(e){ e.stopPropagation(); goTo(idx+1); };
+    outerWrap.appendChild(prev); outerWrap.appendChild(next); outerWrap.appendChild(counter);
+  }
+  return outerWrap;
+}
+
+function _buildVehicleImageEditor(form, ACCENT) {
+  var wrap = document.createElement('div');
+  var lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-bottom:0.5rem;';
+  lbl.textContent = '// IMMAGINI';
+  wrap.appendChild(lbl);
+  var thumbsWrap = document.createElement('div');
+  thumbsWrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.65rem;min-height:36px;';
+  function refreshThumbs() {
+    thumbsWrap.innerHTML = '';
+    var imgs = form.immagini || [];
+    if (imgs.length === 0) {
+      var none = document.createElement('div');
+      none.style.cssText = 'color:rgba(245,166,35,0.32);font-size:12px;padding:0.25rem 0;font-family:\'Courier New\',monospace;';
+      none.textContent = '// nessuna immagine';
+      thumbsWrap.appendChild(none);
+    } else {
+      imgs.forEach(function(src, i) {
+        var t = document.createElement('div');
+        t.style.cssText = 'position:relative;width:72px;height:72px;border:1px solid rgba(245,166,35,0.4);overflow:hidden;flex-shrink:0;background:#111;';
+        var im = document.createElement('img'); im.src = src; im.alt = '';
+        im.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+        im.onerror = function(){ im.style.display='none'; t.style.background='rgba(245,166,35,0.08)'; };
+        var del = document.createElement('button');
+        del.style.cssText = 'position:absolute;top:1px;right:1px;background:rgba(180,20,20,0.88);border:none;color:#fff;font-size:10px;width:17px;height:17px;cursor:pointer;padding:0;line-height:1;font-weight:700;';
+        del.textContent = '✕';
+        (function(ii){ del.onclick = function(){ form.immagini.splice(ii,1); refreshThumbs(); }; })(i);
+        t.appendChild(im); t.appendChild(del); thumbsWrap.appendChild(t);
+      });
+    }
+  }
+  refreshThumbs();
+  wrap.appendChild(thumbsWrap);
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.5rem;';
+  var fileBtn = document.createElement('button'); fileBtn.type='button';
+  fileBtn.style.cssText = 'background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.45);color:#f5a623;font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;padding:0.35rem 0.75rem;cursor:pointer;';
+  fileBtn.textContent = '📁 Carica dal computer';
+  var fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='image/*'; fileInput.multiple=true; fileInput.style.display='none';
+  fileInput.onchange = function(){
+    var files = Array.prototype.slice.call(this.files);
+    var remaining = files.length;
+    files.forEach(function(file){
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        var img = new Image();
+        img.onload = function(){
+          var MAX=900, ratio=Math.min(MAX/img.width,MAX/img.height,1);
+          var canvas=document.createElement('canvas');
+          canvas.width=Math.round(img.width*ratio); canvas.height=Math.round(img.height*ratio);
+          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+          if(!form.immagini) form.immagini=[];
+          form.immagini.push(canvas.toDataURL('image/jpeg',0.78));
+          remaining--;
+          if(remaining<=0) refreshThumbs();
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    fileInput.value='';
+  };
+  fileBtn.onclick=function(){ fileInput.click(); };
+  btnRow.appendChild(fileBtn); btnRow.appendChild(fileInput);
+  wrap.appendChild(btnRow);
+  var urlRow = document.createElement('div');
+  urlRow.style.cssText = 'display:flex;gap:0.4rem;';
+  var urlInput = document.createElement('input'); urlInput.type='text'; urlInput.placeholder='> URL immagine diretta...';
+  urlInput.style.cssText = 'flex:1;background:rgba(245,166,35,0.04);border:1px solid rgba(245,166,35,0.25);color:#ffd080;font-family:\'Courier New\',monospace;font-size:13px;padding:0.4rem 0.6rem;outline:none;';
+  var urlBtn = document.createElement('button'); urlBtn.type='button';
+  urlBtn.style.cssText = 'background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.35);color:#f5a623;font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;padding:0.4rem 0.7rem;cursor:pointer;white-space:nowrap;';
+  urlBtn.textContent = '+ Aggiungi URL';
+  urlBtn.onclick = function(){
+    var url = urlInput.value.trim(); if(!url) return;
+    if(!form.immagini) form.immagini=[];
+    form.immagini.push(url); urlInput.value=''; refreshThumbs();
+  };
+  urlRow.appendChild(urlInput); urlRow.appendChild(urlBtn);
+  wrap.appendChild(urlRow);
+  return wrap;
+}
+/* ---------------------------------- */
+
 function renderEmporioVeicoli() {
   var ACCENT = '#f5a623';
   var wrap = document.createElement('div');
@@ -7126,13 +7247,8 @@ function renderVeicoloCard(v, isParty) {
   card.onmouseenter=function(){ this.style.borderColor='rgba(245,166,35,0.7)'; this.style.transform='translateY(-3px)'; };
   card.onmouseleave=function(){ this.style.borderColor=isParty?'rgba(245,166,35,0.5)':'rgba(245,166,35,0.3)'; this.style.transform=''; };
 
-  if (v.immagine) {
-    var img=document.createElement('img');
-    img.src=v.immagine; img.alt=v.nome||'';
-    img.style.cssText='width:100%;height:160px;object-fit:cover;display:block;border-bottom:1px solid rgba(245,166,35,0.2);';
-    img.onerror=function(){ this.style.display='none'; };
-    card.appendChild(img);
-  }
+  var _vImgs = _vehicleImages(v);
+  if (_vImgs.length > 0) { var _carousel = _buildVehicleCarousel(_vImgs); if (_carousel) card.appendChild(_carousel); }
 
   var head=document.createElement('div');
   head.style.cssText='padding:1rem 1.2rem 0.6rem;border-bottom:1px solid rgba(245,166,35,0.15);display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;';
@@ -7214,7 +7330,8 @@ function renderVeicoloCard(v, isParty) {
 function renderVeicoloForm() {
   var editing=null;
   if (state.veicoliEditingId) (state.veicoli||[]).forEach(function(x){ if(x.id===state.veicoliEditingId) editing=x; });
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagine:editing?editing.immagine:''};
+  var _eImgs = editing ? (editing.immagini && editing.immagini.length ? editing.immagini.slice() : (editing.immagine ? [editing.immagine] : [])) : [];
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_eImgs};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -7268,18 +7385,20 @@ function renderVeicoloForm() {
   r3.appendChild(vField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
   mbody.appendChild(r3);
   mbody.appendChild(vField('DESCRIZIONE','descrizione','textarea'));
-  mbody.appendChild(vField('URL IMMAGINE','immagine','text'));
+  mbody.appendChild(_buildVehicleImageEditor(form, '#f5a623'));
 
   var saveBtn=document.createElement('button');
   saveBtn.style.cssText='width:100%;background:rgba(245,166,35,0.12);border:2px solid #f5a623;color:#f5a623;font-family:\'Courier New\',monospace;font-size:15px;font-weight:700;letter-spacing:0.1em;padding:0.75rem;cursor:pointer;text-transform:uppercase;margin-top:0.5rem;';
   saveBtn.textContent=editing?'> SALVA MODIFICHE':'> AGGIUNGI AL DATABASE';
   saveBtn.onclick=function(){
     if(!form.nome.trim()){ notify('Inserisci il nome del veicolo.','err'); return; }
+    var saved=Object.assign({},form,{immagini:form.immagini||[]});
+    delete saved.immagine;
     if(editing){
-      state.veicoli=(state.veicoli||[]).map(function(x){ return x.id===editing.id?Object.assign({},form,{id:editing.id}):x; });
+      state.veicoli=(state.veicoli||[]).map(function(x){ return x.id===editing.id?Object.assign({},saved,{id:editing.id}):x; });
     } else {
       if(!state.veicoli) state.veicoli=[];
-      state.veicoli.push(Object.assign({},form,{id:'ve_'+Date.now()}));
+      state.veicoli.push(Object.assign({},saved,{id:'ve_'+Date.now()}));
     }
     fbSaveVeicoli();
     notify(editing?'Veicolo aggiornato.':'Veicolo aggiunto al database.');
@@ -7294,7 +7413,8 @@ function renderVeicoloForm() {
 function renderVeicoloPartyForm() {
   var editing=null;
   if (state.veicoliPartyEditingId) (state.veicoliParty||[]).forEach(function(x){ if(x.id===state.veicoliPartyEditingId) editing=x; });
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagine:editing?editing.immagine:''};
+  var _epImgs = editing ? (editing.immagini && editing.immagini.length ? editing.immagini.slice() : (editing.immagine ? [editing.immagine] : [])) : [];
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_epImgs};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -7348,18 +7468,20 @@ function renderVeicoloPartyForm() {
   r3.appendChild(vpField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
   mbody.appendChild(r3);
   mbody.appendChild(vpField('DESCRIZIONE','descrizione','textarea'));
-  mbody.appendChild(vpField('URL IMMAGINE','immagine','text'));
+  mbody.appendChild(_buildVehicleImageEditor(form, '#f5a623'));
 
   var saveBtn=document.createElement('button');
   saveBtn.style.cssText='width:100%;background:rgba(245,166,35,0.12);border:2px solid #f5a623;color:#f5a623;font-family:\'Courier New\',monospace;font-size:15px;font-weight:700;letter-spacing:0.1em;padding:0.75rem;cursor:pointer;text-transform:uppercase;margin-top:0.5rem;';
   saveBtn.textContent=editing?'> SALVA MODIFICHE':'> AGGIUNGI AL PARTY';
   saveBtn.onclick=function(){
     if(!form.nome.trim()){ notify('Inserisci il nome del veicolo.','err'); return; }
+    var saved=Object.assign({},form,{immagini:form.immagini||[]});
+    delete saved.immagine;
     if(!state.veicoliParty) state.veicoliParty=[];
     if(editing){
-      state.veicoliParty=state.veicoliParty.map(function(x){ return x.id===editing.id?Object.assign({},form,{id:editing.id}):x; });
+      state.veicoliParty=state.veicoliParty.map(function(x){ return x.id===editing.id?Object.assign({},saved,{id:editing.id}):x; });
     } else {
-      state.veicoliParty.push(Object.assign({},form,{id:'vp_'+Date.now()}));
+      state.veicoliParty.push(Object.assign({},saved,{id:'vp_'+Date.now()}));
     }
     fbSaveVeicoliParty();
     notify(editing?'Veicolo party aggiornato.':'Veicolo aggiunto al Party.');
