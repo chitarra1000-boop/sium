@@ -7824,7 +7824,7 @@ function renderEmporioArmiFuoco() {
 
   /* Sezione 1 — immagine */
   var sec1 = document.createElement('div');
-  sec1.style.cssText = 'flex:0 0 36%;min-width:0;position:relative;background:#080000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
+  sec1.style.cssText = 'flex:0 0 55%;min-width:0;position:relative;background:#080000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
 
   function renderSec1(arma) {
     sec1.innerHTML = '';
@@ -7864,15 +7864,15 @@ function renderEmporioArmiFuoco() {
     function row(lbl, val) {
       if (!val) return;
       var d = document.createElement('div'); d.style.cssText = 'margin-bottom:0.85rem;';
-      var l = document.createElement('div'); l.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; l.textContent = lbl;
-      var v = document.createElement('div'); v.style.cssText = 'font-size:14px;color:#ffb3b3;line-height:1.5;'; v.textContent = val;
+      var l = document.createElement('div'); l.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; l.textContent = lbl;
+      var v = document.createElement('div'); v.style.cssText = 'font-size:16px;color:#ffb3b3;line-height:1.5;'; v.textContent = val;
       d.appendChild(l); d.appendChild(v); sec2.appendChild(d);
     }
     row('// TIPO', arma.tipo);
     row('// MUNIZIONI', arma.munizioni);
     if (arma.descrizione) {
-      var dl = document.createElement('div'); dl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; dl.textContent = '// DESCRIZIONE'; sec2.appendChild(dl);
-      var dv = document.createElement('div'); dv.style.cssText = 'font-size:13px;color:#ffcccc;line-height:1.65;margin-bottom:0.85rem;white-space:pre-wrap;'; dv.textContent = arma.descrizione; sec2.appendChild(dv);
+      var dl = document.createElement('div'); dl.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(229,48,48,0.5);margin-bottom:0.18rem;'; dl.textContent = '// DESCRIZIONE'; sec2.appendChild(dl);
+      var dv = document.createElement('div'); dv.style.cssText = 'font-size:15px;color:#ffcccc;line-height:1.65;margin-bottom:0.85rem;white-space:pre-wrap;'; dv.textContent = arma.descrizione; sec2.appendChild(dv);
     }
     if (arma.costo) row('// PREZZO', arma.costo+' '+(arma.valuta||'mo'));
     if (isDM()) {
@@ -7923,9 +7923,9 @@ function renderEmporioArmiFuoco() {
     /* info card */
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between;';
-    var nomDiv = document.createElement('div'); nomDiv.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; nomDiv.textContent=arma.nome||'?'; info.appendChild(nomDiv);
-    var tipDiv = document.createElement('div'); tipDiv.style.cssText='font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+ACCENT+';margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; tipDiv.textContent=arma.tipo||''; info.appendChild(tipDiv);
-    if (arma.munizioni) { var munDiv=document.createElement('div'); munDiv.style.cssText='font-size:9px;color:rgba(229,48,48,0.5);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; munDiv.textContent=arma.munizioni; info.appendChild(munDiv); }
+    var nomDiv = document.createElement('div'); nomDiv.style.cssText='font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; nomDiv.textContent=arma.nome||'?'; info.appendChild(nomDiv);
+    var tipDiv = document.createElement('div'); tipDiv.style.cssText='font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:'+ACCENT+';margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; tipDiv.textContent=arma.tipo||''; info.appendChild(tipDiv);
+    if (arma.munizioni) { var munDiv=document.createElement('div'); munDiv.style.cssText='font-size:11px;color:rgba(229,48,48,0.5);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; munDiv.textContent=arma.munizioni; info.appendChild(munDiv); }
     card.appendChild(info);
 
     (function(a, el) {
@@ -8119,10 +8119,10 @@ function _renderArmiPotenziamenti() {
       var img=document.createElement('img'); img.src=imgs[0]; img.alt=''; img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; imgBox.appendChild(img); card.appendChild(imgBox);
     }
     var body=document.createElement('div'); body.style.cssText='padding:0.8rem;flex:1;display:flex;flex-direction:column;gap:0.35rem;';
-    var nome=document.createElement('div'); nome.style.cssText='font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;'; nome.textContent=p.nome||'?'; body.appendChild(nome);
-    if(p.costo){var pr=document.createElement('div');pr.style.cssText='font-size:11px;color:'+ACCENT+';font-weight:700;';pr.textContent=p.costo+' '+(p.valuta||'mo');body.appendChild(pr);}
-    if(p.prerequisiti){var rq=document.createElement('div');rq.style.cssText='font-size:10px;color:rgba(229,48,48,0.5);font-style:italic;';rq.textContent='Req: '+p.prerequisiti;body.appendChild(rq);}
-    if(p.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:11px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=p.effetto;body.appendChild(ef);}
+    var nome=document.createElement('div'); nome.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;'; nome.textContent=p.nome||'?'; body.appendChild(nome);
+    if(p.costo){var pr=document.createElement('div');pr.style.cssText='font-size:13px;color:'+ACCENT+';font-weight:700;';pr.textContent=p.costo+' '+(p.valuta||'mo');body.appendChild(pr);}
+    if(p.prerequisiti){var rq=document.createElement('div');rq.style.cssText='font-size:12px;color:rgba(229,48,48,0.5);font-style:italic;';rq.textContent='Req: '+p.prerequisiti;body.appendChild(rq);}
+    if(p.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:13px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=p.effetto;body.appendChild(ef);}
     if(isDM()){
       var br2=document.createElement('div');br2.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
       var eb2=document.createElement('button');eb2.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb2.textContent='✎ MODIFICA';
@@ -8207,9 +8207,9 @@ function _renderArmiMunizioni() {
   items.forEach(function(m) {
     var card = document.createElement('div'); card.style.cssText = 'border:1px solid rgba(229,48,48,0.22);background:#0a0000;padding:0.9rem;display:flex;flex-direction:column;gap:0.35rem;transition:border-color 0.15s;';
     card.onmouseenter=function(){card.style.borderColor=ACCENT;}; card.onmouseleave=function(){card.style.borderColor='rgba(229,48,48,0.22)';};
-    var nome=document.createElement('div');nome.style.cssText='font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;';nome.textContent=m.nome||'?';card.appendChild(nome);
-    if(m.costo){var pr=document.createElement('div');pr.style.cssText='font-size:11px;color:'+ACCENT+';font-weight:700;';pr.textContent=m.costo+' '+(m.valuta||'mo');card.appendChild(pr);}
-    if(m.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:11px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=m.effetto;card.appendChild(ef);}
+    var nome=document.createElement('div');nome.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;';nome.textContent=m.nome||'?';card.appendChild(nome);
+    if(m.costo){var pr=document.createElement('div');pr.style.cssText='font-size:13px;color:'+ACCENT+';font-weight:700;';pr.textContent=m.costo+' '+(m.valuta||'mo');card.appendChild(pr);}
+    if(m.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:13px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=m.effetto;card.appendChild(ef);}
     if(isDM()){
       var br3=document.createElement('div');br3.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
       var eb3=document.createElement('button');eb3.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb3.textContent='✎ MODIFICA';
