@@ -5418,19 +5418,47 @@ function _schedaFix(raw) {
 }
 var _schedaSaveTimer=null;
 function fbSaveScheda() {
-  if(!_db||!state.currentUser) return;
+  if(!_db||!state.currentUser||!state.schedaAttivaId) return;
   clearTimeout(_schedaSaveTimer);
+  var _sid=state.schedaAttivaId;
   _schedaSaveTimer=setTimeout(function(){
-    _db.ref('schedePG/'+state.currentUser.username).set(state.scheda);
+    var data=Object.assign({},state.scheda); delete data.id;
+    _db.ref('schedePG/'+state.currentUser.username+'/chars/'+_sid).set(data);
   },600);
 }
-function fbLoadScheda(cb) {
-  if(!_db||!state.currentUser){state.scheda=_schedaDefault();state.schedaLoaded=true;if(cb)cb();return;}
+function fbLoadSchede(cb) {
+  if(!_db||!state.currentUser){state.schedeList=[];state.companions={};state.schedaLoaded=true;if(cb)cb();return;}
   _db.ref('schedePG/'+state.currentUser.username).once('value',function(snap){
-    state.scheda=_schedaFix(snap.val());
-    state.schedaLoaded=true;
-    if(cb)cb();
+    var raw=snap.val();
+    if(!raw){state.schedeList=[];state.companions={};state.schedaLoaded=true;if(cb)cb();return;}
+    if(raw._v2){
+      var chars=raw.chars||{};
+      state.schedeList=Object.keys(chars).map(function(k){return Object.assign(_schedaFix(chars[k]),{id:k});});
+      state.companions=raw.companions||{};
+      state.schedaLoaded=true;if(cb)cb();
+    } else {
+      var newId='c'+Date.now();
+      var oldFix=_schedaFix(raw);
+      var upd={_v2:true};upd['chars/'+newId]=oldFix;
+      _db.ref('schedePG/'+state.currentUser.username).update(upd,function(){
+        state.schedeList=[Object.assign({},oldFix,{id:newId})];
+        state.companions={};state.schedaLoaded=true;if(cb)cb();
+      });
+    }
   });
+}
+function fbSaveCompanion(charId,comp) {
+  if(!_db||!state.currentUser||!charId||!comp.id) return;
+  var data=Object.assign({},comp);delete data.id;
+  _db.ref('schedePG/'+state.currentUser.username+'/companions/'+charId+'/'+comp.id).set(data);
+}
+function fbDeleteCompanion(charId,compId) {
+  if(!_db||!state.currentUser) return;
+  _db.ref('schedePG/'+state.currentUser.username+'/companions/'+charId+'/'+compId).remove();
+}
+function fbDeleteSchedaItem(id) {
+  if(!_db||!state.currentUser) return;
+  _db.ref('schedePG/'+state.currentUser.username+'/chars/'+id).remove();
 }
 function updateSchedaDerived() {
   var s=state.scheda, bc=parseInt(s.bonusCompetenza)||2;
@@ -5948,7 +5976,7 @@ function renderSettingsPanel() {
       _db.ref('presence/' + state.currentUser.username).set({ online: false });
     }
     state.currentUser = null;
-    state.scheda = {}; state.schedaLoaded = false;
+    state.scheda = {}; state.schedeList = []; state.schedaAttivaId = null; state.companions = {}; state.schedaLoaded = false;
     try { localStorage.removeItem('mercante_session'); } catch(e){}
     ov.remove();
     document.getElementById('user-badge-el').remove();
@@ -6137,9 +6165,15 @@ var state = {
   petSearch: '',
 
   /* ===== SCHEDA PERSONAGGIO ===== */
-  scheda: {},          // dati della scheda del personaggio corrente
+  scheda: {},          // scheda attiva (oggetto con .id)
   schedaTab: 'principale',
   schedaLoaded: false,
+  schedeList: [],      // [{id,...}] tutte le schede del giocatore
+  schedaAttivaId: null, // id scheda aperta, null = lista
+  companions: {},      // {charId:{compId:{...}}}
+  companionShowForm: false,
+  companionEditingId: null,
+  companionEditingCharId: null,
 
   /* ===== WORLDBUILDING ===== */
   worldbuilding: [],           // [{id, nome, desc, citta:[]}]
@@ -12035,7 +12069,7 @@ function renderPetCard(p) {
   var body=document.createElement('div'); body.className='card-body';
   var nameEl=document.createElement('h3'); nameEl.className='font-display font-bold text-lg mb-2';
   nameEl.style.cssText='color:var(--gold-bright);line-height:1.25;margin:0 0 0.25rem;';
-  nameEl.textContent=p.nome; body.appendChild(nameEl);
+  nameEl.textContent=p.petNome||p.nome; body.appendChild(nameEl);
   /* Proprietario */
   if (p.proprietario) {
     var propEl=document.createElement('div'); propEl.style.cssText='font-family:\'EB Garamond\',serif;font-size:13px;color:#6dbc6d;margin-bottom:0.35rem;';
@@ -12065,6 +12099,11 @@ function renderPetCard(p) {
     trD.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.2rem;">✦ Tratti</div>'+nl2br(escapeHtml(p.tratti));
     body.appendChild(trD);
   }
+  if (p.azioni) {
+    var aziD=document.createElement('div'); aziD.style.cssText='font-family:\'EB Garamond\',serif;font-size:13px;color:var(--text-muted);white-space:pre-wrap;border:1px solid var(--border-subtle);border-radius:3px;padding:0.4rem 0.5rem;margin-bottom:0.4rem;background:var(--bg-base);max-height:100px;overflow-y:auto;';
+    aziD.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.2rem;">⚔ Azioni</div>'+nl2br(escapeHtml(p.azioni));
+    body.appendChild(aziD);
+  }
   /* Footer */
   var foot=document.createElement('div'); foot.className='flex items-center justify-between pt-3 border-t';
   foot.appendChild(document.createElement('span'));
@@ -12090,10 +12129,22 @@ function renderPetCard(p) {
     btnRow.appendChild(editPropBtn); btnRow.appendChild(delBtn);
     foot.appendChild(btnRow);
   } else if (isOwner) {
-    /* Il proprietario può solo cambiare la foto del proprio pet */
+    var ownerRow=document.createElement('div'); ownerRow.className='flex gap-1';
+    /* Rinomina pet */
+    var renBtn=document.createElement('button'); renBtn.className='btn-dark';
+    renBtn.title='Rinomina il tuo pet'; renBtn.style.cssText='font-size:11px;padding:0.3rem 0.65rem;';
+    renBtn.textContent='✏ Rinomina';
+    (function(pet){ renBtn.onclick=function(){
+      var nn=prompt('Nome personalizzato per il tuo pet (lascia vuoto per usare il nome originale):', pet.petNome||'');
+      if(nn===null) return;
+      pet.petNome=nn.trim()||'';
+      fbSavePet(); saveToStorage(); renderMain();
+    }; })(p);
+    ownerRow.appendChild(renBtn);
+    /* Cambia foto */
     var imgUpBtn=document.createElement('button'); imgUpBtn.className='btn-dark';
     imgUpBtn.title='Cambia foto del pet'; imgUpBtn.style.cssText='font-size:11px;padding:0.3rem 0.65rem;';
-    imgUpBtn.textContent='📁 Cambia foto';
+    imgUpBtn.textContent='📁 Foto';
     (function(pet){ imgUpBtn.onclick=function(){
       var inp=document.createElement('input'); inp.type='file'; inp.accept='image/jpeg,image/png';
       inp.onchange=function(){
@@ -12107,7 +12158,8 @@ function renderPetCard(p) {
       };
       inp.click();
     }; })(p);
-    foot.appendChild(imgUpBtn);
+    ownerRow.appendChild(imgUpBtn);
+    foot.appendChild(ownerRow);
   }
   body.appendChild(foot); card.appendChild(body);
   return card;
@@ -12163,20 +12215,245 @@ function adottaDalBestiario() {
 }
 
 /* =====================================================================
-   SCHEDA PERSONAGGIO — PDF-style white pages
+   SCHEDA PERSONAGGIO — multi-scheda v2
    ===================================================================== */
+
+function _companionDefault() {
+  return {nome:'Compagno',tipo:'',ca:'',hpMax:'',hpAttuali:'',velocita:'',for:10,des:10,cos:10,int:10,sag:10,car:10,tsFor:false,tsDes:false,tsCos:false,tsInt:false,tsSag:false,tsCar:false,skText:'',immunita:'',resistenze:'',condImm:'',sensi:'',lingue:'',tratti:'',azioni:[{nome:'',desc:''}]};
+}
+
+function _newScheda() {
+  var nid='c'+Date.now();
+  var ns=Object.assign(_schedaDefault(),{id:nid});
+  state.schedeList.push(ns); state.scheda=ns; state.schedaAttivaId=nid;
+  fbSaveScheda(); renderMain();
+}
+
+function _renderSchedaList() {
+  var wrap=document.createElement('div'); wrap.style.cssText='min-height:100vh;background:#5a5a5a;display:flex;flex-direction:column;';
+  var tbar=document.createElement('div'); tbar.style.cssText='background:#222;border-bottom:1px solid #111;padding:0.5rem 1rem;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;';
+  var btnN=document.createElement('button'); btnN.textContent='+ Nuova Scheda';
+  btnN.style.cssText='background:#8b6f3f;border:1px solid #c9a55c;color:#f0e4cc;border-radius:3px;padding:0.4rem 1rem;cursor:pointer;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.08em;';
+  btnN.onclick=function(){_newScheda();}; tbar.appendChild(btnN); wrap.appendChild(tbar);
+  var content=document.createElement('div');
+  if(state.schedeList.length===0) {
+    content.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;';
+    var empty=document.createElement('div');
+    empty.style.cssText='text-align:center;background:#fff;border-radius:8px;padding:3rem 4rem;box-shadow:0 4px 24px rgba(0,0,0,0.5);max-width:380px;';
+    empty.innerHTML='<div style="font-size:56px;margin-bottom:1rem;">📜</div><h2 style="font-family:\'Cinzel\',serif;font-size:18px;color:#333;margin:0 0 0.5rem;">Nessun personaggio</h2><p style="color:#888;font-size:14px;font-family:Arial,sans-serif;margin:0 0 1.5rem;">Crea la tua prima scheda personaggio.</p>';
+    var btnC=document.createElement('button'); btnC.textContent='Crea Scheda';
+    btnC.style.cssText='background:#8b6f3f;border:none;color:#f0e4cc;border-radius:4px;padding:0.65rem 2.5rem;cursor:pointer;font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:0.1em;';
+    btnC.onclick=function(){_newScheda();}; empty.appendChild(btnC); content.appendChild(empty);
+  } else {
+    content.style.cssText='flex:1;padding:2rem;align-self:flex-start;width:100%;box-sizing:border-box;';
+    var grid=document.createElement('div'); grid.style.cssText='display:flex;flex-wrap:wrap;gap:1.5rem;';
+    state.schedeList.forEach(function(sch){
+      var card=document.createElement('div');
+      card.style.cssText='width:160px;background:#fff;border-radius:6px;box-shadow:0 3px 16px rgba(0,0,0,0.5);overflow:hidden;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;';
+      card.onmouseenter=function(){this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.65)';};
+      card.onmouseleave=function(){this.style.transform='';this.style.boxShadow='0 3px 16px rgba(0,0,0,0.5)';};
+      (function(s){card.onclick=function(){state.scheda=s;state.schedaAttivaId=s.id;renderMain();};})(sch);
+      var imgD=document.createElement('div'); imgD.style.cssText='width:100%;height:160px;background:#e0d5c0;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+      if(sch.aspettoImg){var im=document.createElement('img');im.src=sch.aspettoImg;im.style.cssText='width:100%;height:100%;object-fit:cover;';imgD.appendChild(im);}
+      else{imgD.innerHTML='<div style="font-size:48px;">🧙</div>';}
+      card.appendChild(imgD);
+      var info=document.createElement('div'); info.style.cssText='padding:0.6rem 0.75rem;text-align:center;';
+      var nm=document.createElement('div'); nm.style.cssText='font-family:\'Cinzel\',serif;font-size:12px;font-weight:bold;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; nm.textContent=sch.nomePersonaggio||'Senza nome';
+      var cl=document.createElement('div'); cl.style.cssText='font-size:10px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; cl.textContent=sch.classelivello||'';
+      info.appendChild(nm); if(sch.classelivello)info.appendChild(cl); card.appendChild(info); grid.appendChild(card);
+    });
+    content.appendChild(grid);
+  }
+  wrap.appendChild(content); return wrap;
+}
+
+function _renderCompanionMiniSheet(charId,comp) {
+  var m2=function(v){return Math.floor(((parseInt(v)||10)-10)/2);};
+  var fmt2=function(n){return(n>=0?'+':'')+n;};
+  var wrap=document.createElement('div');
+  wrap.style.cssText='width:760px;background:#f8f4e8;color:#111;box-shadow:0 3px 20px rgba(0,0,0,0.6);padding:14px 16px;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;font-size:10px;border:2px solid #6a8abf;border-radius:4px;margin-top:20px;';
+  /* header */
+  var hdr=document.createElement('div'); hdr.style.cssText='border-bottom:2px solid #6a8abf;margin-bottom:8px;padding-bottom:5px;display:flex;justify-content:space-between;align-items:flex-end;';
+  var nBlk=document.createElement('div');
+  var nLbl=document.createElement('div'); nLbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#4a6a9a;margin-bottom:2px;'; nLbl.textContent='Nome Compagno';
+  var nInp=document.createElement('input'); nInp.type='text'; nInp.value=comp.nome||'';
+  nInp.style.cssText='background:transparent;border:none;border-bottom:1px solid #6a8abf;color:#111;font-size:15px;font-weight:bold;outline:none;width:260px;font-family:Arial,Helvetica,sans-serif;';
+  (function(cid,co){nInp.oninput=function(){co.nome=this.value;fbSaveCompanion(cid,co);};})(charId,comp);
+  nBlk.appendChild(nLbl); nBlk.appendChild(nInp);
+  var tBlk=document.createElement('div'); tBlk.style.cssText='text-align:right;';
+  var tLbl=document.createElement('div'); tLbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.08em;color:#4a6a9a;margin-bottom:2px;'; tLbl.textContent='Tipo';
+  var tInp=document.createElement('input'); tInp.type='text'; tInp.value=comp.tipo||'';
+  tInp.style.cssText='background:transparent;border:none;border-bottom:1px solid #6a8abf;color:#555;font-size:11px;outline:none;width:140px;text-align:right;font-family:Arial,Helvetica,sans-serif;';
+  (function(cid,co){tInp.oninput=function(){co.tipo=this.value;fbSaveCompanion(cid,co);};})(charId,comp);
+  tBlk.appendChild(tLbl); tBlk.appendChild(tInp);
+  hdr.appendChild(nBlk); hdr.appendChild(tBlk); wrap.appendChild(hdr);
+  /* CA / HP / VEL */
+  var r1=document.createElement('div'); r1.style.cssText='display:flex;gap:5px;margin-bottom:7px;';
+  function cmpStat(lbl,key){
+    var bx=document.createElement('div'); bx.style.cssText='border:1px solid #9ab;border-radius:2px;padding:3px 4px;text-align:center;flex:1;background:#f0f5fa;';
+    var inp=document.createElement('input'); inp.type='text'; inp.value=comp[key]||'';
+    inp.style.cssText='width:100%;text-align:center;background:transparent;border:none;color:#111;font-size:14px;font-weight:bold;outline:none;';
+    (function(cid,co,k){inp.oninput=function(){co[k]=this.value;fbSaveCompanion(cid,co);};})(charId,comp,key);
+    var lb=document.createElement('div'); lb.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#4a6a9a;border-top:1px solid #9ab;margin-top:2px;padding-top:1px;'; lb.textContent=lbl;
+    bx.appendChild(inp); bx.appendChild(lb); return bx;
+  }
+  var hpBx=document.createElement('div'); hpBx.style.cssText='flex:2;border:1px solid #9ab;border-radius:2px;padding:3px 4px;text-align:center;background:#f0f5fa;';
+  var hpRw=document.createElement('div'); hpRw.style.cssText='display:flex;align-items:center;justify-content:center;gap:2px;';
+  var hpC=document.createElement('input'); hpC.type='text'; hpC.value=comp.hpAttuali||'';
+  hpC.style.cssText='width:40px;text-align:right;background:transparent;border:none;border-bottom:1px solid #c84040;color:#c84040;font-size:14px;font-weight:bold;outline:none;';
+  (function(cid,co){hpC.oninput=function(){co.hpAttuali=this.value;fbSaveCompanion(cid,co);};})(charId,comp);
+  var hpSp=document.createElement('span'); hpSp.style.cssText='font-size:14px;color:#888;'; hpSp.textContent='/';
+  var hpM=document.createElement('input'); hpM.type='text'; hpM.value=comp.hpMax||'';
+  hpM.style.cssText='width:40px;text-align:left;background:transparent;border:none;border-bottom:1px solid #9ab;color:#111;font-size:14px;font-weight:bold;outline:none;';
+  (function(cid,co){hpM.oninput=function(){co.hpMax=this.value;fbSaveCompanion(cid,co);};})(charId,comp);
+  hpRw.appendChild(hpC); hpRw.appendChild(hpSp); hpRw.appendChild(hpM);
+  var hpLb=document.createElement('div'); hpLb.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#4a6a9a;border-top:1px solid #9ab;margin-top:2px;padding-top:1px;'; hpLb.textContent='Punti Ferita (att/max)';
+  hpBx.appendChild(hpRw); hpBx.appendChild(hpLb);
+  r1.appendChild(cmpStat('Classe Armatura','ca')); r1.appendChild(hpBx); r1.appendChild(cmpStat('Velocità','velocita')); wrap.appendChild(r1);
+  /* Stats 6 */
+  var sN=['FOR','DES','COS','INT','SAG','CAR'],sK=['for','des','cos','int','sag','car'],tsK=['tsFor','tsDes','tsCos','tsInt','tsSag','tsCar'];
+  var sg=document.createElement('div'); sg.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:7px;';
+  sN.forEach(function(sn,i){
+    var cell=document.createElement('div'); cell.style.cssText='border:1px solid #9ab;border-radius:2px;background:#f0f5fa;padding:4px 2px;text-align:center;';
+    var sLb=document.createElement('div'); sLb.style.cssText='font-size:6.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#4a6a9a;margin-bottom:2px;'; sLb.textContent=sn;
+    var sv=parseInt(comp[sK[i]])||10;
+    var vI=document.createElement('input'); vI.type='number'; vI.value=sv; vI.min=1; vI.max=30;
+    vI.style.cssText='width:100%;text-align:center;background:transparent;border:none;border-bottom:1px solid #9ab;color:#111;font-size:14px;font-weight:bold;outline:none;box-sizing:border-box;padding:0;';
+    var mDiv=document.createElement('div'); mDiv.style.cssText='font-size:9px;color:#555;margin-top:1px;'; mDiv.textContent=fmt2(m2(sv));
+    (function(cid,co,k,md){vI.oninput=function(){co[k]=parseInt(this.value)||10;md.textContent=fmt2(m2(co[k]));fbSaveCompanion(cid,co);};})(charId,comp,sK[i],mDiv);
+    var tsRw=document.createElement('div'); tsRw.style.cssText='display:flex;align-items:center;justify-content:center;gap:2px;margin-top:2px;';
+    var tsCb=document.createElement('input'); tsCb.type='checkbox'; tsCb.checked=!!comp[tsK[i]]; tsCb.style.cssText='width:9px;height:9px;cursor:pointer;accent-color:#4a6a9a;';
+    (function(cid,co,tk){tsCb.onchange=function(){co[tk]=this.checked;fbSaveCompanion(cid,co);};})(charId,comp,tsK[i]);
+    var tsLb=document.createElement('span'); tsLb.style.cssText='font-size:5.5px;color:#4a6a9a;'; tsLb.textContent='TS';
+    tsRw.appendChild(tsCb); tsRw.appendChild(tsLb);
+    cell.appendChild(sLb); cell.appendChild(vI); cell.appendChild(mDiv); cell.appendChild(tsRw); sg.appendChild(cell);
+  });
+  wrap.appendChild(sg);
+  /* Textarea helper */
+  function cmpTA(lbl,key,minH){
+    var bx=document.createElement('div'); bx.style.cssText='border:1px solid #9ab;border-radius:2px;';
+    var ta=document.createElement('textarea'); ta.style.cssText='width:100%;background:#f5f8fc;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:'+minH+'px;box-sizing:border-box;';
+    ta.value=comp[key]||'';
+    (function(cid,co,k){ta.oninput=function(){co[k]=this.value;fbSaveCompanion(cid,co);};})(charId,comp,key);
+    var lb=document.createElement('div'); lb.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#4a6a9a;border-top:1px solid #9ab;padding:2px;text-align:center;background:#e8f0fa;'; lb.textContent=lbl;
+    bx.appendChild(ta); bx.appendChild(lb); return bx;
+  }
+  var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;';
+  r3.appendChild(cmpTA('Abilità','skText',38)); r3.appendChild(cmpTA('Sensi','sensi',38)); wrap.appendChild(r3);
+  var r4=document.createElement('div'); r4.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:5px;';
+  r4.appendChild(cmpTA('Immunità ai Danni','immunita',30)); r4.appendChild(cmpTA('Resistenze','resistenze',30)); r4.appendChild(cmpTA('Imm. Condizioni','condImm',30)); wrap.appendChild(r4);
+  var r5=document.createElement('div'); r5.style.cssText='display:grid;grid-template-columns:1fr 2fr;gap:5px;margin-bottom:5px;';
+  r5.appendChild(cmpTA('Lingue','lingue',28)); r5.appendChild(cmpTA('Tratti Speciali','tratti',28)); wrap.appendChild(r5);
+  /* Azioni */
+  var azBx=document.createElement('div'); azBx.style.cssText='border:1px solid #9ab;border-radius:2px;margin-bottom:6px;';
+  var azHd=document.createElement('div'); azHd.style.cssText='font-size:6.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#4a6a9a;padding:3px 5px;border-bottom:1px solid #9ab;background:#e8f0fa;display:flex;align-items:center;justify-content:space-between;';
+  var azSp=document.createElement('span'); azSp.textContent='Azioni / Attacchi'; azHd.appendChild(azSp);
+  var azAdd=document.createElement('button'); azAdd.textContent='+'; azAdd.style.cssText='background:#4a6a9a;border:none;color:#fff;border-radius:2px;padding:1px 6px;cursor:pointer;font-size:10px;';
+  (function(cid,co){azAdd.onclick=function(){if(!co.azioni)co.azioni=[];co.azioni.push({nome:'',desc:''});fbSaveCompanion(cid,co);renderMain();};})(charId,comp);
+  azHd.appendChild(azAdd); azBx.appendChild(azHd);
+  if(!comp.azioni||!comp.azioni.length) comp.azioni=[{nome:'',desc:''}];
+  comp.azioni.forEach(function(az,idx){
+    var azRw=document.createElement('div'); azRw.style.cssText='display:flex;align-items:flex-start;gap:4px;padding:3px 5px;border-bottom:1px solid #d0dde8;';
+    var nI=document.createElement('input'); nI.type='text'; nI.value=az.nome||''; nI.placeholder='Nome azione...';
+    nI.style.cssText='width:110px;flex-shrink:0;background:transparent;border:none;border-bottom:1px solid #9ab;color:#111;font-size:10px;font-weight:bold;outline:none;font-family:Arial,Helvetica,sans-serif;';
+    (function(cid,co,i){nI.oninput=function(){co.azioni[i].nome=this.value;fbSaveCompanion(cid,co);};})(charId,comp,idx);
+    var dT=document.createElement('textarea'); dT.style.cssText='flex:1;background:transparent;border:none;color:#111;font-size:9px;outline:none;resize:none;min-height:26px;font-family:Arial,Helvetica,sans-serif;padding:0;'; dT.value=az.desc||''; dT.placeholder='Descrizione, danni, effetti...';
+    (function(cid,co,i){dT.oninput=function(){co.azioni[i].desc=this.value;fbSaveCompanion(cid,co);};})(charId,comp,idx);
+    var dB=document.createElement('button'); dB.textContent='✕'; dB.style.cssText='background:none;border:none;color:#c04040;cursor:pointer;font-size:11px;padding:0;flex-shrink:0;margin-top:1px;';
+    (function(cid,co,i){dB.onclick=function(){co.azioni.splice(i,1);fbSaveCompanion(cid,co);renderMain();};})(charId,comp,idx);
+    azRw.appendChild(nI); azRw.appendChild(dT); azRw.appendChild(dB); azBx.appendChild(azRw);
+  });
+  wrap.appendChild(azBx);
+  /* Delete */
+  var foot=document.createElement('div'); foot.style.cssText='display:flex;justify-content:flex-end;';
+  var delB=document.createElement('button'); delB.textContent='Elimina scheda compagno';
+  delB.style.cssText='background:#4a1010;border:1px solid #c04040;color:#f08080;border-radius:3px;padding:0.3rem 0.75rem;font-size:10px;cursor:pointer;font-family:\'Cinzel\',serif;';
+  (function(cid,co){delB.onclick=function(){
+    if(!confirm('Eliminare la scheda di "'+(co.nome||'questo compagno')+'"?')) return;
+    if(state.companions&&state.companions[cid]) delete state.companions[cid][co.id];
+    fbDeleteCompanion(cid,co.id); renderMain();
+  };})(charId,comp);
+  foot.appendChild(delB); wrap.appendChild(foot);
+  return wrap;
+}
+
+function _renderCompanionForm(charId) {
+  var cid2='cp'+Date.now();
+  var form={id:cid2,nome:'',tipo:''};
+  var bd=document.createElement('div');
+  bd.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;';
+  bd.onclick=function(e){if(e.target===bd){state.companionShowForm=false;state.companionEditingId=null;renderMain();}};
+  var modal=document.createElement('div');
+  modal.style.cssText='background:#1a1f2a;border:1px solid #3a4a6a;border-radius:6px;width:380px;padding:1.5rem;font-family:\'Cinzel\',serif;';
+  modal.onclick=function(e){e.stopPropagation();};
+  var mT=document.createElement('div'); mT.style.cssText='font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#aacef0;margin-bottom:1.25rem;'; mT.textContent='Nuova Scheda Compagno';
+  modal.appendChild(mT);
+  function cFld(label,key){
+    var w=document.createElement('div'); w.style.marginBottom='0.75rem';
+    var l=document.createElement('label'); l.style.cssText='display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6a9abf;margin-bottom:0.3rem;'; l.textContent=label;
+    var inp=document.createElement('input'); inp.type='text'; inp.value=form[key]||'';
+    inp.style.cssText='width:100%;background:rgba(255,255,255,0.06);border:1px solid #3a4a6a;border-radius:3px;color:#d0e0f0;font-family:\'EB Garamond\',serif;font-size:14px;padding:0.4rem 0.6rem;outline:none;box-sizing:border-box;';
+    inp.oninput=function(){form[key]=this.value;};
+    w.appendChild(l); w.appendChild(inp); return w;
+  }
+  modal.appendChild(cFld('Nome Compagno / Pet','nome'));
+  modal.appendChild(cFld('Tipo (es. Bestia, Costrutto, Drone)','tipo'));
+  var btnR=document.createElement('div'); btnR.style.cssText='display:flex;gap:0.5rem;margin-top:1rem;';
+  var can=document.createElement('button'); can.textContent='Annulla';
+  can.style.cssText='flex:1;background:#2a2a2a;border:1px solid #555;color:#aaa;border-radius:3px;padding:0.55rem;cursor:pointer;font-family:\'Cinzel\',serif;font-size:11px;';
+  can.onclick=function(){state.companionShowForm=false;state.companionEditingId=null;renderMain();};
+  var ok=document.createElement('button'); ok.textContent='Crea Scheda';
+  ok.style.cssText='flex:2;background:#4a6a9a;border:none;color:#fff;border-radius:3px;padding:0.55rem;cursor:pointer;font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.06em;';
+  ok.onclick=function(){
+    if(!form.nome.trim()){alert('Inserisci un nome per il compagno.');return;}
+    var comp=Object.assign(_companionDefault(),form);
+    if(!state.companions) state.companions={};
+    if(!state.companions[charId]) state.companions[charId]={};
+    state.companions[charId][comp.id]=comp;
+    fbSaveCompanion(charId,comp);
+    state.companionShowForm=false; state.companionEditingId=null; renderMain();
+  };
+  btnR.appendChild(can); btnR.appendChild(ok); modal.appendChild(btnR);
+  bd.appendChild(modal); return bd;
+}
+
 function renderScheda() {
   if(isDM()) return document.createElement('div');
-  var wrap=document.createElement('div');
-  wrap.style.cssText='display:flex;flex-direction:column;background:#5a5a5a;';
 
   if(!state.schedaLoaded) {
     var ld=document.createElement('div'); ld.style.cssText='display:flex;align-items:center;justify-content:center;min-height:60vh;background:#5a5a5a;';
-    ld.innerHTML='<div style="background:#fff;padding:2rem 3rem;border-radius:4px;text-align:center;font-family:Arial,sans-serif;color:#333;"><div style="font-size:36px;margin-bottom:0.75rem;">📜</div><h2 style="margin:0;">Caricamento scheda…</h2></div>';
-    wrap.appendChild(ld);
-    fbLoadScheda(function(){renderMain();});
-    return wrap;
+    ld.innerHTML='<div style="background:#fff;padding:2rem 3rem;border-radius:4px;text-align:center;font-family:Arial,sans-serif;color:#333;"><div style="font-size:36px;margin-bottom:0.75rem;">📜</div><h2 style="margin:0;">Caricamento schede…</h2></div>';
+    fbLoadSchede(function(){renderMain();}); return ld;
   }
+
+  if(state.companionShowForm&&state.companionEditingCharId===state.schedaAttivaId) return _renderCompanionForm(state.schedaAttivaId);
+  if(state.schedaAttivaId===null) return _renderSchedaList();
+
+  var wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;background:#5a5a5a;';
+  /* nav bar */
+  var _nb=document.createElement('div'); _nb.style.cssText='background:#1a1a1a;border-bottom:1px solid #333;padding:0.45rem 1rem;display:flex;align-items:center;gap:0.5rem;flex-shrink:0;';
+  var _bk=document.createElement('button'); _bk.innerHTML='&#8592; Personaggi';
+  _bk.style.cssText='background:#444;border:1px solid #666;color:#ccc;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;';
+  _bk.onclick=function(){state.schedaAttivaId=null;state.scheda={};renderMain();}; _nb.appendChild(_bk);
+  var _sp=document.createElement('span'); _sp.style.flex='1'; _nb.appendChild(_sp);
+  var _bN=document.createElement('button'); _bN.textContent='+ Nuova Scheda';
+  _bN.style.cssText='background:#8b6f3f;border:1px solid #c9a55c;color:#f0e4cc;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;letter-spacing:0.07em;';
+  _bN.onclick=function(){_newScheda();}; _nb.appendChild(_bN);
+  var _bA=document.createElement('button'); _bA.textContent='+ Associa Scheda';
+  _bA.style.cssText='background:#2a4060;border:1px solid #4a70a0;color:#aacef0;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;letter-spacing:0.07em;';
+  _bA.onclick=function(){state.companionShowForm=true;state.companionEditingId=null;state.companionEditingCharId=state.schedaAttivaId;renderMain();}; _nb.appendChild(_bA);
+  var _bD=document.createElement('button'); _bD.textContent='Elimina personaggio';
+  _bD.style.cssText='background:#4a1010;border:1px solid #c04040;color:#f08080;border-radius:3px;padding:0.3rem 0.75rem;font-size:10px;cursor:pointer;font-family:\'Cinzel\',serif;margin-left:0.5rem;';
+  _bD.onclick=function(){
+    var _sch=state.scheda;
+    if(!confirm('Eliminare "'+(_sch.nomePersonaggio||'questo personaggio')+'"? Non recuperabile.')) return;
+    var _did=state.schedaAttivaId;
+    state.schedeList=state.schedeList.filter(function(x){return x.id!==_did;});
+    if(state.companions) delete state.companions[_did];
+    fbDeleteSchedaItem(_did); state.schedaAttivaId=null; state.scheda={}; renderMain();
+  }; _nb.appendChild(_bD);
+  wrap.appendChild(_nb);
 
   var s=state.scheda;
   function ss(){fbSaveScheda();}
@@ -12538,6 +12815,10 @@ function renderScheda() {
   iC3.appendChild(makeSpellBlock('9',s.sp9.lista,'sp9',false));
   incG3.appendChild(iC3);
   pg3.appendChild(incG3); pgWrap.appendChild(pg3);
+
+  /* companion mini-sheets below character pages */
+  var _cMapC=(state.companions||{})[state.schedaAttivaId]||{};
+  Object.keys(_cMapC).forEach(function(k){pgWrap.appendChild(_renderCompanionMiniSheet(state.schedaAttivaId,Object.assign({id:k},_cMapC[k])));});
 
   scrollArea.appendChild(pgWrap); wrap.appendChild(scrollArea);
   setTimeout(function(){applyZoom();},0);
