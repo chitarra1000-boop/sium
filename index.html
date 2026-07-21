@@ -5168,6 +5168,16 @@ function setupRealtimeListeners() {
     state.armiDaFuoco = (v && Array.isArray(v)) ? v : [];
     if (state.section === 'emporio' && state.emporioTab === 'armifuoco') renderMain();
   });
+  _db.ref('state/armiFuocoPotenziamenti').on('value', function(snap) {
+    var v = snap.val();
+    state.potenziamenti = (v && Array.isArray(v)) ? v : [];
+    if (state.section === 'emporio' && state.emporioTab === 'armifuoco') renderMain();
+  });
+  _db.ref('state/armiFuocoMunizioni').on('value', function(snap) {
+    var v = snap.val();
+    state.munizioniArmi = (v && Array.isArray(v)) ? v : [];
+    if (state.section === 'emporio' && state.emporioTab === 'armifuoco') renderMain();
+  });
 
   // ---- NOTE ----
   _db.ref('state/notes').on('value', function(snap) {
@@ -5628,6 +5638,14 @@ function fbSaveArmiFuoco() {
   if (!_db) return;
   _db.ref('state/armiFuoco').set(state.armiDaFuoco.length > 0 ? state.armiDaFuoco : null);
 }
+function fbSavePotenziamentiArmi() {
+  if (!_db) return;
+  _db.ref('state/armiFuocoPotenziamenti').set(state.potenziamenti.length > 0 ? state.potenziamenti : null);
+}
+function fbSaveMunizioniArmi() {
+  if (!_db) return;
+  _db.ref('state/armiFuocoMunizioni').set(state.munizioniArmi.length > 0 ? state.munizioniArmi : null);
+}
 function fbSaveNotes() { fbSave('state/notes', state.notes); }
 
 /* ============================================================
@@ -6082,6 +6100,17 @@ var state = {
   armiDaFuocoSearch: '',
   armiDaFuocoShowForm: false,
   armiDaFuocoEditingId: null,
+  armiSubTab: 'armi',
+  potenziamenti: [],
+  potenziamentiSelectedId: null,
+  potenziamentiSearch: '',
+  potenziamentiShowForm: false,
+  potenziamentiEditingId: null,
+  munizioniArmi: [],
+  munizioniArmiSelectedId: null,
+  munizioniArmiSearch: '',
+  munizioniArmiShowForm: false,
+  munizioniArmiEditingId: null,
   combatants: [makeEmptyCombatant()],
   round: 1,
   activeIndex: 0,
@@ -7729,10 +7758,16 @@ function renderEmporioArmiFuoco() {
   var hdrRight = document.createElement('div');
   hdrRight.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;';
   if (isDM()) {
+    var _subT = state.armiSubTab||'armi';
     var addBtn = document.createElement('button');
     addBtn.style.cssText = 'background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;font-weight:700;letter-spacing:0.1em;padding:0.5rem 1.1rem;cursor:pointer;text-transform:uppercase;';
-    addBtn.textContent = '+ NUOVA ARMA';
-    addBtn.onclick = function(){ state.armiDaFuocoShowForm=true; state.armiDaFuocoEditingId=null; renderMain(); };
+    addBtn.textContent = _subT==='potenziamenti'?'+ POTENZIAMENTO':_subT==='munizioni'?'+ MUNIZIONI':'+ NUOVA ARMA';
+    addBtn.onclick = function(){
+      if(_subT==='potenziamenti'){state.potenziamentiShowForm=true;state.potenziamentiEditingId=null;}
+      else if(_subT==='munizioni'){state.munizioniArmiShowForm=true;state.munizioniArmiEditingId=null;}
+      else{state.armiDaFuocoShowForm=true;state.armiDaFuocoEditingId=null;}
+      renderMain();
+    };
     hdrRight.appendChild(addBtn);
   }
   var backBtn = document.createElement('button');
@@ -7746,8 +7781,25 @@ function renderEmporioArmiFuoco() {
   srch.type='text'; srch.placeholder='> RICERCA ARMI...'; srch.value=state.armiDaFuocoSearch||'';
   srch.style.cssText='width:100%;box-sizing:border-box;background:rgba(229,48,48,0.04);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;padding:0.5rem 1rem;outline:none;';
   srch.oninput=function(){ state.armiDaFuocoSearch=this.value; renderMain(); };
+  if ((state.armiSubTab||'armi') !== 'armi') srch.style.display = 'none';
   hdr.appendChild(srch);
   wrap.appendChild(hdr);
+
+  /* --- SUB-TAB BAR --- */
+  var subTabBar = document.createElement('div');
+  subTabBar.style.cssText = 'display:flex;border-bottom:2px solid rgba(229,48,48,0.2);background:#090000;flex-shrink:0;';
+  [['armi','⊛ ARMI'],['potenziamenti','⬡ POTENZIAMENTI'],['munizioni','◉ MUNIZIONI']].forEach(function(t){
+    var isAct = (state.armiSubTab||'armi') === t[0];
+    var tb = document.createElement('button');
+    tb.style.cssText = 'background:'+(isAct?'rgba(229,48,48,0.1)':'transparent')+';border:none;border-bottom:2px solid '+(isAct?ACCENT:'transparent')+';color:'+(isAct?ACCENT:'rgba(229,48,48,0.4)')+';font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;letter-spacing:0.1em;padding:0.6rem 1.4rem;cursor:pointer;text-transform:uppercase;transition:all 0.15s;margin-bottom:-2px;';
+    tb.textContent = t[1];
+    tb.onclick = function(){ state.armiSubTab=t[0]; renderMain(); };
+    subTabBar.appendChild(tb);
+  });
+  wrap.appendChild(subTabBar);
+
+  if ((state.armiSubTab||'armi') === 'potenziamenti') { wrap.appendChild(_renderArmiPotenziamenti()); if(state.potenziamentiShowForm) wrap.appendChild(_renderPotenziamentiForm()); return wrap; }
+  if ((state.armiSubTab||'armi') === 'munizioni') { wrap.appendChild(_renderArmiMunizioni()); if(state.munizioniArmiShowForm) wrap.appendChild(_renderMunizioniArmiForm()); return wrap; }
 
   var all = (state.armiDaFuoco||[]).slice().sort(function(a,b){return (a.nome||'').localeCompare(b.nome||'','it');});
   var q = (state.armiDaFuocoSearch||'').toLowerCase();
@@ -7770,9 +7822,9 @@ function renderEmporioArmiFuoco() {
   var mainArea = document.createElement('div');
   mainArea.style.cssText = 'flex:1;display:flex;overflow:hidden;min-height:300px;';
 
-  /* Sezione 1 — immagine grande */
+  /* Sezione 1 — immagine */
   var sec1 = document.createElement('div');
-  sec1.style.cssText = 'flex:1;min-width:0;position:relative;background:#080000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
+  sec1.style.cssText = 'flex:0 0 36%;min-width:0;position:relative;background:#080000;overflow:hidden;display:flex;align-items:center;justify-content:center;';
 
   function renderSec1(arma) {
     sec1.innerHTML = '';
@@ -7805,7 +7857,7 @@ function renderEmporioArmiFuoco() {
 
   /* Sezione 2 — dettagli */
   var sec2 = document.createElement('div');
-  sec2.style.cssText = 'width:320px;flex-shrink:0;background:#0d0000;overflow-y:auto;padding:1.25rem 1.5rem;';
+  sec2.style.cssText = 'flex:1;min-width:0;background:#0d0000;overflow-y:auto;padding:1.25rem 1.5rem;';
 
   function renderSec2(arma) {
     sec2.innerHTML = '';
@@ -7894,31 +7946,50 @@ function renderEmporioArmiFuoco() {
     strip.appendChild(card); cardEls.push(card);
   });
 
-  /* Mouse wheel → scroll orizzontale */
+  /* Clone cards for infinite circular scroll */
+  cardEls.forEach(function(origCard, idx) {
+    var a = filtered[idx];
+    var clone = origCard.cloneNode(true);
+    clone.onclick = function() {
+      state.armiDaFuocoSelectedId = a.id;
+      cardEls.forEach(function(ce){ ce.style.borderColor='rgba(229,48,48,0.18)'; ce.style.background='#0a0000'; });
+      origCard.style.borderColor = ACCENT;
+      origCard.style.background = 'rgba(229,48,48,0.07)';
+      renderSec1(a); renderSec2(a);
+      origCard.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+    };
+    strip.appendChild(clone);
+  });
+
+  var halfWidth = 0;
+  setTimeout(function(){ halfWidth = strip.scrollWidth / 2; }, 150);
+
+  /* Mouse wheel → scroll orizzontale circolare */
   strip.addEventListener('wheel', function(e) {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       strip.scrollLeft += e.deltaY;
+      if (halfWidth > 0) {
+        if (strip.scrollLeft >= halfWidth) strip.scrollLeft -= halfWidth;
+        else if (strip.scrollLeft < 0) strip.scrollLeft += halfWidth;
+      }
     }
   }, {passive: false});
 
-  /* Auto-scroll lento */
+  /* Auto-scroll lento circolare */
   var autoScrollId = null;
   var autoScrollPaused = false;
   function startAutoScroll() {
     if (autoScrollId) return;
     autoScrollId = setInterval(function() {
       if (autoScrollPaused) return;
-      var maxScroll = strip.scrollWidth - strip.clientWidth;
-      if (maxScroll <= 0) return;
       strip.scrollLeft += 0.6;
-      if (strip.scrollLeft >= maxScroll) strip.scrollLeft = 0;
+      if (halfWidth > 0 && strip.scrollLeft >= halfWidth) strip.scrollLeft -= halfWidth;
     }, 30);
   }
   strip.addEventListener('mouseenter', function(){ autoScrollPaused=true; });
   strip.addEventListener('mouseleave', function(){ autoScrollPaused=false; });
   strip.addEventListener('touchstart', function(){ autoScrollPaused=true; }, {passive:true});
-  /* Pulisci il timer quando il wrap viene rimosso dal DOM */
   wrap.addEventListener('remove-autoscroll', function(){ clearInterval(autoScrollId); });
   setTimeout(startAutoScroll, 600);
 
@@ -7969,14 +8040,14 @@ function renderArmaFuocoForm() {
   var mbody=document.createElement('div');
   mbody.style.cssText='padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.9rem;';
 
-  var fStyle='width:100%;background:rgba(229,48,48,0.05);border:1px solid rgba(229,48,48,0.3);color:#ffb3b3;font-family:\'Courier New\',monospace;font-size:14px;padding:0.5rem 0.75rem;outline:none;box-sizing:border-box;';
+  var fStyle='width:100%;background:#0d0000;border:1px solid rgba(229,48,48,0.35);color:#ffb3b3;font-family:\'Courier New\',monospace;font-size:14px;padding:0.5rem 0.75rem;outline:none;box-sizing:border-box;';
   function aField(lbl,key,type,opts){
     var g=document.createElement('div');
     var l=document.createElement('label'); l.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;'; l.textContent='// '+lbl; g.appendChild(l);
     var el;
     if(type==='select'){
-      el=document.createElement('select'); el.style.cssText=fStyle;
-      (opts||[]).forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; if(form[key]===o)opt.selected=true; el.appendChild(opt); });
+      el=document.createElement('select'); el.style.cssText=fStyle+'appearance:none;-webkit-appearance:none;cursor:pointer;';
+      (opts||[]).forEach(function(o){ var opt=document.createElement('option'); opt.value=o; opt.textContent=o; opt.style.cssText='background:#0d0000;color:#ffb3b3;'; if(form[key]===o)opt.selected=true; el.appendChild(opt); });
     } else if(type==='textarea'){
       el=document.createElement('textarea'); el.style.cssText=fStyle+'resize:vertical;'; el.rows=4; el.value=form[key];
     } else {
@@ -8026,6 +8097,184 @@ function renderArmaFuocoForm() {
   panel.appendChild(mbody);
   backdrop.appendChild(panel);
   return backdrop;
+}
+
+function _renderArmiPotenziamenti() {
+  var ACCENT = '#e53030';
+  var outer = document.createElement('div');
+  outer.style.cssText = 'flex:1;overflow-y:auto;padding:1.5rem 2rem;';
+  var items = (state.potenziamenti||[]).slice().sort(function(a,b){return (a.nome||'').localeCompare(b.nome||'','it');});
+  if (items.length === 0) {
+    var empty = document.createElement('div'); empty.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;color:rgba(229,48,48,0.3);font-size:18px;letter-spacing:0.1em;text-align:center;';
+    empty.innerHTML = 'NESSUN POTENZIAMENTO'+(isDM()?'<div style="font-size:13px;margin-top:1rem;">> aggiungi il primo potenziamento</div>':'');
+    outer.appendChild(empty); return outer;
+  }
+  var grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;';
+  items.forEach(function(p) {
+    var card = document.createElement('div'); card.style.cssText = 'border:1px solid rgba(229,48,48,0.22);background:#0a0000;display:flex;flex-direction:column;overflow:hidden;transition:border-color 0.15s;';
+    card.onmouseenter=function(){card.style.borderColor=ACCENT;}; card.onmouseleave=function(){card.style.borderColor='rgba(229,48,48,0.22)';};
+    var imgs = p.immagini&&p.immagini.length?p.immagini:(p.immagine?[p.immagine]:[]);
+    if (imgs.length > 0) {
+      var imgBox=document.createElement('div'); imgBox.style.cssText='height:130px;overflow:hidden;background:#040000;';
+      var img=document.createElement('img'); img.src=imgs[0]; img.alt=''; img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;'; imgBox.appendChild(img); card.appendChild(imgBox);
+    }
+    var body=document.createElement('div'); body.style.cssText='padding:0.8rem;flex:1;display:flex;flex-direction:column;gap:0.35rem;';
+    var nome=document.createElement('div'); nome.style.cssText='font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;'; nome.textContent=p.nome||'?'; body.appendChild(nome);
+    if(p.costo){var pr=document.createElement('div');pr.style.cssText='font-size:11px;color:'+ACCENT+';font-weight:700;';pr.textContent=p.costo+' '+(p.valuta||'mo');body.appendChild(pr);}
+    if(p.prerequisiti){var rq=document.createElement('div');rq.style.cssText='font-size:10px;color:rgba(229,48,48,0.5);font-style:italic;';rq.textContent='Req: '+p.prerequisiti;body.appendChild(rq);}
+    if(p.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:11px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=p.effetto;body.appendChild(ef);}
+    if(isDM()){
+      var br2=document.createElement('div');br2.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
+      var eb2=document.createElement('button');eb2.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb2.textContent='✎ MODIFICA';
+      eb2.onclick=function(){state.potenziamentiEditingId=p.id;state.potenziamentiShowForm=true;renderMain();};
+      var db3=document.createElement('button');db3.style.cssText='background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.3);color:#ff8080;font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem 0.5rem;cursor:pointer;';db3.textContent='✕';
+      db3.onclick=function(){if(confirm('Eliminare '+escapeHtml(p.nome||'questo potenziamento')+'?')){state.potenziamenti=state.potenziamenti.filter(function(x){return x.id!==p.id;});fbSavePotenziamentiArmi();renderMain();}};
+      br2.appendChild(eb2);br2.appendChild(db3);body.appendChild(br2);
+    }
+    card.appendChild(body); grid.appendChild(card);
+  });
+  outer.appendChild(grid); return outer;
+}
+
+function _renderPotenziamentiForm() {
+  var ACCENT='#e53030';
+  var editing=null;
+  if(state.potenziamentiEditingId)(state.potenziamenti||[]).forEach(function(x){if(x.id===state.potenziamentiEditingId)editing=x;});
+  var _ei=editing?(editing.immagini&&editing.immagini.length?editing.immagini.slice():(editing.immagine?[editing.immagine]:[])):[];
+  var form={nome:editing?editing.nome:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',prerequisiti:editing?editing.prerequisiti:'',effetto:editing?editing.effetto:'',immagini:_ei};
+  var backdrop=document.createElement('div');
+  backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  backdrop.onclick=function(e){if(e.target===backdrop){state.potenziamentiShowForm=false;state.potenziamentiEditingId=null;renderMain();}};
+  var panel=document.createElement('div');
+  panel.style.cssText='background:#0d0000;border:2px solid rgba(229,48,48,0.5);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;';
+  panel.onclick=function(e){e.stopPropagation();};
+  var mhead=document.createElement('div');
+  mhead.style.cssText='padding:1rem 1.5rem;border-bottom:1px solid rgba(229,48,48,0.2);display:flex;justify-content:space-between;align-items:center;';
+  mhead.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:16px;font-weight:700;color:'+ACCENT+';letter-spacing:0.1em;">'+(editing?'✎ MODIFICA POTENZIAMENTO':'⬡ NUOVO POTENZIAMENTO')+'</div>';
+  var closeB=document.createElement('button');closeB.style.cssText='background:none;border:none;color:'+ACCENT+';font-size:20px;cursor:pointer;';closeB.textContent='✕';
+  closeB.onclick=function(){state.potenziamentiShowForm=false;state.potenziamentiEditingId=null;renderMain();};
+  mhead.appendChild(closeB);panel.appendChild(mhead);
+  var mbody=document.createElement('div');mbody.style.cssText='padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.9rem;';
+  var fStyle='width:100%;background:#0d0000;border:1px solid rgba(229,48,48,0.35);color:#ffb3b3;font-family:\'Courier New\',monospace;font-size:14px;padding:0.5rem 0.75rem;outline:none;box-sizing:border-box;';
+  function pField(lbl,key,type){
+    var g=document.createElement('div');
+    var l=document.createElement('label');l.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;';l.textContent='// '+lbl;g.appendChild(l);
+    var el;
+    if(type==='textarea'){el=document.createElement('textarea');el.style.cssText=fStyle+'resize:vertical;';el.rows=3;el.value=form[key];}
+    else{el=document.createElement('input');el.type=type||'text';el.style.cssText=fStyle;el.value=form[key];}
+    el.onchange=el.oninput=function(){form[key]=type==='number'?(Number(this.value)||0):this.value;};
+    g.appendChild(el);return g;
+  }
+  mbody.appendChild(pField('NOME POTENZIAMENTO','nome','text'));
+  var rCP=document.createElement('div');rCP.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
+  rCP.appendChild(pField('PREZZO','costo','number'));
+  var gV=document.createElement('div');
+  var lV=document.createElement('label');lV.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;';lV.textContent='// VALUTA';gV.appendChild(lV);
+  var selV=document.createElement('select');selV.style.cssText=fStyle+'appearance:none;-webkit-appearance:none;cursor:pointer;';
+  VALUTE.forEach(function(v){var o=document.createElement('option');o.value=v.code;o.textContent=v.code;o.style.cssText='background:#0d0000;color:#ffb3b3;';if(form.valuta===v.code)o.selected=true;selV.appendChild(o);});
+  selV.onchange=function(){form.valuta=this.value;};gV.appendChild(selV);rCP.appendChild(gV);
+  mbody.appendChild(rCP);
+  mbody.appendChild(pField('PREREQUISITI','prerequisiti','text'));
+  mbody.appendChild(pField('EFFETTO','effetto','textarea'));
+  var imgEditor=_buildVehicleImageEditor(form,ACCENT);mbody.appendChild(imgEditor);
+  var saveBtn=document.createElement('button');
+  saveBtn.style.cssText='width:100%;background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.75rem;cursor:pointer;text-transform:uppercase;margin-top:0.5rem;';
+  saveBtn.textContent=editing?'> SALVA MODIFICHE':'> AGGIUNGI POTENZIAMENTO';
+  saveBtn.onclick=function(){
+    if(!form.nome.trim()){notify('Inserisci il nome del potenziamento.','err');return;}
+    var saved=Object.assign({},form,{immagini:form.immagini||[]});delete saved.immagine;
+    if(!state.potenziamenti)state.potenziamenti=[];
+    if(editing){state.potenziamenti=state.potenziamenti.map(function(x){return x.id===editing.id?Object.assign({},saved,{id:editing.id}):x;});}
+    else{state.potenziamenti.push(Object.assign({},saved,{id:'pot_'+Date.now()}));}
+    fbSavePotenziamentiArmi();
+    notify(editing?'Potenziamento aggiornato.':'Potenziamento aggiunto.');
+    state.potenziamentiShowForm=false;state.potenziamentiEditingId=null;renderMain();
+  };
+  mbody.appendChild(saveBtn);panel.appendChild(mbody);backdrop.appendChild(panel);return backdrop;
+}
+
+function _renderArmiMunizioni() {
+  var ACCENT = '#e53030';
+  var outer = document.createElement('div');
+  outer.style.cssText = 'flex:1;overflow-y:auto;padding:1.5rem 2rem;';
+  var items = (state.munizioniArmi||[]).slice().sort(function(a,b){return (a.nome||'').localeCompare(b.nome||'','it');});
+  if (items.length === 0) {
+    var empty = document.createElement('div'); empty.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;color:rgba(229,48,48,0.3);font-size:18px;letter-spacing:0.1em;text-align:center;';
+    empty.innerHTML = 'NESSUNA MUNIZIONE'+(isDM()?'<div style="font-size:13px;margin-top:1rem;">> aggiungi le prime munizioni</div>':'');
+    outer.appendChild(empty); return outer;
+  }
+  var grid = document.createElement('div'); grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;';
+  items.forEach(function(m) {
+    var card = document.createElement('div'); card.style.cssText = 'border:1px solid rgba(229,48,48,0.22);background:#0a0000;padding:0.9rem;display:flex;flex-direction:column;gap:0.35rem;transition:border-color 0.15s;';
+    card.onmouseenter=function(){card.style.borderColor=ACCENT;}; card.onmouseleave=function(){card.style.borderColor='rgba(229,48,48,0.22)';};
+    var nome=document.createElement('div');nome.style.cssText='font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;';nome.textContent=m.nome||'?';card.appendChild(nome);
+    if(m.costo){var pr=document.createElement('div');pr.style.cssText='font-size:11px;color:'+ACCENT+';font-weight:700;';pr.textContent=m.costo+' '+(m.valuta||'mo');card.appendChild(pr);}
+    if(m.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:11px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=m.effetto;card.appendChild(ef);}
+    if(isDM()){
+      var br3=document.createElement('div');br3.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
+      var eb3=document.createElement('button');eb3.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb3.textContent='✎ MODIFICA';
+      eb3.onclick=function(){state.munizioniArmiEditingId=m.id;state.munizioniArmiShowForm=true;renderMain();};
+      var db4=document.createElement('button');db4.style.cssText='background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.3);color:#ff8080;font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem 0.5rem;cursor:pointer;';db4.textContent='✕';
+      db4.onclick=function(){if(confirm('Eliminare '+escapeHtml(m.nome||'queste munizioni')+'?')){state.munizioniArmi=state.munizioniArmi.filter(function(x){return x.id!==m.id;});fbSaveMunizioniArmi();renderMain();}};
+      br3.appendChild(eb3);br3.appendChild(db4);card.appendChild(br3);
+    }
+    grid.appendChild(card);
+  });
+  outer.appendChild(grid); return outer;
+}
+
+function _renderMunizioniArmiForm() {
+  var ACCENT='#e53030';
+  var editing=null;
+  if(state.munizioniArmiEditingId)(state.munizioniArmi||[]).forEach(function(x){if(x.id===state.munizioniArmiEditingId)editing=x;});
+  var form={nome:editing?editing.nome:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',effetto:editing?editing.effetto:''};
+  var backdrop=document.createElement('div');
+  backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  backdrop.onclick=function(e){if(e.target===backdrop){state.munizioniArmiShowForm=false;state.munizioniArmiEditingId=null;renderMain();}};
+  var panel=document.createElement('div');
+  panel.style.cssText='background:#0d0000;border:2px solid rgba(229,48,48,0.5);max-width:460px;width:100%;max-height:90vh;overflow-y:auto;';
+  panel.onclick=function(e){e.stopPropagation();};
+  var mhead=document.createElement('div');
+  mhead.style.cssText='padding:1rem 1.5rem;border-bottom:1px solid rgba(229,48,48,0.2);display:flex;justify-content:space-between;align-items:center;';
+  mhead.innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:16px;font-weight:700;color:'+ACCENT+';letter-spacing:0.1em;">'+(editing?'✎ MODIFICA MUNIZIONI':'◉ NUOVE MUNIZIONI')+'</div>';
+  var closeB=document.createElement('button');closeB.style.cssText='background:none;border:none;color:'+ACCENT+';font-size:20px;cursor:pointer;';closeB.textContent='✕';
+  closeB.onclick=function(){state.munizioniArmiShowForm=false;state.munizioniArmiEditingId=null;renderMain();};
+  mhead.appendChild(closeB);panel.appendChild(mhead);
+  var mbody=document.createElement('div');mbody.style.cssText='padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.9rem;';
+  var fStyle='width:100%;background:#0d0000;border:1px solid rgba(229,48,48,0.35);color:#ffb3b3;font-family:\'Courier New\',monospace;font-size:14px;padding:0.5rem 0.75rem;outline:none;box-sizing:border-box;';
+  function mField(lbl,key,type){
+    var g=document.createElement('div');
+    var l=document.createElement('label');l.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;';l.textContent='// '+lbl;g.appendChild(l);
+    var el;
+    if(type==='textarea'){el=document.createElement('textarea');el.style.cssText=fStyle+'resize:vertical;';el.rows=3;el.value=form[key];}
+    else{el=document.createElement('input');el.type=type||'text';el.style.cssText=fStyle;el.value=form[key];}
+    el.onchange=el.oninput=function(){form[key]=type==='number'?(Number(this.value)||0):this.value;};
+    g.appendChild(el);return g;
+  }
+  mbody.appendChild(mField('NOME MUNIZIONI','nome','text'));
+  var rCP2=document.createElement('div');rCP2.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
+  rCP2.appendChild(mField('PREZZO','costo','number'));
+  var gV2=document.createElement('div');
+  var lV2=document.createElement('label');lV2.style.cssText='display:block;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(229,48,48,0.65);margin-bottom:0.3rem;';lV2.textContent='// VALUTA';gV2.appendChild(lV2);
+  var selV2=document.createElement('select');selV2.style.cssText=fStyle+'appearance:none;-webkit-appearance:none;cursor:pointer;';
+  VALUTE.forEach(function(v){var o=document.createElement('option');o.value=v.code;o.textContent=v.code;o.style.cssText='background:#0d0000;color:#ffb3b3;';if(form.valuta===v.code)o.selected=true;selV2.appendChild(o);});
+  selV2.onchange=function(){form.valuta=this.value;};gV2.appendChild(selV2);rCP2.appendChild(gV2);
+  mbody.appendChild(rCP2);
+  mbody.appendChild(mField('EFFETTO','effetto','textarea'));
+  var saveBtn=document.createElement('button');
+  saveBtn.style.cssText='width:100%;background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.75rem;cursor:pointer;text-transform:uppercase;margin-top:0.5rem;';
+  saveBtn.textContent=editing?'> SALVA MODIFICHE':'> AGGIUNGI MUNIZIONI';
+  saveBtn.onclick=function(){
+    if(!form.nome.trim()){notify('Inserisci il nome delle munizioni.','err');return;}
+    var saved=Object.assign({},form);
+    if(!state.munizioniArmi)state.munizioniArmi=[];
+    if(editing){state.munizioniArmi=state.munizioniArmi.map(function(x){return x.id===editing.id?Object.assign({},saved,{id:editing.id}):x;});}
+    else{state.munizioniArmi.push(Object.assign({},saved,{id:'mun_'+Date.now()}));}
+    fbSaveMunizioniArmi();
+    notify(editing?'Munizioni aggiornate.':'Munizioni aggiunte.');
+    state.munizioniArmiShowForm=false;state.munizioniArmiEditingId=null;renderMain();
+  };
+  mbody.appendChild(saveBtn);panel.appendChild(mbody);backdrop.appendChild(panel);return backdrop;
 }
 
 function renderEmporioCyber() {
