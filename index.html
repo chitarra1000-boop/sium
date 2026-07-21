@@ -5387,7 +5387,7 @@ function _schedaDefault() {
     successi:[false,false,false],fallimenti:[false,false,false],
     attacchi:[{nome:'',bonus:'',danni:''},{nome:'',bonus:'',danni:''},{nome:'',bonus:'',danni:''}],
     trattiCar:'',ideali:'',legami:'',difetti:'',
-    altreCompetenze:'',equipaggiamento:'',privilegi:'',rame:'',argento:'',oro:'',platino:'',crediti:'',
+    altreCompetenze:'',equipaggiamento:'',privilegi:'',rame:'',argento:'',oro:'',platino:'',crediti:'',livelloFollia:0,
     eta:'',altezza:'',peso:'',occhi:'',carnagione:'',capelli:'',
     aspettoDesc:'',aspettoImg:'',alleatiOrg:'',nomeOrg:'',
     storia:'',trattiAgg:'',tesoro:'',
@@ -6809,12 +6809,12 @@ function renderEmporioDroghe() {
     '<ul style="margin:0 0 0.8rem;padding-left:1.4rem;list-style:disc;">' +
       '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;"><strong>Livello 1</strong> — 1 dose a settimana</li>' +
       '<li style="font-size:15px;color:#ffe08a;line-height:1.6;margin-bottom:0.3rem;"><strong>Livello 2</strong> — 1 dose al giorno</li>' +
-      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;"><strong>Livello 3</strong> — 3 dosi al giorno</li>' +
+      '<li style="font-size:15px;color:#ffe08a;line-height:1.6;"><strong>Livello 3</strong> — 3 dosi al giorno <span style="color:#ff8888;font-size:13px;">(assumere la droga non ha alcun effetto)</span></li>' +
     '</ul>' +
     '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-top:0.4rem;margin-bottom:0.5rem;">Progressione della dipendenza:</div>' +
     '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Consumare dosi entro i limiti del proprio <strong>Tasso di Fabbisogno</strong> non richiede alcun Tiro Salvezza e non fa salire il livello di dipendenza.</p>' +
     '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Se si consumano dosi <strong>oltre il proprio Tasso di Fabbisogno</strong>, bisogna effettuare un Tiro Salvezza (su <strong>Costituzione</strong> per le droghe fisiche, su <strong>Saggezza</strong> per quelle psicologiche). Se si fallisce, la dipendenza sale di 1 livello. Un <strong>1 naturale</strong> sul dado fallisce sempre, indipendentemente dai modificatori.</p>' +
-    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0;">Raggiunto il <strong>Livello 3</strong> (il massimo), assumere la droga non conferisce più alcun beneficio: serve unicamente a soddisfare il fabbisogno ed evitare l\'astinenza.</p>' +
+    '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0;">Raggiunto il <strong>Livello 3</strong> (il massimo), assumere la droga <strong style="color:#ff8888;">non ha alcun effetto sul personaggio</strong>: non conferisce benefici né malus aggiuntivi, e serve unicamente a soddisfare il fabbisogno ed evitare l\'astinenza.</p>' +
     '<div style="font-size:14px;font-weight:700;color:#ffcc00;margin-top:1rem;margin-bottom:0.5rem;">🧪 Disintossicazione:</div>' +
     '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0 0 0.6rem;">Gli incantesimi e gli effetti base che neutralizzano i veleni riescono ad <strong>annullare gli effetti attivi</strong> di una droga, ma <strong>non possono liberare il personaggio dalla sua dipendenza</strong>.</p>' +
     '<p style="font-size:15px;color:#ffe08a;line-height:1.65;margin:0;">Per disintossicarsi magicamente serve una magia più potente: lanciare <strong>Ristorare Superiore</strong> (o un incantesimo di potenza simile) riduce il livello di dipendenza della creatura esattamente di <strong>1</strong>.</p>';
@@ -12413,6 +12413,20 @@ function renderScheda() {
     }); atkBd1.appendChild(tr);
   });
   atkT1.appendChild(atkBd1); atkB1.appendChild(atkT1); atkB1.appendChild(secTitle('Attacchi & Incantesimi')); cC.appendChild(atkB1);
+  /* --- LIVELLO DI FOLLIA --- */
+  var folliaB1=document.createElement('div'); folliaB1.style.cssText='border:1px solid #aaa;border-radius:2px;padding:4px;margin-bottom:4px;';
+  var folliaTit=document.createElement('div'); folliaTit.style.cssText='font-size:6px;font-weight:bold;text-transform:uppercase;letter-spacing:0.05em;color:#555;text-align:center;margin-bottom:4px;'; folliaTit.textContent='Livello di Follia';
+  folliaB1.appendChild(folliaTit);
+  var folliaRow=document.createElement('div'); folliaRow.style.cssText='display:flex;justify-content:center;gap:5px;margin-bottom:2px;';
+  for(var fi=1;fi<=5;fi++){(function(lvl){
+    var bub=document.createElement('div');
+    var isAct=(s.livelloFollia||0)>=lvl;
+    bub.style.cssText='width:22px;height:22px;border-radius:50%;border:1.5px solid #7a3a7a;cursor:pointer;background:'+(isAct?'#7a3a7a':'transparent')+';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;color:'+(isAct?'#fff':'#7a3a7a')+';box-sizing:border-box;';
+    bub.textContent=String(lvl);
+    bub.onclick=function(){ s.livelloFollia=((s.livelloFollia||0)===lvl?0:lvl); renderMain(); };
+    folliaRow.appendChild(bub);
+  })(fi);}
+  folliaB1.appendChild(folliaRow); cC.appendChild(folliaB1);
   var eqB1=document.createElement('div'); eqB1.style.cssText='border:1px solid #aaa;border-radius:2px;flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:120px;';
   /* --- MONETE --- */
   var monWrap=document.createElement('div'); monWrap.style.cssText='flex-shrink:0;padding:3px 3px 2px;border-bottom:1px solid #ccc;';
