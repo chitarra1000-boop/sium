@@ -12468,7 +12468,7 @@ function adottaDalBestiario() {
    ===================================================================== */
 
 function _companionDefault() {
-  return {nome:'Compagno',tipo:'',ca:'',hpMax:'',hpAttuali:'',velocita:'',for:10,des:10,cos:10,int:10,sag:10,car:10,tsFor:false,tsDes:false,tsCos:false,tsInt:false,tsSag:false,tsCar:false,skText:'',immunita:'',resistenze:'',condImm:'',sensi:'',lingue:'',tratti:'',azioni:[{nome:'',desc:''}]};
+  return {nome:'Compagno',tipo:'',ca:'',hpMax:'',hpAttuali:'',velocita:'',bonusComp:2,for:10,des:10,cos:10,int:10,sag:10,car:10,tsFor:false,tsDes:false,tsCos:false,tsInt:false,tsSag:false,tsCar:false,skText:'',skAcro:false,skAnim:false,skArca:false,skAtle:false,skFurt:false,skInda:false,skInga:false,skInti:false,skIntr:false,skIntu:false,skMedi:false,skNatu:false,skPerc:false,skPers:false,skRapi:false,skReli:false,skSopr:false,skStor:false,skTecn:false,immunita:'',resistenze:'',condImm:'',sensi:'',lingue:'',tratti:'',azioni:[{nome:'',desc:''}]};
 }
 
 function _newScheda() {
@@ -12587,12 +12587,52 @@ function _renderCompanionMiniSheet(charId,comp) {
     var lb=document.createElement('div'); lb.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#4a6a9a;border-top:1px solid #9ab;padding:2px;text-align:center;background:#e8f0fa;'; lb.textContent=lbl;
     bx.appendChild(ta); bx.appendChild(lb); return bx;
   }
-  var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;';
-  r3.appendChild(cmpTA('Abilità','skText',38)); r3.appendChild(cmpTA('Sensi','sensi',38)); wrap.appendChild(r3);
+  /* Bonus Competenza */
+  var bcRw=document.createElement('div'); bcRw.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;padding:3px 6px;border:1px solid #9ab;border-radius:2px;background:#f0f5fa;';
+  var bcLb=document.createElement('span'); bcLb.style.cssText='font-size:6.5px;font-weight:bold;text-transform:uppercase;color:#4a6a9a;white-space:nowrap;'; bcLb.textContent='Bonus Competenza:';
+  var bcIn=document.createElement('input'); bcIn.type='number'; bcIn.value=comp.bonusComp||2; bcIn.min=1; bcIn.max=9;
+  bcIn.style.cssText='width:36px;text-align:center;background:transparent;border:none;border-bottom:1px solid #9ab;color:#111;font-size:13px;font-weight:bold;outline:none;';
+  bcRw.appendChild(bcLb); bcRw.appendChild(bcIn); wrap.appendChild(bcRw);
+
+  /* Skills con checkbox e bonus calcolato */
+  var SKILLS=[
+    {k:'skAtle',lbl:'Atletica',ab:'for'},
+    {k:'skAcro',lbl:'Acrobazia',ab:'des'},{k:'skFurt',lbl:'Furtività',ab:'des'},{k:'skRapi',lbl:'Rapidità di mano',ab:'des'},
+    {k:'skArca',lbl:'Arcano',ab:'int'},{k:'skInda',lbl:'Indagare',ab:'int'},{k:'skNatu',lbl:'Natura',ab:'int'},
+    {k:'skReli',lbl:'Religione',ab:'int'},{k:'skStor',lbl:'Storia',ab:'int'},{k:'skTecn',lbl:'Tecnologia',ab:'int'},
+    {k:'skAnim',lbl:'Addestrare animali',ab:'sag'},{k:'skIntu',lbl:'Intuizione',ab:'sag'},{k:'skMedi',lbl:'Medicina',ab:'sag'},
+    {k:'skPerc',lbl:'Percezione',ab:'sag'},{k:'skSopr',lbl:'Sopravvivenza',ab:'sag'},
+    {k:'skInga',lbl:'Inganno',ab:'car'},{k:'skInti',lbl:'Intimidazione',ab:'car'},{k:'skIntr',lbl:'Intrattenimento',ab:'car'},{k:'skPers',lbl:'Persuasione',ab:'car'}
+  ];
+  var _skBEl={};
+  function _calcSkB(sk){ var ab=parseInt(comp[sk.ab])||10; var mod=Math.floor((ab-10)/2); var bc=parseInt(comp.bonusComp)||2; return mod+(comp[sk.k]?bc:0); }
+  function _refreshSk(){ SKILLS.forEach(function(sk){ if(_skBEl[sk.k]){var b=_calcSkB(sk);_skBEl[sk.k].textContent=(b>=0?'+':'')+b;} }); }
+  (function(cid,co){bcIn.oninput=function(){co.bonusComp=parseInt(this.value)||2;fbSaveCompanion(cid,co);_refreshSk();};})(charId,comp);
+  var skBox=document.createElement('div'); skBox.style.cssText='border:1px solid #9ab;border-radius:2px;margin-bottom:5px;';
+  var skHd=document.createElement('div'); skHd.style.cssText='font-size:6px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#4a6a9a;padding:2px 5px;border-bottom:1px solid #9ab;background:#e8f0fa;'; skHd.textContent='Abilità';
+  skBox.appendChild(skHd);
+  var skGrid=document.createElement('div'); skGrid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:2px;';
+  SKILLS.forEach(function(sk){
+    var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:2px;padding:1px 3px;';
+    var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!comp[sk.k]; cb.style.cssText='width:8px;height:8px;cursor:pointer;accent-color:#4a6a9a;flex-shrink:0;';
+    var b=_calcSkB(sk);
+    var bonSp=document.createElement('span'); bonSp.style.cssText='font-size:7.5px;font-weight:bold;color:#4a6a9a;width:22px;text-align:right;flex-shrink:0;'; bonSp.textContent=(b>=0?'+':'')+b; _skBEl[sk.k]=bonSp;
+    var lbl=document.createElement('span'); lbl.style.cssText='font-size:7.5px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:1px;'; lbl.textContent=sk.lbl;
+    (function(cid,co,k){cb.onchange=function(){co[k]=this.checked;fbSaveCompanion(cid,co);_refreshSk();};})(charId,comp,sk.k);
+    row.appendChild(cb); row.appendChild(bonSp); row.appendChild(lbl); skGrid.appendChild(row);
+  });
+  skBox.appendChild(skGrid); wrap.appendChild(skBox);
+
+  var r3b=document.createElement('div'); r3b.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;';
+  r3b.appendChild(cmpTA('Sensi','sensi',30)); r3b.appendChild(cmpTA('Lingue','lingue',30)); wrap.appendChild(r3b);
   var r4=document.createElement('div'); r4.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:5px;';
-  r4.appendChild(cmpTA('Immunità ai Danni','immunita',30)); r4.appendChild(cmpTA('Resistenze','resistenze',30)); r4.appendChild(cmpTA('Imm. Condizioni','condImm',30)); wrap.appendChild(r4);
-  var r5=document.createElement('div'); r5.style.cssText='display:grid;grid-template-columns:1fr 2fr;gap:5px;margin-bottom:5px;';
-  r5.appendChild(cmpTA('Lingue','lingue',28)); r5.appendChild(cmpTA('Tratti Speciali','tratti',28)); wrap.appendChild(r5);
+  r4.appendChild(cmpTA('Immunità ai Danni','immunita',28)); r4.appendChild(cmpTA('Resistenze','resistenze',28)); r4.appendChild(cmpTA('Imm. Condizioni','condImm',28)); wrap.appendChild(r4);
+  /* Tratti Speciali — area grande e ridimensionabile */
+  var trBox=document.createElement('div'); trBox.style.cssText='border:1px solid #9ab;border-radius:2px;margin-bottom:5px;';
+  var trTa=document.createElement('textarea'); trTa.style.cssText='width:100%;background:#f5f8fc;border:none;resize:vertical;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:4px;min-height:80px;box-sizing:border-box;'; trTa.value=comp.tratti||'';
+  (function(cid,co){trTa.oninput=function(){co.tratti=this.value;fbSaveCompanion(cid,co);};})(charId,comp);
+  var trLb=document.createElement('div'); trLb.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#4a6a9a;border-top:1px solid #9ab;padding:2px;text-align:center;background:#e8f0fa;'; trLb.textContent='Tratti Speciali';
+  trBox.appendChild(trTa); trBox.appendChild(trLb); wrap.appendChild(trBox);
   /* Azioni */
   var azBx=document.createElement('div'); azBx.style.cssText='border:1px solid #9ab;border-radius:2px;margin-bottom:6px;';
   var azHd=document.createElement('div'); azHd.style.cssText='font-size:6.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em;color:#4a6a9a;padding:3px 5px;border-bottom:1px solid #9ab;background:#e8f0fa;display:flex;align-items:center;justify-content:space-between;';
@@ -13069,7 +13109,7 @@ function renderScheda() {
 
   /* companion mini-sheets below character pages */
   var _cMapC=(state.companions||{})[state.schedaAttivaId]||{};
-  Object.keys(_cMapC).forEach(function(k){pgWrap.appendChild(_renderCompanionMiniSheet(state.schedaAttivaId,Object.assign({id:k},_cMapC[k])));});
+  Object.keys(_cMapC).forEach(function(k){_cMapC[k].id=k;pgWrap.appendChild(_renderCompanionMiniSheet(state.schedaAttivaId,_cMapC[k]));});
 
   scrollArea.appendChild(pgWrap); wrap.appendChild(scrollArea);
   setTimeout(function(){applyZoom();},0);
