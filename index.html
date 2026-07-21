@@ -5380,7 +5380,7 @@ function _schedaDefault() {
     skAcrobazia:false,skAnimali:false,skArcano:false,skAtletica:false,skFurtivita:false,
     skIndagare:false,skInganno:false,skIntimidire:false,skIntrattenere:false,skIntuizione:false,
     skMedicina:false,skNatura:false,skPercezione:false,skPersuasione:false,skRapidita:false,
-    skReligione:false,skSopravvivenza:false,skStoria:false,
+    skReligione:false,skSopravvivenza:false,skStoria:false,skTecnologia:false,
     ispirazione:false,bonusCompetenza:2,
     ca:'',iniziativa:'',velocita:'',
     hpMax:'',hpAttuali:'',hpTemp:'',dadiVita:'',
@@ -5441,7 +5441,7 @@ function updateSchedaDerived() {
   [['for','tsFor'],['des','tsDes'],['cos','tsCos'],['int','tsInt'],['sag','tsSag'],['car','tsCar']].forEach(function(p){
     var el=document.getElementById('pd-ts-'+p[0]);if(el)el.textContent=fmt(st[p[0]]+(s[p[1]]?bc:0));
   });
-  var skMap=[['des','skAcrobazia','acrobazia'],['sag','skAnimali','animali'],['int','skArcano','arcano'],['for','skAtletica','atletica'],['des','skFurtivita','furtivita'],['int','skIndagare','indagare'],['car','skInganno','inganno'],['car','skIntimidire','intimidire'],['car','skIntrattenere','intrattenere'],['sag','skIntuizione','intuizione'],['sag','skMedicina','medicina'],['int','skNatura','natura'],['sag','skPercezione','percezione'],['car','skPersuasione','persuasione'],['des','skRapidita','rapidita'],['int','skReligione','religione'],['sag','skSopravvivenza','sopravvivenza'],['int','skStoria','storia']];
+  var skMap=[['des','skAcrobazia','acrobazia'],['sag','skAnimali','animali'],['int','skArcano','arcano'],['for','skAtletica','atletica'],['des','skFurtivita','furtivita'],['int','skIndagare','indagare'],['car','skInganno','inganno'],['car','skIntimidire','intimidire'],['car','skIntrattenere','intrattenere'],['sag','skIntuizione','intuizione'],['sag','skMedicina','medicina'],['int','skNatura','natura'],['sag','skPercezione','percezione'],['car','skPersuasione','persuasione'],['des','skRapidita','rapidita'],['int','skReligione','religione'],['sag','skSopravvivenza','sopravvivenza'],['int','skStoria','storia'],['int','skTecnologia','tecnologia']];
   skMap.forEach(function(sk){var el=document.getElementById('pd-sk-'+sk[2]);if(el)el.textContent=fmt(st[sk[0]]+(s[sk[1]]?bc:0));});
   var pp=document.getElementById('pd-pass-perc');if(pp)pp.textContent=10+st.sag+(s.skPercezione?bc:0);
 }
@@ -7293,6 +7293,20 @@ function renderVeicoloCard(v, isParty) {
   if (v.velocita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.5rem;margin-bottom:0.25rem;">// VELOCITÀ</div><div style="font-size:16px;color:#ffd080;line-height:1.5;">'+nl2br(escapeHtml(v.velocita))+'</div>';
   if (v.capacita) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// CAPACITÀ</div><div style="font-size:16px;color:#ffd080;">'+nl2br(escapeHtml(v.capacita))+'</div>';
   if (v.pf) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// PF</div><div style="font-size:16px;color:#ffd080;">'+escapeHtml(v.pf)+'</div>';
+  var _hasStats = v.stFor||v.stDes||v.stCos||v.stInt||v.stSag||v.stCar;
+  if (_hasStats) {
+    function _statMod(val){var n=parseInt(val)||10;return (n>=10?'+':'')+Math.floor((n-10)/2);}
+    body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.4rem;">// STATISTICHE</div>';
+    var statsRow=document.createElement('div'); statsRow.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:4px;text-align:center;';
+    [['FOR',v.stFor],['DES',v.stDes],['COS',v.stCos],['INT',v.stInt],['SAG',v.stSag],['CAR',v.stCar]].forEach(function(st){
+      var cell=document.createElement('div'); cell.style.cssText='border:1px solid rgba(245,166,35,0.25);padding:4px 2px;';
+      cell.innerHTML='<div style="font-size:9px;font-weight:700;color:#c87d10;letter-spacing:0.08em;">'+st[0]+'</div>'
+        +'<div style="font-size:15px;font-weight:700;color:#ffd080;">'+(st[1]||'—')+'</div>'
+        +(st[1]?'<div style="font-size:10px;color:rgba(255,208,128,0.6);">'+_statMod(st[1])+'</div>':'');
+      statsRow.appendChild(cell);
+    });
+    body.appendChild(statsRow);
+  }
   if (v.descrizione) body.innerHTML+='<div style="font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-top:0.7rem;margin-bottom:0.25rem;">// DESCRIZIONE</div><div style="font-size:14px;color:#e8c070;line-height:1.5;">'+nl2br(escapeHtml(v.descrizione))+'</div>';
   var _vs = _textScore(v.velocita, v.capacita, v.descrizione);
   if (_vs > 500) card.classList.add('card--wide');
@@ -7353,7 +7367,7 @@ function renderVeicoloForm() {
   var editing=null;
   if (state.veicoliEditingId) (state.veicoli||[]).forEach(function(x){ if(x.id===state.veicoliEditingId) editing=x; });
   var _eImgs = editing ? (editing.immagini && editing.immagini.length ? editing.immagini.slice() : (editing.immagine ? [editing.immagine] : [])) : [];
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_eImgs};
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_eImgs,stFor:editing?editing.stFor:'',stDes:editing?editing.stDes:'',stCos:editing?editing.stCos:'',stInt:editing?editing.stInt:'',stSag:editing?editing.stSag:'',stCar:editing?editing.stCar:''};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -7402,6 +7416,19 @@ function renderVeicoloForm() {
   r2.appendChild(vField('CAPACITÀ','capacita','text'));
   r2.appendChild(vField('PF (Punti Ferita)','pf','text'));
   mbody.appendChild(r2);
+  var rStats=document.createElement('div');
+  var statsLbl=document.createElement('div'); statsLbl.style.cssText='font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-bottom:0.4rem;'; statsLbl.textContent='// STATISTICHE (opzionale)';
+  rStats.appendChild(statsLbl);
+  var statsGrid=document.createElement('div'); statsGrid.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:0.5rem;';
+  [['FOR','stFor'],['DES','stDes'],['COS','stCos'],['INT','stInt'],['SAG','stSag'],['CAR','stCar']].forEach(function(st){
+    var g=document.createElement('div'); g.style.cssText='text-align:center;';
+    var l=document.createElement('div'); l.style.cssText='font-size:10px;font-weight:700;color:#c87d10;margin-bottom:0.2rem;'; l.textContent=st[0]; g.appendChild(l);
+    var inp=document.createElement('input'); inp.type='number'; inp.min=1; inp.max=30; inp.value=form[st[1]]||''; inp.placeholder='—';
+    inp.style.cssText='width:100%;text-align:center;background:rgba(245,166,35,0.05);border:1px solid rgba(245,166,35,0.3);color:#ffd080;font-family:\'Courier New\',monospace;font-size:15px;padding:0.4rem 0.2rem;outline:none;box-sizing:border-box;';
+    (function(k){inp.oninput=function(){form[k]=this.value?Number(this.value):'';};})(st[1]);
+    g.appendChild(inp); statsGrid.appendChild(g);
+  });
+  rStats.appendChild(statsGrid); mbody.appendChild(rStats);
   var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
   r3.appendChild(vField('COSTO','costo','number'));
   r3.appendChild(vField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
@@ -7436,7 +7463,7 @@ function renderVeicoloPartyForm() {
   var editing=null;
   if (state.veicoliPartyEditingId) (state.veicoliParty||[]).forEach(function(x){ if(x.id===state.veicoliPartyEditingId) editing=x; });
   var _epImgs = editing ? (editing.immagini && editing.immagini.length ? editing.immagini.slice() : (editing.immagine ? [editing.immagine] : [])) : [];
-  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_epImgs};
+  var form={nome:editing?editing.nome:'',tipo:editing?editing.tipo:TIPI_VEICOLO[0],pf:editing?editing.pf:'',costo:editing?editing.costo:0,valuta:editing?editing.valuta:'mo',velocita:editing?editing.velocita:'',capacita:editing?editing.capacita:'',descrizione:editing?editing.descrizione:'',immagini:_epImgs,stFor:editing?editing.stFor:'',stDes:editing?editing.stDes:'',stCos:editing?editing.stCos:'',stInt:editing?editing.stInt:'',stSag:editing?editing.stSag:'',stCar:editing?editing.stCar:''};
 
   var backdrop=document.createElement('div');
   backdrop.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:1rem;';
@@ -7485,6 +7512,19 @@ function renderVeicoloPartyForm() {
   r2.appendChild(vpField('CAPACITÀ','capacita','text'));
   r2.appendChild(vpField('PF (Punti Ferita)','pf','text'));
   mbody.appendChild(r2);
+  var rStatsP=document.createElement('div');
+  var statsLblP=document.createElement('div'); statsLblP.style.cssText='font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#c87d10;margin-bottom:0.4rem;'; statsLblP.textContent='// STATISTICHE (opzionale)';
+  rStatsP.appendChild(statsLblP);
+  var statsGridP=document.createElement('div'); statsGridP.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:0.5rem;';
+  [['FOR','stFor'],['DES','stDes'],['COS','stCos'],['INT','stInt'],['SAG','stSag'],['CAR','stCar']].forEach(function(st){
+    var g=document.createElement('div'); g.style.cssText='text-align:center;';
+    var l=document.createElement('div'); l.style.cssText='font-size:10px;font-weight:700;color:#c87d10;margin-bottom:0.2rem;'; l.textContent=st[0]; g.appendChild(l);
+    var inp=document.createElement('input'); inp.type='number'; inp.min=1; inp.max=30; inp.value=form[st[1]]||''; inp.placeholder='—';
+    inp.style.cssText='width:100%;text-align:center;background:rgba(245,166,35,0.05);border:1px solid rgba(245,166,35,0.3);color:#ffd080;font-family:\'Courier New\',monospace;font-size:15px;padding:0.4rem 0.2rem;outline:none;box-sizing:border-box;';
+    (function(k){inp.oninput=function(){form[k]=this.value?Number(this.value):'';};})(st[1]);
+    g.appendChild(inp); statsGridP.appendChild(g);
+  });
+  rStatsP.appendChild(statsGridP); mbody.appendChild(rStatsP);
   var r3=document.createElement('div'); r3.style.cssText='display:grid;grid-template-columns:2fr 1fr;gap:0.75rem;';
   r3.appendChild(vpField('COSTO','costo','number'));
   r3.appendChild(vpField('VALUTA','valuta','select',VALUTE.map(function(v){return v.code;})));
@@ -12179,8 +12219,18 @@ function renderScheda() {
   /* ---- HELPERS ---- */
   function makePage(){
     var pg=document.createElement('div');
-    pg.style.cssText='width:760px;min-height:1040px;background:#fff;color:#111;box-shadow:0 3px 20px rgba(0,0,0,0.6);padding:14px 16px;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;font-size:10px;';
+    pg.style.cssText='width:760px;min-height:1040px;background:#fff;color:#111;box-shadow:0 3px 20px rgba(0,0,0,0.6);padding:14px 16px;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;font-size:10px;display:flex;flex-direction:column;';
     return pg;
+  }
+  function makeTraitBox(label,key,minH,grow){
+    var box=document.createElement('div');
+    box.style.cssText='border:1px solid #aaa;border-radius:2px;margin-bottom:4px;overflow:hidden;'+(grow?'flex:1;display:flex;flex-direction:column;':'');
+    var ta=document.createElement('textarea');
+    ta.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:'+minH+'px;line-height:1.4;'+(grow?'flex:1;':'');
+    ta.value=s[key]||'';
+    (function(k){ta.oninput=function(){s[k]=this.value;ss();};})(key);
+    var lbl=document.createElement('div'); lbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#555;text-align:center;background:#f0f0f0;border-top:1px solid #bbb;padding:2px;flex-shrink:0;'; lbl.textContent=label;
+    box.appendChild(ta); box.appendChild(lbl); return box;
   }
   function secTitle(text){
     var d=document.createElement('div');
@@ -12222,14 +12272,6 @@ function renderScheda() {
     var val=document.createElement('span'); val.id='pd-sk-'+idSuffix; val.style.cssText='font-size:9px;font-weight:bold;min-width:18px;text-align:right;'; val.textContent=fsv(s[statKey],s[profKey]);
     var nm=document.createElement('span'); nm.style.cssText='font-size:8px;margin-left:1px;'; nm.innerHTML=name+' <em style="color:#888;font-size:7px;">('+abbr+')</em>';
     row.appendChild(bub); row.appendChild(val); row.appendChild(nm); return row;
-  }
-  function makeTraitBox(label,key,minH){
-    var box=document.createElement('div'); box.style.cssText='border:1px solid #aaa;border-radius:2px;margin-bottom:4px;overflow:hidden;';
-    var ta=document.createElement('textarea'); ta.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:'+minH+'px;line-height:1.4;';
-    ta.value=s[key]||'';
-    (function(k){ta.oninput=function(){s[k]=this.value;ss();};})(key);
-    var lbl=document.createElement('div'); lbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;color:#555;text-align:center;background:#f0f0f0;border-top:1px solid #bbb;padding:2px;'; lbl.textContent=label;
-    box.appendChild(ta); box.appendChild(lbl); return box;
   }
   function makeHdrCell(label,key,isFirst){
     var cell=document.createElement('div'); cell.style.cssText=(isFirst?'':'border-left:1px solid #aaa;')+'padding:2px 4px;';
@@ -12287,13 +12329,13 @@ function renderScheda() {
   hR2.appendChild(makeHdrCell('Punti Esperienza','pe',false));
   hdr1.appendChild(hR1); hdr1.appendChild(hR2); pg1.appendChild(hdr1);
   /* Main grid */
-  var mg=document.createElement('div'); mg.style.cssText='display:grid;grid-template-columns:88px 186px 1fr 1fr;gap:5px;';
+  var mg=document.createElement('div'); mg.style.cssText='display:grid;grid-template-columns:88px 186px 1fr 1fr;gap:5px;flex:1;align-items:stretch;';
   /* COL A - Stats */
   var cA=document.createElement('div');
   [['Forza','for'],['Destrezza','des'],['Costituzione','cos'],['Intelligenza','int'],['Saggezza','sag'],['Carisma','car']].forEach(function(st){cA.appendChild(makeStatBox(st[0],st[1]));});
   mg.appendChild(cA);
   /* COL B - Saves/Skills */
-  var cB=document.createElement('div');
+  var cB=document.createElement('div'); cB.style.cssText='display:flex;flex-direction:column;';
   var ispRow1=document.createElement('div'); ispRow1.style.cssText='display:flex;gap:4px;margin-bottom:5px;';
   var ispBox1=document.createElement('div'); ispBox1.style.cssText='flex:1;border:1.5px solid #666;border-radius:3px;text-align:center;padding:3px;cursor:pointer;';
   var ispIco=document.createElement('div'); ispIco.style.cssText='font-size:14px;'; ispIco.textContent=s.ispirazione?'★':'☆';
@@ -12309,20 +12351,20 @@ function renderScheda() {
   [['Forza','for','tsFor'],['Destrezza','des','tsDes'],['Costituzione','cos','tsCos'],['Intelligenza','int','tsInt'],['Saggezza','sag','tsSag'],['Carisma','car','tsCar']].forEach(function(ts){tsBox1.appendChild(makeTsRow(ts[0],ts[1],ts[2]));});
   tsBox1.appendChild(secTitle('Tiri Salvezza')); cB.appendChild(tsBox1);
   var skBox1=document.createElement('div'); skBox1.style.cssText='border:1px solid #aaa;border-radius:3px;padding:4px;margin-bottom:4px;';
-  [['Acrobazia','des','skAcrobazia','acrobazia','Des'],['Addestrare Animali','sag','skAnimali','animali','Sag'],['Arcano','int','skArcano','arcano','Int'],['Atletica','for','skAtletica','atletica','For'],['Furtività','des','skFurtivita','furtivita','Des'],['Indagare','int','skIndagare','indagare','Int'],['Inganno','car','skInganno','inganno','Car'],['Intimidire','car','skIntimidire','intimidire','Car'],['Intrattenere','car','skIntrattenere','intrattenere','Car'],['Intuizione','sag','skIntuizione','intuizione','Sag'],['Medicina','sag','skMedicina','medicina','Sag'],['Natura','int','skNatura','natura','Int'],['Percezione','sag','skPercezione','percezione','Sag'],['Persuasione','car','skPersuasione','persuasione','Car'],['Rapidità di Mano','des','skRapidita','rapidita','Des'],['Religione','int','skReligione','religione','Int'],['Sopravvivenza','sag','skSopravvivenza','sopravvivenza','Sag'],['Storia','int','skStoria','storia','Int']].forEach(function(sk){skBox1.appendChild(makeSkillRow(sk[0],sk[1],sk[2],sk[3],sk[4]));});
+  [['Acrobazia','des','skAcrobazia','acrobazia','Des'],['Addestrare Animali','sag','skAnimali','animali','Sag'],['Arcano','int','skArcano','arcano','Int'],['Atletica','for','skAtletica','atletica','For'],['Furtività','des','skFurtivita','furtivita','Des'],['Indagare','int','skIndagare','indagare','Int'],['Inganno','car','skInganno','inganno','Car'],['Intimidire','car','skIntimidire','intimidire','Car'],['Intrattenere','car','skIntrattenere','intrattenere','Car'],['Intuizione','sag','skIntuizione','intuizione','Sag'],['Medicina','sag','skMedicina','medicina','Sag'],['Natura','int','skNatura','natura','Int'],['Percezione','sag','skPercezione','percezione','Sag'],['Persuasione','car','skPersuasione','persuasione','Car'],['Rapidità di Mano','des','skRapidita','rapidita','Des'],['Religione','int','skReligione','religione','Int'],['Sopravvivenza','sag','skSopravvivenza','sopravvivenza','Sag'],['Storia','int','skStoria','storia','Int'],['Tecnologia','int','skTecnologia','tecnologia','Int']].forEach(function(sk){skBox1.appendChild(makeSkillRow(sk[0],sk[1],sk[2],sk[3],sk[4]));});
   skBox1.appendChild(secTitle('Abilità')); cB.appendChild(skBox1);
   var ppRow1=document.createElement('div'); ppRow1.style.cssText='display:flex;align-items:center;gap:4px;border:1px solid #aaa;border-radius:2px;padding:3px;margin-bottom:4px;';
   var ppVal1=document.createElement('div'); ppVal1.id='pd-pass-perc'; ppVal1.style.cssText='font-size:16px;font-weight:bold;min-width:24px;text-align:center;border:1.5px solid #555;border-radius:3px;padding:0 3px;';
   ppVal1.textContent=10+m(s.sag)+(s.skPercezione?(parseInt(s.bonusCompetenza)||2):0);
   var ppLbl1=document.createElement('div'); ppLbl1.style.cssText='font-size:7px;color:#444;line-height:1.3;'; ppLbl1.textContent='Saggezza (Percezione) Passiva';
   ppRow1.appendChild(ppVal1); ppRow1.appendChild(ppLbl1); cB.appendChild(ppRow1);
-  var altBox1=document.createElement('div'); altBox1.style.cssText='border:1px solid #aaa;border-radius:2px;';
-  var altTa1=document.createElement('textarea'); altTa1.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:60px;'; altTa1.value=s.altreCompetenze||'';
+  var altBox1=document.createElement('div'); altBox1.style.cssText='border:1px solid #aaa;border-radius:2px;flex:1;display:flex;flex-direction:column;overflow:hidden;';
+  var altTa1=document.createElement('textarea'); altTa1.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:60px;flex:1;'; altTa1.value=s.altreCompetenze||'';
   altTa1.oninput=function(){s.altreCompetenze=this.value;ss();};
   altBox1.appendChild(altTa1); altBox1.appendChild(secTitle('Altre Competenze & Linguaggi')); cB.appendChild(altBox1);
   mg.appendChild(cB);
   /* COL C - Combat */
-  var cC=document.createElement('div');
+  var cC=document.createElement('div'); cC.style.cssText='display:flex;flex-direction:column;';
   var cavRow1=document.createElement('div'); cavRow1.style.cssText='display:flex;gap:4px;margin-bottom:5px;';
   [['CA','ca'],['Iniziativa','iniziativa'],['Velocità','velocita']].forEach(function(cf){
     var b=document.createElement('div'); b.style.cssText='flex:1;border:2px solid #666;border-radius:3px;text-align:center;padding:3px;';
@@ -12371,13 +12413,14 @@ function renderScheda() {
     }); atkBd1.appendChild(tr);
   });
   atkT1.appendChild(atkBd1); atkB1.appendChild(atkT1); atkB1.appendChild(secTitle('Attacchi & Incantesimi')); cC.appendChild(atkB1);
-  var eqB1=document.createElement('div'); eqB1.style.cssText='border:1px solid #aaa;border-radius:2px;';
-  var eqTa1=document.createElement('textarea'); eqTa1.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:80px;'; eqTa1.value=s.equipaggiamento||'';
+  var eqB1=document.createElement('div'); eqB1.style.cssText='border:1px solid #aaa;border-radius:2px;flex:1;display:flex;flex-direction:column;overflow:hidden;';
+  var eqTa1=document.createElement('textarea'); eqTa1.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:80px;flex:1;'; eqTa1.value=s.equipaggiamento||'';
   eqTa1.oninput=function(){s.equipaggiamento=this.value;ss();}; eqB1.appendChild(eqTa1); eqB1.appendChild(secTitle('Equipaggiamento')); cC.appendChild(eqB1);
   mg.appendChild(cC);
   /* COL D - Traits */
-  var cD=document.createElement('div');
-  [['Tratti Caratteriali','trattiCar',42],['Ideali','ideali',36],['Legami','legami',36],['Difetti','difetti',36],['Privilegi & Tratti','privilegi',120]].forEach(function(tf){cD.appendChild(makeTraitBox(tf[0],tf[1],tf[2]));});
+  var cD=document.createElement('div'); cD.style.cssText='display:flex;flex-direction:column;';
+  [['Tratti Caratteriali','trattiCar',42],['Ideali','ideali',36],['Legami','legami',36],['Difetti','difetti',36]].forEach(function(tf){cD.appendChild(makeTraitBox(tf[0],tf[1],tf[2]));});
+  cD.appendChild(makeTraitBox('Privilegi & Tratti','privilegi',120,true));
   mg.appendChild(cD);
   pg1.appendChild(mg); pgWrap.appendChild(pg1);
 
@@ -12392,9 +12435,9 @@ function renderScheda() {
   var h2R2=document.createElement('div'); h2R2.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;';
   h2R2.appendChild(makeHdrCell('Occhi','occhi',true)); h2R2.appendChild(makeHdrCell('Carnagione','carnagione',false)); h2R2.appendChild(makeHdrCell('Capelli','capelli',false));
   hdr2.appendChild(h2R1); hdr2.appendChild(h2R2); pg2.appendChild(hdr2);
-  var bg2G=document.createElement('div'); bg2G.style.cssText='display:grid;grid-template-columns:220px 1fr;gap:8px;';
+  var bg2G=document.createElement('div'); bg2G.style.cssText='display:grid;grid-template-columns:220px 1fr;gap:8px;flex:1;align-items:stretch;';
   var bg2L=document.createElement('div'); bg2L.style.cssText='display:flex;flex-direction:column;gap:6px;';
-  var aspImgB=document.createElement('div'); aspImgB.style.cssText='border:1px solid #aaa;border-radius:3px;overflow:hidden;aspect-ratio:3/4;cursor:pointer;position:relative;background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:180px;';
+  var aspImgB=document.createElement('div'); aspImgB.style.cssText='border:1px solid #aaa;border-radius:3px;overflow:hidden;cursor:pointer;position:relative;background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:200px;flex:1;';
   if(s.aspettoImg){
     var aspI2=document.createElement('img'); aspI2.src=s.aspettoImg; aspI2.style.cssText='width:100%;height:100%;object-fit:cover;'; aspImgB.appendChild(aspI2);
     var aspDel=document.createElement('div'); aspDel.style.cssText='position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.65);color:#fff;border-radius:3px;padding:1px 5px;cursor:pointer;font-size:11px;'; aspDel.textContent='✕';
@@ -12413,16 +12456,17 @@ function renderScheda() {
   aspTa.oninput=function(){s.aspettoDesc=this.value;ss();}; aspDB.appendChild(aspTa); aspDB.appendChild(secTitle('Aspetto del Personaggio')); bg2L.appendChild(aspDB);
   bg2G.appendChild(bg2L);
   var bg2R=document.createElement('div'); bg2R.style.cssText='display:flex;flex-direction:column;gap:6px;';
-  var alleB2=document.createElement('div'); alleB2.style.cssText='border:1px solid #aaa;border-radius:2px;';
+  var alleB2=document.createElement('div'); alleB2.style.cssText='border:1px solid #aaa;border-radius:2px;flex-shrink:0;';
   var orgR2=document.createElement('div'); orgR2.style.cssText='display:flex;align-items:center;gap:4px;padding:3px;border-bottom:1px solid #ddd;';
   var orgL2=document.createElement('span'); orgL2.style.cssText='font-size:7px;color:#555;white-space:nowrap;'; orgL2.textContent='Nome organizzazione:';
   var orgI2=document.createElement('input'); orgI2.type='text'; orgI2.value=s.nomeOrg||''; orgI2.style.cssText='flex:1;background:transparent;border:none;border-bottom:1px solid #bbb;color:#111;font-size:11px;outline:none;';
   orgI2.oninput=function(){s.nomeOrg=this.value;ss();}; orgR2.appendChild(orgL2); orgR2.appendChild(orgI2); alleB2.appendChild(orgR2);
   var alleTa2=document.createElement('textarea'); alleTa2.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:70px;'; alleTa2.value=s.alleatiOrg||'';
   alleTa2.oninput=function(){s.alleatiOrg=this.value;ss();}; alleB2.appendChild(alleTa2); alleB2.appendChild(secTitle('Alleati & Organizzazioni')); bg2R.appendChild(alleB2);
-  [['Storia del Personaggio','storia',160],['Tratti & Privilegi Aggiuntivi','trattiAgg',120],['Tesoro','tesoro',80]].forEach(function(tf){
-    var box=document.createElement('div'); box.style.cssText='border:1px solid #aaa;border-radius:2px;';
-    var ta=document.createElement('textarea'); ta.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;height:'+tf[2]+'px;'; ta.value=s[tf[1]]||'';
+  [['Storia del Personaggio','storia',160,false],['Tratti & Privilegi Aggiuntivi','trattiAgg',120,false],['Tesoro','tesoro',80,true]].forEach(function(tf){
+    var grow=tf[3];
+    var box=document.createElement('div'); box.style.cssText='border:1px solid #aaa;border-radius:2px;'+(grow?'flex:1;display:flex;flex-direction:column;overflow:hidden;':'');
+    var ta=document.createElement('textarea'); ta.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;'+(grow?'flex:1;min-height:'+tf[2]+'px;':'height:'+tf[2]+'px;'); ta.value=s[tf[1]]||'';
     (function(k){ta.oninput=function(){s[k]=this.value;ss();};})(tf[1]);
     box.appendChild(ta); box.appendChild(secTitle(tf[0])); bg2R.appendChild(box);
   });
