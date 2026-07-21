@@ -6218,7 +6218,11 @@ var state = {
     showLibrary: false,
     currentStoryId: null,
     currentStoryName: ''
-  }
+  },
+
+  /* ===== SCHEDE PG (DM view) ===== */
+  schedePGAll: null,     // null = non ancora caricato, {} = caricato (vuoto o con dati)
+  schedePGFilter: 'tutti'
 };
 
 /* Numero di settori per ciascuno stadio */
@@ -6509,6 +6513,7 @@ function render() {
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) main.appendChild(renderSchedePG()); else main.appendChild(renderDadi()); }
   contentWrap.appendChild(main);
 
   if (state.regiaActive) {
@@ -6549,6 +6554,7 @@ function renderMain() {
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) main.appendChild(renderSchedePG()); else main.appendChild(renderDadi()); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -6626,6 +6632,29 @@ function renderSidebar() {
   dadiItem.innerHTML = dadiIcon + '<span>Lanciatore Dadi</span>';
   dadiItem.onclick = function() { state.section = 'dadi'; state.sidebarOpen = false; renderMain(); };
   sb.appendChild(dadiItem);
+
+  /* Pulsante Schede PG — solo DM */
+  if (isDM()) {
+    var schedePGIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+    var schedePGItem = document.createElement('div');
+    schedePGItem.className = 'nav-item' + (state.section === 'schedepg' ? ' active' : '');
+    schedePGItem.innerHTML = schedePGIcon + '<span>Schede PG</span>';
+    schedePGItem.onclick = function() {
+      state.section = 'schedepg';
+      state.sidebarOpen = false;
+      if (state.schedePGAll === null) {
+        state.schedePGAll = {};
+        if (_db) {
+          _db.ref('schedePG').once('value', function(snap) {
+            state.schedePGAll = snap.val() || {};
+            renderMain();
+          });
+        }
+      }
+      renderMain();
+    };
+    sb.appendChild(schedePGItem);
+  }
 
   var footer = document.createElement('div');
   footer.className = 'sidebar-footer';
@@ -15888,6 +15917,168 @@ function renderRegiaSonora() {
 /* ============================================================
    SEZIONE LANCIATORE DI DADI
    ============================================================ */
+function renderSchedePG() {
+  var wrap = document.createElement('div');
+
+  var header = document.createElement('header');
+  header.className = 'border-b';
+  var hc = document.createElement('div');
+  hc.className = 'container-main';
+  hc.style.cssText = 'padding-top:2rem;padding-bottom:1.5rem;';
+  hc.innerHTML =
+    '<div class="header-eyebrow mb-3"><span>Pannello Master</span></div>' +
+    '<h1 class="header-title">Schede PG</h1>' +
+    '<p class="font-script italic mt-2 text-lg" style="color:var(--text-muted);">Tutti i personaggi della campagna.</p>';
+  header.appendChild(hc);
+  wrap.appendChild(header);
+
+  var body = document.createElement('div');
+  body.className = 'container-main';
+  body.style.cssText = 'padding-top:1.5rem;padding-bottom:2rem;';
+
+  var allData = state.schedePGAll;
+
+  /* Dati non ancora caricati */
+  if (allData === null || allData === undefined) {
+    var loading = document.createElement('div');
+    loading.style.cssText = 'text-align:center;padding:3rem;color:var(--text-muted);font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:0.1em;';
+    loading.textContent = 'Caricamento schede…';
+    body.appendChild(loading);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  /* Raccolta di tutti i personaggi da tutti gli utenti */
+  var allChars = []; // [{username, charId, char}]
+  Object.keys(allData).forEach(function(username) {
+    var userData = allData[username];
+    if (userData && userData.chars) {
+      Object.keys(userData.chars).forEach(function(charId) {
+        var ch = userData.chars[charId];
+        if (ch) allChars.push({ username: username, charId: charId, char: ch });
+      });
+    }
+  });
+
+  /* Lista degli utenti per i filtri */
+  var usernames = [];
+  Object.keys(allData).forEach(function(u) {
+    if (allData[u] && allData[u].chars && Object.keys(allData[u].chars).length > 0) {
+      usernames.push(u);
+    }
+  });
+  usernames.sort();
+
+  /* Refresh button */
+  var refreshBtn = document.createElement('button');
+  refreshBtn.style.cssText = 'float:right;background:transparent;border:1px solid var(--border-subtle);color:var(--text-muted);font-size:11px;font-family:\'Cinzel\',serif;letter-spacing:0.08em;padding:4px 10px;border-radius:3px;cursor:pointer;';
+  refreshBtn.textContent = '↻ Aggiorna';
+  refreshBtn.onclick = function() {
+    state.schedePGAll = null;
+    if (_db) {
+      _db.ref('schedePG').once('value', function(snap) {
+        state.schedePGAll = snap.val() || {};
+        renderMain();
+      });
+    }
+  };
+  body.appendChild(refreshBtn);
+
+  /* Filtri per account */
+  var filterBar = document.createElement('div');
+  filterBar.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem;';
+
+  var mkFilterBtn = function(label, val) {
+    var btn = document.createElement('button');
+    var isActive = state.schedePGFilter === val;
+    btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 14px;border-radius:3px;cursor:pointer;border:1px solid ' +
+      (isActive ? 'var(--gold)' : 'var(--border-subtle)') + ';background:' +
+      (isActive ? 'rgba(201,165,92,0.15)' : 'transparent') + ';color:' +
+      (isActive ? 'var(--gold)' : 'var(--text-muted)') + ';transition:all 0.15s;';
+    btn.textContent = label;
+    btn.onclick = function() { state.schedePGFilter = val; renderMain(); };
+    return btn;
+  };
+
+  filterBar.appendChild(mkFilterBtn('Tutti', 'tutti'));
+  usernames.forEach(function(u) {
+    filterBar.appendChild(mkFilterBtn(u, u));
+  });
+  body.appendChild(filterBar);
+
+  /* Applica filtro */
+  var filtered = allChars;
+  if (state.schedePGFilter !== 'tutti') {
+    filtered = allChars.filter(function(item) { return item.username === state.schedePGFilter; });
+  }
+
+  if (filtered.length === 0) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;padding:3rem;color:var(--text-muted);font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:0.1em;';
+    empty.textContent = 'Nessuna scheda trovata.';
+    body.appendChild(empty);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  /* Griglia schede */
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;';
+
+  filtered.forEach(function(item) {
+    var ch = item.char;
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;';
+    card.onmouseenter = function() { card.style.borderColor = 'var(--gold-dim)'; card.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)'; };
+    card.onmouseleave = function() { card.style.borderColor = 'var(--border-subtle)'; card.style.boxShadow = 'none'; };
+
+    /* Immagine */
+    var imgBox = document.createElement('div');
+    imgBox.style.cssText = 'width:100%;height:140px;background:var(--bg-card-elevated);display:flex;align-items:center;justify-content:center;overflow:hidden;';
+    if (ch.aspettoImg) {
+      var img = document.createElement('img');
+      img.src = ch.aspettoImg;
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      imgBox.appendChild(img);
+    } else {
+      var placeholder = document.createElement('div');
+      placeholder.style.cssText = 'font-size:48px;line-height:1;';
+      placeholder.textContent = '🧙';
+      imgBox.appendChild(placeholder);
+    }
+    card.appendChild(imgBox);
+
+    /* Info */
+    var info = document.createElement('div');
+    info.style.cssText = 'padding:10px 12px 12px;';
+
+    var nome = document.createElement('div');
+    nome.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;';
+    nome.textContent = ch.nomePersonaggio || 'Senza nome';
+    info.appendChild(nome);
+
+    if (ch.classelivello) {
+      var classe = document.createElement('div');
+      classe.style.cssText = 'font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;';
+      classe.textContent = ch.classelivello;
+      info.appendChild(classe);
+    }
+
+    /* Badge account */
+    var badge = document.createElement('div');
+    badge.style.cssText = 'display:inline-block;font-size:9px;font-family:\'Cinzel\',serif;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:rgba(201,165,92,0.12);color:var(--gold-dim);border:1px solid rgba(201,165,92,0.25);';
+    badge.textContent = item.username;
+    info.appendChild(badge);
+
+    card.appendChild(info);
+    grid.appendChild(card);
+  });
+
+  body.appendChild(grid);
+  wrap.appendChild(body);
+  return wrap;
+}
+
 function renderDadi() {
   var wrap = document.createElement('div');
 
