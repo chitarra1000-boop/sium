@@ -12999,14 +12999,15 @@ function renderScheda() {
   h2R2.appendChild(makeHdrCell('Occhi','occhi',true)); h2R2.appendChild(makeHdrCell('Carnagione','carnagione',false)); h2R2.appendChild(makeHdrCell('Capelli','capelli',false));
   hdr2.appendChild(h2R1); hdr2.appendChild(h2R2); pg2.appendChild(hdr2);
   var bg2G=document.createElement('div'); bg2G.style.cssText='display:grid;grid-template-columns:220px 1fr;gap:8px;flex:1;align-items:stretch;';
-  var bg2L=document.createElement('div'); bg2L.style.cssText='display:flex;flex-direction:column;gap:6px;';
-  var aspImgB=document.createElement('div'); aspImgB.style.cssText='border:1px solid #aaa;border-radius:3px;overflow:hidden;cursor:pointer;position:relative;background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:200px;flex:1;';
+  var bg2L=document.createElement('div'); bg2L.style.cssText='display:flex;flex-direction:column;gap:6px;height:100%;overflow:hidden;';
+  /* immagine personaggio — altezza fissa in alto */
+  var aspImgB=document.createElement('div'); aspImgB.style.cssText='border:1px solid #aaa;border-radius:3px;overflow:hidden;cursor:pointer;position:relative;background:#f5f5f5;display:flex;align-items:center;justify-content:center;height:280px;flex-shrink:0;';
   if(s.aspettoImg){
     var aspI2=document.createElement('img'); aspI2.src=s.aspettoImg; aspI2.style.cssText='width:100%;height:100%;object-fit:cover;'; aspImgB.appendChild(aspI2);
     var aspDel=document.createElement('div'); aspDel.style.cssText='position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.65);color:#fff;border-radius:3px;padding:1px 5px;cursor:pointer;font-size:11px;'; aspDel.textContent='✕';
     aspDel.onclick=function(e){e.stopPropagation();s.aspettoImg='';ss();renderMain();}; aspImgB.appendChild(aspDel);
   } else {
-    aspImgB.innerHTML='<div style="text-align:center;color:#aaa;font-family:Arial,sans-serif;"><div style="font-size:32px;">🧙</div><div style="font-size:10px;margin-top:4px;">Clicca per caricare<br>immagine</div></div>';
+    aspImgB.innerHTML='<div style="text-align:center;color:#aaa;font-family:Arial,sans-serif;"><div style="font-size:36px;">🧙</div><div style="font-size:10px;margin-top:6px;">Clicca per caricare<br>immagine personaggio</div></div>';
   }
   aspImgB.onclick=function(e){
     if(e.target.textContent==='✕') return;
@@ -13014,8 +13015,9 @@ function renderScheda() {
     inp.onchange=function(){if(!this.files[0]) return; var r=new FileReader(); r.onload=function(ev){s.aspettoImg=ev.target.result;ss();renderMain();}; r.readAsDataURL(this.files[0]);};
     inp.click();
   }; bg2L.appendChild(aspImgB);
-  var aspDB=document.createElement('div'); aspDB.style.cssText='border:1px solid #aaa;border-radius:2px;';
-  var aspTa=document.createElement('textarea'); aspTa.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;min-height:55px;'; aspTa.value=s.aspettoDesc||'';
+  /* descrizione aspetto — riempie lo spazio rimanente */
+  var aspDB=document.createElement('div'); aspDB.style.cssText='border:1px solid #aaa;border-radius:2px;flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:120px;';
+  var aspTa=document.createElement('textarea'); aspTa.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;flex:1;box-sizing:border-box;'; aspTa.value=s.aspettoDesc||'';
   aspTa.oninput=function(){s.aspettoDesc=this.value;ss();}; aspDB.appendChild(aspTa); aspDB.appendChild(secTitle('Aspetto del Personaggio')); bg2L.appendChild(aspDB);
   bg2G.appendChild(bg2L);
   var bg2R=document.createElement('div'); bg2R.style.cssText='display:flex;flex-direction:column;gap:6px;';
