@@ -16797,8 +16797,7 @@ function _ovStartDraw(layerKey, factionId) {
   if (hint) {
     hint.style.display = 'block';
     hint.innerHTML =
-      '<span class="ov-hint-text" style="color:#f0d070;">🖊 0 vertici — clicca sulla mappa per aggiungere punti · ESC annulla</span>' +
-      '<button onclick="_ovFinishDraw()" style="margin-left:10px;background:rgba(120,200,120,0.15);border:1px solid #6c6;color:#afa;border-radius:4px;padding:4px 14px;cursor:pointer;font-size:11px;font-family:inherit;vertical-align:middle;">💾 Salva Zona</button>';
+      '<span class="ov-hint-text" style="color:#f0d070;">🖊 0 vertici — clicca sulla mappa per aggiungere punti · <b>Shift+S</b> per salvare · ESC per annullare</span>';
   }
 }
 
@@ -17369,9 +17368,13 @@ function initLeafletMap(mapDiv, infoPanel) {
     /* ESC handler per annullare disegno */
     if (window._ovEscHandler) document.removeEventListener('keydown', window._ovEscHandler);
     window._ovEscHandler = function(ev) {
-      if (ev.key === 'Escape' && _ovDrawActive) {
+      if (!_ovDrawActive) return;
+      if (ev.key === 'Escape') {
         _ovCancelDraw();
         document.querySelectorAll('.ov-draw-fac-btn').forEach(function(b){ b.textContent = '✏'; b.style.color = ''; });
+      } else if (ev.key === 'S' && ev.shiftKey) {
+        ev.preventDefault();
+        _ovFinishDraw();
       }
     };
     document.addEventListener('keydown', window._ovEscHandler);
