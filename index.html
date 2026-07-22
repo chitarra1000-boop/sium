@@ -825,8 +825,9 @@
   @media (max-width: 640px) { .weapon-grid { grid-template-columns: 1fr; } }
 
   /* ===== LIBRERIA ===== */
-  .libro-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:1.5rem; }
-  @media (max-width:640px) { .libro-grid { grid-template-columns:repeat(2,1fr); } }
+  .libro-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; }
+  @media (max-width:900px) { .libro-grid { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:600px) { .libro-grid { grid-template-columns:repeat(2,1fr); } }
   .libro-card { background:linear-gradient(165deg,var(--bg-card-elevated),var(--bg-card)); border:1px solid var(--border-subtle); border-radius:6px; overflow:hidden; cursor:pointer; transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; text-decoration:none; }
   .libro-card:hover { border-color:var(--border-gold); transform:translateY(-4px); box-shadow:var(--shadow-card-hover); }
   .libro-card-img { aspect-ratio:2/3; overflow:hidden; background:var(--bg-base); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -6650,28 +6651,28 @@ function renderMain() {
 var LIBRI_DEFAULT = [
   { id:'d_0', titolo:'Guida del DM',
     url:'https://anyflip.com/fqnfa/nyqv/basic',
-    copertina:'https://imgs.search.brave.com/5DG_uiDaJZYJ9FRUQozRf3_7A7eG5NFA-MTOoMIrOic/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNTFpZDZqQkNRT0wuanBn' },
+    copertina:'https://m.media-amazon.com/images/I/51id6jBCQOL.jpg' },
   { id:'d_1', titolo:'Manuale del Giocatore',
     url:'https://online.anyflip.com/piwcj/iafx/mobile/index.html',
-    copertina:'https://imgs.search.brave.com/kU3lAXyKqdU0AEjgR2zm4Gws8IJ7aU2HiAJD2ZOUo0w/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cuZHJhZ29uc2xhaXIuaXQvaW1hZ2VzLzVlL3BoYi8wMS5qcGc' },
+    copertina:'https://www.dragonslair.it/images/5e/phb/01.jpg' },
   { id:'d_2', titolo:'Calderone Omnicomprensivo di Tasha',
     url:'https://online.anyflip.com/jzhjh/dako/mobile/index.html',
-    copertina:'https://imgs.search.brave.com/76_qNPHfkN3JtUJtCPTkXhBpHqwMoQQdqxe41Q8dk4Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9ob2JieWJyb3RoZXJzLml0L2Nkbi9zaG9wL2ZpbGVzL3MtbDE2MDBfMV9kMDk5NzhjYy04ZGE0LTQ5ZGMtYmFkNC1hNGM4YzU0OWE3NTgud2VicD92PTE3MzQ5NzU0ODImd2lkdGg9MTQ0NQ' },
+    copertina:'https://hobbybrothers.it/cdn/shop/files/s-l1600_1_d09978cc-8da4-49dc-bad4-a4c8c549a758.webp?v=1734975482&width=1445' },
   { id:'d_3', titolo:'Guida Omnicomprensiva di Xanathar',
     url:'https://anyflip.com/cdguy/ktdn',
-    copertina:'https://imgs.search.brave.com/zasluTHQud58rNjsbQze13Gzxo6RtickHQlpGd-dz1A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9ibG9nZ2VyLmdvb2dsZXVzZXJjb250ZW50LmNvbS9pbWcvYi9SMjl2WjJ4bC9BVnZYc0VnVl80aUJaRkxxMVpQWkJPX0VielF5NzNpU1haZ2pNWS03WlZWNnYxT3U1N0psRjR6LUhqUEh1Mm5RV1gxN0xNbWNPZTJDMGhQYUh1SFZ5Z1BweFdQSjZVbVo5dGdLeEF5U2QzWU1udDhTMnZ1ZW50WEZzeGZhWlkzSVdsampCNUdqTklVYVJwMG1PNWJOUWJZDDRNQ0tMWXVveWh2ZG5tVGthS1V2WVZ5aVhLVUhwb1VmN05ZUVREUTd3ZDZoL3c0ODAtaDY0MC8xNzIyMjYxMDE2LndlYnA' },
+    copertina:'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgV_4iBZFLq1ZPZBO_EbzQy73iSXZgjMY-7ZVV6v1Ou57JlF4z-HjPHu2nQWX17LMmcOe2C0hPaHuHVygPpxWPJ6UmZ9tgKxAySd3YMnt8S2vuentXFsxfaZY3IWljjB5GjNIUaRp0mO5bNQbY4MCKLYuoyhvdnmTkaKUvYVyiXKUHpoUf7NYQTDQ7wd6h/w480-h640/1722261016.webp' },
   { id:'d_4', titolo:'Mostri del Multiverso',
     url:'https://online.anyflip.com/liohb/gpqn/mobile/index.html',
-    copertina:'https://imgs.search.brave.com/ST0fW3npHEN3LEvQNCD4fgISJUe1AQygXkgwFmZRjms/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cudGVsb2RvaW9pbGR1bmdlb24uaXQvd3AtY29udGVudC91cGxvYWRzLzIwMjQvMDYvbWFudWFsZS1tb3N0cmkyMDI0LWluZ2xlc2UtNzkzeDEwMjQud2VicA' },
+    copertina:'https://www.telodoioildungeon.it/wp-content/uploads/2024/06/manuale-mostri2024-inglese-793x1024.webp' },
   { id:'d_5', titolo:'7th Sea',
     url:'https://anyflip.com/tcjtu/qmsn/basic',
-    copertina:'https://imgs.search.brave.com/KQRO3Czs7poCuFw26r1NLI4DoRgpl2J4O8sbffheHVQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNzF2RVF5N3ozSkwuanBn' },
+    copertina:'https://m.media-amazon.com/images/I/71vEQy7z3JL.jpg' },
   { id:'d_6', titolo:'Guida agli Incontri Sessuali',
     url:'https://www.scribd.com/document/627164140/Sexual-guide-to-5e-v1-1#page=19',
-    copertina:'https://imgs.search.brave.com/awQKYxtMw1f0zA2tImssRiFNvg0mVriEEAqG1HcoQ6g/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWd2Mi0xLWYuc2NyaWJkYXNzZXRzLmNvbS9pbWcvZG9jdW1lbnQvNjI3MTY0MTQwLzE0OXgxOTgvYmU2MjA4MDdjYi8xNzcyOTg5NTQxP3Y9MQ' },
+    copertina:'https://imgv2-1-f.scribdassets.com/img/document/627164140/149x198/be620807cb/1772989541?v=1' },
   { id:'d_7', titolo:"Technomancer's Textbook",
     url:'https://archive.org/details/technomancers-textbook/mode/2up',
-    copertina:'https://imgs.search.brave.com/fBkwaXEDe3lvcZtWS2b0f-37b2Y9CM91l1tLySa5EFg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmV2aWV3LnJlZGQuaXQvdGVjaG5vbWFuY2Vycy10ZXh0Ym9vay1hLWZyZWUtMjc1LXBhZ2UtYm9vay1mb3ItcnVubmluZy1hLWQtdi0wLWNhdjVqY2c0dDlnNjEuanBnP3dpZHRoPTY0MCZjcm9wPXNtYXJ0JmF1dG89d2VicCZzPTYzYzAwMWJkMWM5MmFiNWQ0ZDMxMmQ1NDJkYzkwNDcxNGM0ODE2ZTA' }
+    copertina:'https://preview.redd.it/technomancers-textbook-a-free-275-page-book-for-running-a-d-v-0-cav5jcg4t9g61.jpg?width=640&crop=smart&auto=webp&s=63c001bd1c92ab5d4d312d542dc904714c4816e0' }
 ];
 
 function _libroCard(libro, showDelete) {
