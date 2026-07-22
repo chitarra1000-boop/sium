@@ -16794,7 +16794,12 @@ function _ovStartDraw(layerKey, factionId) {
   _leafletMap.dragging.disable();
   _leafletMap.getContainer().style.cursor = 'crosshair';
   var hint = document.querySelector('.mappa-draw-hint');
-  if (hint) { hint.style.display='block'; hint.style.color='#f0d070'; hint.textContent='🖊 Click per aggiungere vertici · Doppio-click per chiudere · ESC per annullare'; }
+  if (hint) {
+    hint.style.display = 'block';
+    hint.innerHTML =
+      '<span class="ov-hint-text" style="color:#f0d070;">🖊 0 vertici — clicca sulla mappa per aggiungere punti · ESC annulla</span>' +
+      '<button onclick="_ovFinishDraw()" style="margin-left:10px;background:rgba(120,200,120,0.15);border:1px solid #6c6;color:#afa;border-radius:4px;padding:4px 14px;cursor:pointer;font-size:11px;font-family:inherit;vertical-align:middle;">💾 Salva Zona</button>';
+  }
 }
 
 function _ovCancelDraw() {
@@ -16822,10 +16827,12 @@ function _ovFinishDraw() {
   if (!_ovDrawActive) return;
   if (_ovDrawPoints.length < 3) {
     var hint = document.querySelector('.mappa-draw-hint');
-    if (hint) { hint.textContent = '⚠ Servono almeno 3 vertici per chiudere il poligono!'; hint.style.color = '#ff9090'; }
+    if (hint) {
+      var ht = hint.querySelector('.ov-hint-text');
+      if (ht) { ht.style.color = '#ff9090'; ht.textContent = '⚠ Servono almeno 3 vertici! Continua a cliccare sulla mappa.'; }
+    }
     return;
   }
-  var mid = state.mappaActiveId;
   var lk = _ovDrawLayerKey; var fid = _ovDrawFactionId;
   var pts = _ovDrawPoints.slice();
   _ovCancelDraw();
@@ -16835,10 +16842,31 @@ function _ovFinishDraw() {
   var data = { factionId: fid, points: pts };
   ld.polygons[pid] = data;
   _ovFbSavePoly(lk, pid, data);
+  /* attiva il layer se non è già visibile, così l'utente vede subito la zona */
+  if (state.mappaLayerVisible !== lk) {
+    state.mappaLayerVisible = lk;
+    document.querySelectorAll('.mappa-layer-btn').forEach(function(b){ b.classList.remove('active'); });
+    var lb = document.querySelector('.mappa-layer-btn[data-lk="' + lk + '"]');
+    if (lb) lb.classList.add('active');
+  }
   refreshMappaOverlays();
   /* aggiorna contatore poligoni nel pannello */
   var op = document.querySelector('.mappa-overlay-panel.open');
   if (op) _renderOverlayPanel(op, lk);
+  /* messaggio di successo con pulsante per zona staccata */
+  var hint2 = document.querySelector('.mappa-draw-hint');
+  if (hint2) {
+    var facNome = (ld.factions && ld.factions[fid] && ld.factions[fid].nome) ? ld.factions[fid].nome : '';
+    hint2.style.display = 'block';
+    hint2.innerHTML =
+      '<span style="color:#90ee90;">✅ Zona salvata' + (facNome ? ' per &ldquo;' + facNome + '&rdquo;' : '') + '!</span>' +
+      '<span style="color:var(--text-muted);font-size:11px;margin-left:8px;">Per una zona staccata della stessa fazione →</span>' +
+      '<button onclick="_ovStartDraw(\'' + lk + '\',\'' + fid + '\')" style="margin-left:8px;background:rgba(201,165,92,0.15);border:1px solid var(--gold-dim);color:var(--gold);border-radius:4px;padding:4px 12px;cursor:pointer;font-size:11px;font-family:inherit;vertical-align:middle;">✏ Altra Zona</button>';
+    setTimeout(function() {
+      var h2 = document.querySelector('.mappa-draw-hint');
+      if (h2 && !_ovDrawActive) h2.style.display = 'none';
+    }, 7000);
+  }
 }
 
 /* ---- PANNELLO DM GESTIONE FAZIONI ---- */
@@ -16975,7 +17003,7 @@ function _renderOverlayPanel(panel, layerKey) {
   /* Hint ESC */
   var hintDiv = document.createElement('div');
   hintDiv.style.cssText = 'font-size:10px;color:var(--text-faint);font-style:italic;margin-top:8px;line-height:1.5;border-top:1px solid var(--border-subtle);padding-top:8px;';
-  hintDiv.innerHTML = '<b>Come disegnare:</b><br>1. Clicca ✏ accanto alla fazione<br>2. Click sulla mappa per aggiungere vertici (illimitati)<br>3. Doppio-click per chiudere il poligono<br>4. ESC per annullare<br><br><b>Tasto destro</b> su un poligono per eliminarlo';
+  hintDiv.innerHTML = '<b>Come disegnare:</b><br>1. Clicca ✏ accanto alla fazione<br>2. Click sulla mappa per aggiungere vertici (illimitati)<br>3. Clicca <b>💾 Salva Zona</b> per chiudere<br>4. ESC per annullare<br><br><b>Zone staccate:</b> salva la prima zona, poi clicca di nuovo ✏ per disegnarne un\'altra separata della stessa fazione.<br><br><b>Tasto destro</b> su un poligono per eliminarlo';
   body.appendChild(hintDiv);
 }
 
@@ -17197,6 +17225,7 @@ function renderMappa() {
   OVERLAY_DEFS.forEach(function(def) {
     var btn = document.createElement('button');
     btn.className = 'mappa-layer-btn' + (state.mappaLayerVisible === def.key ? ' active' : '');
+    btn.dataset.lk = def.key;
     btn.textContent = def.icon + ' ' + def.label;
     btn.onclick = function() {
       if (state.mappaLayerVisible === def.key) {
@@ -17361,7 +17390,7 @@ function initLeafletMap(mapDiv, infoPanel) {
           _ovDrawPoly = L.polygon(_ovDrawPoints.map(function(p){ return [p.lat, p.lng]; }), { color:_col, fillColor:_col, fillOpacity:0.15, weight:2, dashArray:'6,4' }).addTo(_leafletMap);
         }
         var hint = document.querySelector('.mappa-draw-hint');
-        if (hint) hint.textContent = '🖊 ' + _ovDrawPoints.length + ' vertici · Doppio-click per chiudere · ESC per annullare';
+        if (hint) { var ht = hint.querySelector('.ov-hint-text'); if (ht) ht.textContent = '🖊 ' + _ovDrawPoints.length + ' vertici — clicca per aggiungere · Salva Zona o doppio-click per chiudere · ESC annulla'; }
         return;
       }
       /* Modalità flag */
