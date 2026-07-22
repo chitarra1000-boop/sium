@@ -6645,6 +6645,294 @@ function renderMain() {
 }
 
 /* ============================================================
+   SCHEDE ALTERNATIVE (7th Sea, Cthulhu, LotR)
+   ============================================================ */
+
+var SHEET_DEFS = {
+  '7thsea': {
+    label: '7th Sea',
+    thumbnail: 'schede/7th_sea.webp',
+    pages: ['schede/7th_sea.webp'],
+    pageLabels: ['Scheda']
+  },
+  'cthulhu': {
+    label: 'Il Richiamo di Cthulhu',
+    thumbnail: 'schede/cthulhu_1.png',
+    pages: ['schede/cthulhu_1.png', 'schede/cthulhu_2.png'],
+    pageLabels: ['Scheda', 'Retro']
+  },
+  'lotr': {
+    label: 'Il Signore degli Anelli',
+    thumbnail: 'schede/lotr_1.png',
+    pages: ['schede/lotr_1.png', 'schede/lotr_2.png'],
+    pageLabels: ['Scheda', 'Retro']
+  }
+};
+
+/* Mostra un input temporaneo sovrapposto alla scheda per aggiungere/modificare un'annotazione */
+function _showAnnotInput(overlay, x, y, initialText, onDone) {
+  var old = document.getElementById('annot-tmp');
+  if (old) old.remove();
+
+  var inp = document.createElement('textarea');
+  inp.id = 'annot-tmp';
+  inp.value = initialText;
+  inp.rows = 2;
+  inp.style.cssText =
+    'position:absolute;left:'+x+'%;top:'+y+'%;transform:translateY(-50%);' +
+    'width:28%;min-width:80px;background:rgba(255,255,255,0.92);' +
+    'border:1.5px solid #4466bb;border-radius:3px;' +
+    'font-size:clamp(7px,1.1vw,12px);padding:2px 4px;z-index:20;' +
+    'resize:none;outline:none;color:#000;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,0.25);';
+
+  overlay.appendChild(inp);
+  inp.focus();
+  if (initialText) inp.select();
+
+  var done = false;
+  function finish(save) {
+    if (done) return; done = true;
+    var val = inp.value.trim();
+    inp.remove();
+    onDone(save ? (val || null) : (initialText || null));
+  }
+
+  inp.onblur   = function()  { finish(true); };
+  inp.onkeydown = function(e) {
+    e.stopPropagation();
+    if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(true); }
+  };
+  inp.onclick = function(e) { e.stopPropagation(); };
+}
+
+/* Render di una scheda alternativa con overlay annotazioni */
+function _renderSchedaAnnotata(tipo) {
+  var def = SHEET_DEFS[tipo];
+  if (!def) return document.createElement('div');
+  var _dmView = state.schedePGViewMode;
+
+  if (!state.scheda.annotations) state.scheda.annotations = {};
+  if (typeof state.scheda.annotPage !== 'number') state.scheda.annotPage = 0;
+  var curPage = Math.min(state.scheda.annotPage, def.pages.length - 1);
+  var pageKey = 'p' + curPage;
+  if (!state.scheda.annotations[pageKey]) state.scheda.annotations[pageKey] = {};
+  var pageAnns = state.scheda.annotations[pageKey];
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'min-height:100vh;display:flex;flex-direction:column;background:#5a5a5a;';
+
+  /* ---- NAV BAR ---- */
+  var nav = document.createElement('div');
+  nav.style.cssText = 'background:#1a1a1a;border-bottom:1px solid #333;padding:0.45rem 1rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:50;';
+
+  var bk = document.createElement('button');
+  bk.textContent = '← Indietro';
+  bk.style.cssText = 'background:#333;border:1px solid #555;color:#ccc;border-radius:3px;padding:0.3rem 0.7rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;';
+  bk.onclick = function() {
+    if (_dmView) {
+      state.schedePGViewMode = false; state.schedePGOpenChar = null;
+      state.schedaAttivaId = null; state.scheda = {}; state.companions = {};
+    } else {
+      state.schedaAttivaId = null;
+    }
+    renderMain();
+  };
+  nav.appendChild(bk);
+
+  var nameInp = document.createElement('input');
+  nameInp.type = 'text';
+  nameInp.value = state.scheda.nome || '';
+  nameInp.placeholder = 'Nome personaggio';
+  nameInp.readOnly = _dmView;
+  nameInp.style.cssText = 'flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid #c9a55c;color:#f0e4cc;font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;outline:none;padding:0.2rem 0.4rem;';
+  nameInp.oninput = function() { state.scheda.nome = this.value; if (!_dmView) fbSaveScheda(); };
+  nav.appendChild(nameInp);
+
+  if (_dmView) {
+    var badge = document.createElement('span');
+    badge.textContent = '⚔ Vista Master — sola lettura';
+    badge.style.cssText = 'font-size:10px;color:#c9a55c;background:rgba(201,165,92,0.1);border:1px solid rgba(201,165,92,0.3);border-radius:3px;padding:0.2rem 0.6rem;';
+    nav.appendChild(badge);
+  }
+
+  /* Tabs pagine */
+  if (def.pages.length > 1) {
+    var tabsWrap = document.createElement('div');
+    tabsWrap.style.cssText = 'display:flex;gap:0.3rem;margin-left:auto;';
+    def.pageLabels.forEach(function(lbl, i) {
+      var tab = document.createElement('button');
+      tab.textContent = lbl;
+      tab.style.cssText = 'background:' + (i === curPage ? '#8b6f3f' : '#2a2a2a') + ';border:1px solid #c9a55c;color:#f0e4cc;border-radius:3px;padding:0.25rem 0.7rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;';
+      tab.onclick = function() {
+        state.scheda.annotPage = i;
+        if (!_dmView) fbSaveScheda();
+        renderMain();
+      };
+      tabsWrap.appendChild(tab);
+    });
+    nav.appendChild(tabsWrap);
+  }
+
+  /* Istruzioni uso */
+  if (!_dmView) {
+    var hint = document.createElement('div');
+    hint.style.cssText = 'width:100%;font-size:10px;color:#888;padding:0.1rem 0;';
+    hint.textContent = '✏ Clicca in un punto vuoto della scheda per aggiungere testo · Clicca su un testo per modificarlo · Tasto destro per eliminarlo · Invio per confermare · ESC per annullare';
+    nav.appendChild(hint);
+  }
+  wrap.appendChild(nav);
+
+  /* ---- SHEET + OVERLAY ---- */
+  var sheetOuter = document.createElement('div');
+  sheetOuter.style.cssText = 'flex:1;overflow-y:auto;padding:1rem;display:flex;justify-content:center;';
+
+  var sheetWrap = document.createElement('div');
+  sheetWrap.style.cssText = 'position:relative;width:100%;max-width:850px;';
+
+  var img = document.createElement('img');
+  img.src = def.pages[curPage];
+  img.style.cssText = 'width:100%;display:block;pointer-events:none;border:2px solid #333;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+  sheetWrap.appendChild(img);
+
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;' + (_dmView ? '' : 'cursor:crosshair;');
+
+  /* Render annotazioni esistenti */
+  Object.keys(pageAnns).forEach(function(aid) {
+    var ann = pageAnns[aid];
+    if (!ann || !ann.text) return;
+
+    var el = document.createElement('div');
+    el.style.cssText =
+      'position:absolute;left:'+ann.x+'%;top:'+ann.y+'%;transform:translateY(-50%);' +
+      'color:rgba(0,0,0,0.9);font-size:clamp(7px,1.05vw,12px);' +
+      'white-space:pre-wrap;word-break:break-word;max-width:28%;' +
+      'pointer-events:' + (_dmView ? 'none' : 'auto') + ';' +
+      'cursor:' + (_dmView ? 'default' : 'pointer') + ';z-index:5;line-height:1.25;' +
+      'background:transparent;';
+    el.textContent = ann.text;
+
+    if (!_dmView) {
+      el.onclick = function(e) {
+        e.stopPropagation();
+        _showAnnotInput(overlay, ann.x, ann.y, ann.text, function(newText) {
+          if (newText === null || newText === '') {
+            delete pageAnns[aid];
+          } else {
+            pageAnns[aid].text = newText;
+          }
+          state.scheda.annotations[pageKey] = pageAnns;
+          fbSaveScheda(); renderMain();
+        });
+      };
+      el.oncontextmenu = function(e) {
+        e.preventDefault();
+        delete pageAnns[aid];
+        state.scheda.annotations[pageKey] = pageAnns;
+        fbSaveScheda(); renderMain();
+      };
+    }
+    overlay.appendChild(el);
+  });
+
+  /* Click per aggiungere nuova annotazione */
+  if (!_dmView) {
+    overlay.onclick = function(e) {
+      if (e.target !== overlay) return;
+      var rect = overlay.getBoundingClientRect();
+      var x = (e.clientX - rect.left) / rect.width * 100;
+      var y = (e.clientY - rect.top) / rect.height * 100;
+      _showAnnotInput(overlay, x, y, '', function(newText) {
+        if (!newText) return;
+        var aid = 'a' + Date.now();
+        state.scheda.annotations[pageKey][aid] = { x: x, y: y, text: newText };
+        fbSaveScheda(); renderMain();
+      });
+    };
+  }
+
+  sheetWrap.appendChild(overlay);
+  sheetOuter.appendChild(sheetWrap);
+  wrap.appendChild(sheetOuter);
+  return wrap;
+}
+
+/* Modal selezione tipo scheda */
+function _renderTipoSelectorModal(onSelect) {
+  var back = document.createElement('div');
+  back.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;';
+
+  var box = document.createElement('div');
+  box.style.cssText = 'background:#1a1a2a;border:1px solid #c9a55c;border-radius:8px;padding:1.5rem;max-width:800px;width:100%;';
+  box.onclick = function(e) { e.stopPropagation(); };
+
+  var title = document.createElement('div');
+  title.style.cssText = 'font-family:\'Cinzel\',serif;font-size:16px;font-weight:700;color:#f0d070;letter-spacing:0.1em;margin-bottom:1.25rem;text-align:center;';
+  title.textContent = 'Scegli il tipo di scheda';
+  box.appendChild(title);
+
+  var grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;';
+
+  var types = [
+    { key: 'normale', label: 'Normale (D&D 5e)', thumb: null, desc: 'Scheda digitale interattiva' }
+  ];
+  Object.keys(SHEET_DEFS).forEach(function(k) {
+    types.push({ key: k, label: SHEET_DEFS[k].label, thumb: SHEET_DEFS[k].thumbnail, desc: '' });
+  });
+
+  types.forEach(function(t) {
+    var card = document.createElement('div');
+    card.style.cssText = 'border:2px solid #3a3a4a;border-radius:6px;overflow:hidden;cursor:pointer;transition:border-color 0.2s,transform 0.2s;background:#12121e;';
+    card.onmouseenter = function() { card.style.borderColor='#c9a55c'; card.style.transform='translateY(-3px)'; };
+    card.onmouseleave = function() { card.style.borderColor='#3a3a4a'; card.style.transform=''; };
+
+    var imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'height:180px;overflow:hidden;background:#0a0a14;display:flex;align-items:flex-start;justify-content:center;';
+    if (t.thumb) {
+      var im = document.createElement('img');
+      im.src = t.thumb;
+      im.style.cssText = 'width:100%;object-fit:cover;object-position:top;';
+      imgWrap.appendChild(im);
+    } else {
+      imgWrap.style.alignItems = 'center';
+      imgWrap.innerHTML = '<span style="font-size:3rem;">⚔</span>';
+    }
+    card.appendChild(imgWrap);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'padding:0.75rem;';
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#f0d070;';
+    lbl.textContent = t.label;
+    body.appendChild(lbl);
+    if (t.desc) {
+      var dsc = document.createElement('div');
+      dsc.style.cssText = 'font-size:11px;color:#888;margin-top:0.25rem;';
+      dsc.textContent = t.desc;
+      body.appendChild(dsc);
+    }
+    card.appendChild(body);
+
+    card.onclick = function() { back.remove(); onSelect(t.key); };
+    grid.appendChild(card);
+  });
+
+  box.appendChild(grid);
+
+  var cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Annulla';
+  cancelBtn.style.cssText = 'margin-top:1rem;background:transparent;border:1px solid #555;color:#888;border-radius:3px;padding:0.4rem 1rem;cursor:pointer;font-size:12px;width:100%;';
+  cancelBtn.onclick = function() { back.remove(); };
+  box.appendChild(cancelBtn);
+
+  back.appendChild(box);
+  back.onclick = function() { back.remove(); };
+  document.body.appendChild(back);
+}
+
+/* ============================================================
    LIBRERIA
    ============================================================ */
 
@@ -12771,10 +13059,20 @@ function _companionDefault() {
 }
 
 function _newScheda() {
-  var nid='c'+Date.now();
-  var ns=Object.assign(_schedaDefault(),{id:nid});
-  state.schedeList.push(ns); state.scheda=ns; state.schedaAttivaId=nid;
-  fbSaveScheda(); renderMain();
+  _renderTipoSelectorModal(function(tipo) {
+    var nid = 'c' + Date.now();
+    var ns;
+    if (tipo === 'normale') {
+      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: 'normale' });
+    } else {
+      ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
+    }
+    state.schedeList.push(ns);
+    state.scheda = ns;
+    state.schedaAttivaId = nid;
+    fbSaveScheda();
+    renderMain();
+  });
 }
 
 function _renderSchedaList() {
@@ -13016,6 +13314,10 @@ function renderScheda() {
 
   if(!state.schedePGViewMode && state.companionShowForm&&state.companionEditingCharId===state.schedaAttivaId) return _renderCompanionForm(state.schedaAttivaId);
   if(state.schedaAttivaId===null) return _renderSchedaList();
+
+  /* Routing per schede alternative */
+  var _sTipo = state.scheda.schedaTipo || 'normale';
+  if (_sTipo !== 'normale' && SHEET_DEFS[_sTipo]) return _renderSchedaAnnotata(_sTipo);
 
   var wrap=document.createElement('div');
   wrap.style.cssText='display:flex;flex-direction:column;background:#5a5a5a;';
