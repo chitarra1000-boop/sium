@@ -823,6 +823,21 @@
 
   .weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.5rem; }
   @media (max-width: 640px) { .weapon-grid { grid-template-columns: 1fr; } }
+
+  /* ===== LIBRERIA ===== */
+  .libro-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:1.5rem; }
+  @media (max-width:640px) { .libro-grid { grid-template-columns:repeat(2,1fr); } }
+  .libro-card { background:linear-gradient(165deg,var(--bg-card-elevated),var(--bg-card)); border:1px solid var(--border-subtle); border-radius:6px; overflow:hidden; cursor:pointer; transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s; display:flex; flex-direction:column; text-decoration:none; }
+  .libro-card:hover { border-color:var(--border-gold); transform:translateY(-4px); box-shadow:var(--shadow-card-hover); }
+  .libro-card-img { aspect-ratio:2/3; overflow:hidden; background:var(--bg-base); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .libro-card-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease; display:block; }
+  .libro-card:hover .libro-card-img img { transform:scale(1.04); }
+  .libro-card-img-ph { font-size:3.5rem; opacity:0.25; }
+  .libro-card-body { padding:0.75rem 0.85rem; flex:1; }
+  .libro-card-title { font-family:'Cinzel',serif; font-size:18px; font-weight:700; color:var(--gold-bright); line-height:1.3; margin:0; }
+  .libro-add-form { display:flex; flex-direction:column; gap:0.5rem; padding:1rem; background:var(--bg-card); border:1px solid var(--border-soft); border-radius:6px; margin-bottom:1.5rem; }
+  .libro-add-form input { background:var(--bg-base); border:1px solid var(--border-soft); color:var(--text-main); font-family:'EB Garamond',serif; font-size:15px; padding:0.45rem 0.7rem; border-radius:3px; outline:none; transition:border-color 0.2s; }
+  .libro-add-form input:focus { border-color:var(--border-gold); }
   .card--wide { grid-column: span 2; }
   @media (max-width: 700px) { .card--wide { grid-column: span 1; } }
 
@@ -6275,7 +6290,11 @@ var state = {
   schedePGAll: null,     // null = non ancora caricato, {} = caricato (vuoto o con dati)
   schedePGFilter: 'tutti',
   schedePGOpenChar: null, // {username, charId, char} — scheda aperta, null = lista
-  schedePGViewMode: false // true = DM sta guardando scheda completa
+  schedePGViewMode: false, // true = DM sta guardando scheda completa
+
+  /* ===== LIBRERIA ===== */
+  libriCustom: null,    // null = non caricato, {} = caricato
+  libriShowForm: false  // true = form aggiungi libro visibile
 };
 
 /* Numero di settori per ciascuno stadio */
@@ -6567,6 +6586,7 @@ function render() {
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
   else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(renderScheda()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'libri') main.appendChild(renderLibri());
   contentWrap.appendChild(main);
 
   if (state.regiaActive) {
@@ -6608,6 +6628,7 @@ function renderMain() {
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
   else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(renderScheda()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'libri') main.appendChild(renderLibri());
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -6620,6 +6641,182 @@ function renderMain() {
     if (state.regiaActive && !existingRegia) cw.appendChild(renderRegiaSonora());
     if (!state.regiaActive && existingRegia) existingRegia.remove();
   }
+}
+
+/* ============================================================
+   LIBRERIA
+   ============================================================ */
+
+var LIBRI_DEFAULT = [
+  { id:'d_0', titolo:'Guida del DM',
+    url:'https://anyflip.com/fqnfa/nyqv/basic',
+    copertina:'https://imgs.search.brave.com/5DG_uiDaJZYJ9FRUQozRf3_7A7eG5NFA-MTOoMIrOic/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNTFpZDZqQkNRT0wuanBn' },
+  { id:'d_1', titolo:'Manuale del Giocatore',
+    url:'https://online.anyflip.com/piwcj/iafx/mobile/index.html',
+    copertina:'https://imgs.search.brave.com/kU3lAXyKqdU0AEjgR2zm4Gws8IJ7aU2HiAJD2ZOUo0w/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cuZHJhZ29uc2xhaXIuaXQvaW1hZ2VzLzVlL3BoYi8wMS5qcGc' },
+  { id:'d_2', titolo:'Calderone Omnicomprensivo di Tasha',
+    url:'https://online.anyflip.com/jzhjh/dako/mobile/index.html',
+    copertina:'https://imgs.search.brave.com/76_qNPHfkN3JtUJtCPTkXhBpHqwMoQQdqxe41Q8dk4Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9ob2JieWJyb3RoZXJzLml0L2Nkbi9zaG9wL2ZpbGVzL3MtbDE2MDBfMV9kMDk5NzhjYy04ZGE0LTQ5ZGMtYmFkNC1hNGM4YzU0OWE3NTgud2VicD92PTE3MzQ5NzU0ODImd2lkdGg9MTQ0NQ' },
+  { id:'d_3', titolo:'Guida Omnicomprensiva di Xanathar',
+    url:'https://anyflip.com/cdguy/ktdn',
+    copertina:'https://imgs.search.brave.com/zasluTHQud58rNjsbQze13Gzxo6RtickHQlpGd-dz1A/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9ibG9nZ2VyLmdvb2dsZXVzZXJjb250ZW50LmNvbS9pbWcvYi9SMjl2WjJ4bC9BVnZYc0VnVl80aUJaRkxxMVpQWkJPX0VielF5NzNpU1haZ2pNWS03WlZWNnYxT3U1N0psRjR6LUhqUEh1Mm5RV1gxN0xNbWNPZTJDMGhQYUh1SFZ5Z1BweFdQSjZVbVo5dGdLeEF5U2QzWU1udDhTMnZ1ZW50WEZzeGZhWlkzSVdsampCNUdqTklVYVJwMG1PNWJOUWJZDDRNQ0tMWXVveWh2ZG5tVGthS1V2WVZ5aVhLVUhwb1VmN05ZUVREUTd3ZDZoL3c0ODAtaDY0MC8xNzIyMjYxMDE2LndlYnA' },
+  { id:'d_4', titolo:'Mostri del Multiverso',
+    url:'https://online.anyflip.com/liohb/gpqn/mobile/index.html',
+    copertina:'https://imgs.search.brave.com/ST0fW3npHEN3LEvQNCD4fgISJUe1AQygXkgwFmZRjms/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cudGVsb2RvaW9pbGR1bmdlb24uaXQvd3AtY29udGVudC91cGxvYWRzLzIwMjQvMDYvbWFudWFsZS1tb3N0cmkyMDI0LWluZ2xlc2UtNzkzeDEwMjQud2VicA' },
+  { id:'d_5', titolo:'7th Sea',
+    url:'https://anyflip.com/tcjtu/qmsn/basic',
+    copertina:'https://imgs.search.brave.com/KQRO3Czs7poCuFw26r1NLI4DoRgpl2J4O8sbffheHVQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1lZGlhLWFtYXpvbi5jb20vaW1hZ2VzL0kvNzF2RVF5N3ozSkwuanBn' },
+  { id:'d_6', titolo:'Guida agli Incontri Sessuali',
+    url:'https://www.scribd.com/document/627164140/Sexual-guide-to-5e-v1-1#page=19',
+    copertina:'https://imgs.search.brave.com/awQKYxtMw1f0zA2tImssRiFNvg0mVriEEAqG1HcoQ6g/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWd2Mi0xLWYuc2NyaWJkYXNzZXRzLmNvbS9pbWcvZG9jdW1lbnQvNjI3MTY0MTQwLzE0OXgxOTgvYmU2MjA4MDdjYi8xNzcyOTg5NTQxP3Y9MQ' },
+  { id:'d_7', titolo:"Technomancer's Textbook",
+    url:'https://archive.org/details/technomancers-textbook/mode/2up',
+    copertina:'https://imgs.search.brave.com/fBkwaXEDe3lvcZtWS2b0f-37b2Y9CM91l1tLySa5EFg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmV2aWV3LnJlZGQuaXQvdGVjaG5vbWFuY2Vycy10ZXh0Ym9vay1hLWZyZWUtMjc1LXBhZ2UtYm9vay1mb3ItcnVubmluZy1hLWQtdi0wLWNhdjVqY2c0dDlnNjEuanBnP3dpZHRoPTY0MCZjcm9wPXNtYXJ0JmF1dG89d2VicCZzPTYzYzAwMWJkMWM5MmFiNWQ0ZDMxMmQ1NDJkYzkwNDcxNGM0ODE2ZTA' }
+];
+
+function _libroCard(libro, showDelete) {
+  var a = document.createElement('a');
+  a.className = 'libro-card';
+  a.href = libro.url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+
+  var imgWrap = document.createElement('div');
+  imgWrap.className = 'libro-card-img';
+  if (libro.copertina) {
+    var im = document.createElement('img');
+    im.src = libro.copertina;
+    im.alt = libro.titolo;
+    im.onerror = function() { this.style.display='none'; imgWrap.innerHTML += '<span class="libro-card-img-ph">📖</span>'; };
+    imgWrap.appendChild(im);
+  } else {
+    imgWrap.innerHTML = '<span class="libro-card-img-ph">📖</span>';
+  }
+  a.appendChild(imgWrap);
+
+  var body = document.createElement('div');
+  body.className = 'libro-card-body';
+  var title = document.createElement('p');
+  title.className = 'libro-card-title';
+  title.textContent = libro.titolo;
+  body.appendChild(title);
+
+  if (showDelete && isDM()) {
+    var del = document.createElement('button');
+    del.textContent = '🗑';
+    del.title = 'Rimuovi libro';
+    del.style.cssText = 'margin-top:0.5rem;background:none;border:none;color:var(--text-faint);font-size:14px;cursor:pointer;padding:0;';
+    del.onclick = function(e) {
+      e.preventDefault(); e.stopPropagation();
+      if (!confirm('Rimuovere "' + libro.titolo + '" dalla libreria?')) return;
+      _db && _db.ref('libri/books/' + libro.id).remove();
+      if (state.libriCustom) delete state.libriCustom[libro.id];
+      renderMain();
+    };
+    body.appendChild(del);
+  }
+
+  a.appendChild(body);
+  return a;
+}
+
+function renderLibri() {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;min-height:100vh;';
+
+  var header = document.createElement('header');
+  header.className = 'border-b';
+  var hc = document.createElement('div');
+  hc.className = 'container-main';
+  hc.style.cssText = 'padding-top:1.5rem;padding-bottom:1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;';
+  hc.innerHTML = '<div><div class="header-eyebrow mb-2"><span>Risorse</span></div><h1 class="header-title">Libreria</h1></div>';
+
+  if (isDM()) {
+    var addBtn = document.createElement('button');
+    addBtn.className = 'btn-gold';
+    addBtn.innerHTML = (ICON.plus || '+') + ' Aggiungi Libro';
+    addBtn.style.cssText = 'align-self:flex-end;margin-bottom:0.5rem;';
+    addBtn.onclick = function() { state.libriShowForm = !state.libriShowForm; renderMain(); };
+    hc.appendChild(addBtn);
+  }
+  header.appendChild(hc);
+  wrap.appendChild(header);
+
+  var main = document.createElement('section');
+  main.className = 'container-main';
+  main.style.cssText = 'padding-top:1.5rem;padding-bottom:3rem;';
+
+  /* Form aggiungi (solo DM) */
+  if (isDM() && state.libriShowForm) {
+    var form = document.createElement('div');
+    form.className = 'libro-add-form';
+
+    var fTitle = document.createElement('div');
+    fTitle.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:var(--gold-dim);letter-spacing:0.1em;margin-bottom:0.25rem;';
+    fTitle.textContent = '+ NUOVO LIBRO';
+    form.appendChild(fTitle);
+
+    var inpTitolo = document.createElement('input');
+    inpTitolo.placeholder = 'Titolo del libro';
+    inpTitolo.style.width = '100%';
+
+    var inpUrl = document.createElement('input');
+    inpUrl.placeholder = 'Link al libro (URL)';
+    inpUrl.style.width = '100%';
+
+    var inpImg = document.createElement('input');
+    inpImg.placeholder = 'URL immagine copertina';
+    inpImg.style.width = '100%';
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:0.5rem;';
+
+    var saveBtn = document.createElement('button');
+    saveBtn.className = 'btn-gold';
+    saveBtn.textContent = 'Salva';
+    saveBtn.onclick = function() {
+      var t = inpTitolo.value.trim();
+      var u = inpUrl.value.trim();
+      var c = inpImg.value.trim();
+      if (!t || !u) { inpTitolo.style.borderColor='#c84040'; return; }
+      var id = 'b_' + Date.now();
+      var libro = { id: id, titolo: t, url: u, copertina: c };
+      if (!state.libriCustom) state.libriCustom = {};
+      state.libriCustom[id] = libro;
+      _db && _db.ref('libri/books/' + id).set({ titolo: t, url: u, copertina: c });
+      state.libriShowForm = false;
+      renderMain();
+    };
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'mappa-btn';
+    cancelBtn.textContent = 'Annulla';
+    cancelBtn.onclick = function() { state.libriShowForm = false; renderMain(); };
+
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+    form.appendChild(inpTitolo);
+    form.appendChild(inpUrl);
+    form.appendChild(inpImg);
+    form.appendChild(btnRow);
+    main.appendChild(form);
+  }
+
+  /* Griglia libri */
+  var grid = document.createElement('div');
+  grid.className = 'libro-grid';
+
+  LIBRI_DEFAULT.forEach(function(l) { grid.appendChild(_libroCard(l, false)); });
+
+  var custom = state.libriCustom || {};
+  Object.keys(custom).forEach(function(id) {
+    var l = Object.assign({ id: id }, custom[id]);
+    grid.appendChild(_libroCard(l, true));
+  });
+
+  main.appendChild(grid);
+  wrap.appendChild(main);
+  return wrap;
 }
 
 function renderSidebar() {
@@ -6708,6 +6905,25 @@ function renderSidebar() {
     };
     sb.appendChild(schedePGItem);
   }
+
+  /* Pulsante Libreria — visibile a tutti, ultimo prima del footer */
+  var libriIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+  var libriItem = document.createElement('div');
+  libriItem.className = 'nav-item' + (state.section === 'libri' ? ' active' : '');
+  libriItem.innerHTML = libriIcon + '<span>Libreria</span>';
+  libriItem.onclick = function() {
+    state.section = 'libri';
+    state.sidebarOpen = false;
+    if (state.libriCustom === null) {
+      state.libriCustom = {};
+      _db && _db.ref('libri/books').once('value', function(snap) {
+        state.libriCustom = snap.val() || {};
+        renderMain();
+      });
+    }
+    renderMain();
+  };
+  sb.appendChild(libriItem);
 
   var footer = document.createElement('div');
   footer.className = 'sidebar-footer';
