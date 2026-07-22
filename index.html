@@ -6669,55 +6669,228 @@ var SHEET_DEFS = {
   }
 };
 
-/* Mostra un input temporaneo sovrapposto alla scheda per aggiungere/modificare un'annotazione */
-function _showAnnotInput(overlay, x, y, initialText, onDone) {
-  var old = document.getElementById('annot-tmp');
-  if (old) old.remove();
+/* ============================================================
+   SCHEDE ALTERNATIVE — campi fissi sovrapposti all'immagine
+   ============================================================ */
 
-  var inp = document.createElement('textarea');
-  inp.id = 'annot-tmp';
-  inp.value = initialText;
-  inp.rows = 2;
-  inp.style.cssText =
-    'position:absolute;left:'+x+'%;top:'+y+'%;transform:translateY(-50%);' +
-    'width:28%;min-width:80px;background:rgba(255,255,255,0.92);' +
-    'border:1.5px solid #4466bb;border-radius:3px;' +
-    'font-size:clamp(7px,1.1vw,12px);padding:2px 4px;z-index:20;' +
-    'resize:none;outline:none;color:#000;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,0.25);';
-
-  overlay.appendChild(inp);
-  inp.focus();
-  if (initialText) inp.select();
-
-  var done = false;
-  function finish(save) {
-    if (done) return; done = true;
-    var val = inp.value.trim();
-    inp.remove();
-    onDone(save ? (val || null) : (initialText || null));
-  }
-
-  inp.onblur   = function()  { finish(true); };
-  inp.onkeydown = function(e) {
-    e.stopPropagation();
-    if (e.key === 'Escape') { e.preventDefault(); finish(false); }
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finish(true); }
-  };
-  inp.onclick = function(e) { e.stopPropagation(); };
+function _sf(key, tp, l, t, w, h) {
+  return { key:key, tp:tp, l:l, t:t, w:w, h:h||null };
 }
 
-/* Render di una scheda alternativa con overlay annotazioni */
-function _renderSchedaAnnotata(tipo) {
-  var def = SHEET_DEFS[tipo];
-  if (!def) return document.createElement('div');
-  var _dmView = state.schedePGViewMode;
+var SHEET_FIELDS = (function() {
+  var f = {};
 
-  if (!state.scheda.annotations) state.scheda.annotations = {};
+  /* ---- 7th Sea (1 pagina) ---- */
+  f['7thsea'] = { 0: [
+    _sf('eroe',     'i','38%','5.1%', '57%'),
+    _sf('nazione',  'i','38%','8.4%', '57%'),
+    _sf('concetto', 'i','38%','11.7%','57%'),
+    _sf('vig_att','i','3.5%','18.8%','8%'), _sf('vig_max','i','13%','18.8%','7%'),
+    _sf('gra_att','i','3.5%','26.3%','8%'), _sf('gra_max','i','13%','26.3%','7%'),
+    _sf('ris_att','i','3.5%','33.8%','8%'), _sf('ris_max','i','13%','33.8%','7%'),
+    _sf('acu_att','i','3.5%','41.3%','8%'), _sf('acu_max','i','13%','41.3%','7%'),
+    _sf('pan_att','i','3.5%','48.8%','8%'), _sf('pan_max','i','13%','48.8%','7%'),
+    _sf('ricchezza','i','53%','16%','8%'),
+    _sf('fama',      'a','27%','19%',  '29%','10.5%'),
+    _sf('background','a','62%','14.5%','35%','20%'),
+    _sf('vantaggi',  'a','27%','30.5%','29%','23%'),
+    _sf('s_titolo',    'i','63%','30.5%','34%'),
+    _sf('s_scopo',     'i','63%','33.5%','34%'),
+    _sf('s_ricompensa','i','63%','38.5%','34%'),
+    _sf('s_atto',      'i','63%','41.5%','34%'),
+    _sf('virtu', 'i','63%','47.5%','34%'),
+    _sf('hubris','i','63%','51.5%','34%'),
+    _sf('sk_allettare','i','15%','57.3%','6%'), _sf('sk_adguerra',  'i','15%','59.1%','6%'),
+    _sf('sk_atletica', 'i','15%','60.9%','6%'), _sf('sk_cavalcare', 'i','15%','62.7%','6%'),
+    _sf('sk_convincere','i','15%','64.5%','6%'),_sf('sk_empatia',   'i','15%','66.3%','6%'),
+    _sf('sk_esibirsi', 'i','15%','68.1%','6%'), _sf('sk_furto',     'i','15%','69.9%','6%'),
+    _sf('sk_intimidire','i','15%','71.7%','6%'),_sf('sk_istruzione','i','15%','73.5%','6%'),
+    _sf('sk_mira',     'i','15%','75.3%','6%'), _sf('sk_mischia',   'i','15%','77.1%','6%'),
+    _sf('sk_nascond',  'i','15%','78.9%','6%'), _sf('sk_navigaz',   'i','15%','80.7%','6%'),
+    _sf('sk_notare',   'i','15%','82.5%','6%'), _sf('sk_rissa',     'i','15%','84.3%','6%'),
+    _sf('punti_eroe','i','12.5%','96%','8%'),
+  ]};
+
+  /* ---- Cthulhu ---- */
+  f['cthulhu'] = {};
+  f['cthulhu'][0] = [
+    _sf('giocatore',  'i','1%',  '12.5%','36%'), _sf('nome',       'i','1%',  '15.6%','36%'),
+    _sf('professione','i','1%',  '18.7%','36%'), _sf('sesso',      'i','1%',  '21.8%','9%'),
+    _sf('eta',        'i','12.5%','21.8%','8%'), _sf('titoli',     'i','1%',  '24.9%','36%'),
+    _sf('luogo',      'i','1%',  '28%',  '36%'), _sf('disordini',  'i','1%',  '31.1%','36%'),
+    _sf('c_for','i','43%','12.5%','5%'), _sf('c_des','i','55%','12.5%','5%'), _sf('c_int','i','71%','12.5%','9%'),
+    _sf('c_cos','i','43%','15.6%','5%'), _sf('c_fas','i','55%','15.6%','5%'), _sf('c_man','i','71%','15.6%','9%'),
+    _sf('c_tag','i','43%','18.7%','5%'), _sf('c_san','i','55%','18.7%','5%'), _sf('c_edu','i','71%','18.7%','9%'),
+    _sf('tiro_idea',   'i','43%','21.8%','9%'), _sf('bonus_danno','i','58%','21.8%','8%'),
+    _sf('tiro_fortuna','i','77%','21.8%','9%'), _sf('miti_cthu',  'i','43%','24.9%','9%'),
+    _sf('conoscenze',  'i','61%','24.9%','8%'),
+    _sf('sanita_att','i','5%', '35.5%','10%'),
+    _sf('magia_att', 'i','55%','35.5%','10%'),
+    _sf('hp_att',    'i','55%','44.5%','10%'),
+    /* abilità – colonna sinistra */
+    _sf('sk_antropologia','i','25%','51%',   '5%'), _sf('sk_archeologia', 'i','25%','52.45%','5%'),
+    _sf('sk_arrampic',    'i','25%','53.9%', '5%'), _sf('sk_arte',        'i','25%','55.35%','5%'),
+    _sf('sk_arte1_n',     'i','13%','56.8%', '10%'),_sf('sk_arte1',       'i','25%','56.8%', '5%'),
+    _sf('sk_arte2_n',     'i','13%','58.25%','10%'),_sf('sk_arte2',       'i','25%','58.25%','5%'),
+    _sf('sk_arti_marz',   'i','25%','59.7%', '5%'), _sf('sk_ascoltare',   'i','25%','61.15%','5%'),
+    _sf('sk_astronomia',  'i','25%','62.6%', '5%'), _sf('sk_bibliotecon', 'i','25%','64.05%','5%'),
+    _sf('sk_biologia',    'i','25%','65.5%', '5%'), _sf('sk_cavalcare',   'i','25%','66.95%','5%'),
+    _sf('sk_celare',      'i','25%','68.4%', '5%'), _sf('sk_chimica',     'i','25%','69.85%','5%'),
+    _sf('sk_contabilita', 'i','25%','71.3%', '5%'), _sf('sk_contrattare', 'i','25%','72.75%','5%'),
+    _sf('sk_convincere',  'i','25%','74.2%', '5%'), _sf('sk_elettronica', 'i','25%','75.65%','5%'),
+    _sf('sk_farmacologia','i','25%','77.1%', '5%'), _sf('sk_fisica',      'i','25%','78.55%','5%'),
+    _sf('sk_fotografia',  'i','25%','80%',   '5%'), _sf('sk_geologia',    'i','25%','81.45%','5%'),
+    _sf('sk_guidare',     'i','25%','82.9%', '5%'), _sf('sk_individuare', 'i','25%','84.35%','5%'),
+    /* abilità – colonna centrale */
+    _sf('sk_intrufolarsi','i','52%','51%',   '5%'), _sf('sk_lanciare',    'i','52%','52.45%','5%'),
+    _sf('sk_legge',       'i','52%','53.9%', '5%'), _sf('sk_lingua_altra','i','52%','55.35%','5%'),
+    _sf('sk_lang1_n',     'i','36%','56.8%', '13%'),_sf('sk_lang1',       'i','52%','56.8%', '5%'),
+    _sf('sk_lang2_n',     'i','36%','58.25%','13%'),_sf('sk_lang2',       'i','52%','58.25%','5%'),
+    _sf('sk_lingua_madre','i','52%','59.7%', '5%'), _sf('sk_manovrare',   'i','52%','61.15%','5%'),
+    _sf('sk_medicina',    'i','52%','62.6%', '5%'), _sf('sk_miti_sk',     'i','52%','64.05%','5%'),
+    _sf('sk_nascondersi', 'i','52%','65.5%', '5%'), _sf('sk_nuotare',     'i','52%','66.95%','5%'),
+    _sf('sk_occultismo',  'i','52%','68.4%', '5%'), _sf('sk_orientamento','i','52%','69.85%','5%'),
+    _sf('sk_pil_n',       'i','36%','71.3%', '13%'),_sf('sk_pilotare',    'i','52%','71.3%', '5%'),
+    _sf('sk_pronto_socc', 'i','52%','72.75%','5%'), _sf('sk_psicoanalisi','i','52%','74.2%', '5%'),
+    _sf('sk_psicologia',  'i','52%','75.65%','5%'), _sf('sk_raggirare',   'i','52%','77.1%', '5%'),
+    _sf('sk_reputazione', 'i','52%','78.55%','5%'), _sf('sk_rip_elettr',  'i','52%','80%',   '5%'),
+    /* abilità – colonna destra */
+    _sf('sk_rip_meccan','i','89%','51%',   '9%'), _sf('sk_saltare',    'i','89%','52.45%','9%'),
+    _sf('sk_scassinare','i','89%','53.9%', '9%'), _sf('sk_schivare',   'i','89%','55.35%','9%'),
+    _sf('sk_seg_tracce','i','89%','56.8%', '9%'), _sf('sk_storia',     'i','89%','58.25%','9%'),
+    _sf('sk_storia_nat','i','89%','59.7%', '9%'), _sf('sk_uso_comp',   'i','89%','61.15%','9%'),
+    _sf('sk_cu1_n',     'i','64%','62.6%', '22%'),_sf('sk_cu1',        'i','89%','62.6%', '9%'),
+    _sf('sk_cu2_n',     'i','64%','64.05%','22%'),_sf('sk_cu2',        'i','89%','64.05%','9%'),
+    _sf('sk_fucile',    'i','89%','67%',   '9%'), _sf('sk_mitra',      'i','89%','68.45%','9%'),
+    _sf('sk_mitrag',    'i','89%','69.9%', '9%'), _sf('sk_pistola',    'i','89%','71.35%','9%'),
+    _sf('sk_shotgun',   'i','89%','72.8%', '9%'),
+    _sf('armi_fuoco','a','1%', '88%','55%','11%'),
+    _sf('armi_corpo', 'a','57%','88%','41%','11%'),
+  ];
+  f['cthulhu'][1] = [
+    _sf('nome2',       'i','1%',  '7.5%', '42%'), _sf('residenza',   'i','1%',  '11%',  '42%'),
+    _sf('descrizione', 'i','1%',  '14.5%','42%'), _sf('desc2',       'i','1%',  '17%',  '42%'),
+    _sf('famiglia',    'i','1%',  '20%',  '42%'), _sf('fam2',        'i','1%',  '22.5%','42%'),
+    _sf('fam3',        'i','1%',  '25%',  '42%'),
+    _sf('ep1','i','47%','7.5%', '51%'), _sf('ep2','i','47%','9.5%', '51%'),
+    _sf('ep3','i','47%','11.5%','51%'), _sf('ep4','i','47%','13.5%','51%'),
+    _sf('ep5','i','47%','15.5%','51%'),
+    _sf('ferite1','i','47%','17.5%','51%'), _sf('ferite2','i','47%','19.5%','51%'),
+    _sf('segni1', 'i','47%','21.5%','51%'), _sf('segni2', 'i','47%','23.5%','51%'),
+    _sf('segni3', 'i','47%','25%',  '51%'),
+    _sf('storia1','a','1%', '27%','45%','24%'),
+    _sf('storia2','a','48%','27%','50%','24%'),
+    _sf('reddito',     'i','2%', '54%',  '20%'), _sf('denaro_disp', 'i','28%','54%',  '18%'),
+    _sf('risparmi1',   'i','2%', '57.5%','44%'), _sf('risparmi2',   'i','2%', '60.5%','44%'),
+    _sf('proprieta1',  'i','2%', '63.5%','44%'), _sf('proprieta2',  'i','2%', '66%',  '44%'),
+    _sf('possedim1',   'i','2%', '69%',  '44%'), _sf('possedim2',   'i','2%', '71.5%','44%'),
+    _sf('equipagg','a','50%','51.5%','48%','37%'),
+    _sf('vol1_n','i','2%', '73.5%','17%'), _sf('vol1_p','i','24%','73.5%','6%'),
+    _sf('vol2_n','i','2%', '75.5%','17%'), _sf('vol2_p','i','24%','75.5%','6%'),
+    _sf('vol3_n','i','2%', '77.5%','17%'), _sf('vol3_p','i','24%','77.5%','6%'),
+    _sf('vol4_n','i','2%', '79.5%','17%'), _sf('vol4_p','i','24%','79.5%','6%'),
+    _sf('vol5_n','i','2%', '81.5%','17%'), _sf('vol5_p','i','24%','81.5%','6%'),
+    _sf('artef1','i','2%', '89.5%','22%'), _sf('incan1','i','26%','89.5%','18%'),
+    _sf('artef2','i','2%', '91%',  '22%'), _sf('incan2','i','26%','91%',  '18%'),
+    _sf('artef3','i','2%', '92.5%','22%'), _sf('incan3','i','26%','92.5%','18%'),
+    _sf('entita','a','50%','73%','48%','25%'),
+  ];
+
+  /* ---- Lord of the Rings ---- */
+  f['lotr'] = {};
+  var _lsk = [
+    ['acrobazia','57.3%'], ['artigianato','58.27%'], ['camuffare','59.24%'],
+    ['cavalcare','60.21%'], ['cercare','61.18%'], ['comb_arm','62.15%'],
+    ['comb_dist','63.12%'], ['comb_senzarmi','64.09%'], ['conoscenze','65.06%'],
+    ['correre','66.03%'], ['discutere','67%'], ['furtivita','67.97%'],
+    ['giochi','68.94%'], ['guarigione','69.91%'], ['guidare_carri','70.88%'],
+    ['imitare','71.85%'], ['individuare','72.82%'], ['interrogare','73.79%'],
+    ['intimidire','74.76%'], ['intrattenere','75.73%'], ['intuizione','76.7%'],
+    ['ispirare','77.67%'], ['lav_metalli','78.64%'], ['lav_pietra','79.61%'],
+    ['linguaggi','80.58%'], ['manualita','81.55%'], ['navigazione','82.52%'],
+    ['nuotare','83.49%'], ['occultare','84.46%'], ['persuadere','85.43%'],
+    ['pred_tempo','86.4%'], ['saltare','87.37%'], ['scalare','88.34%'],
+    ['seg_tracce','89.31%'], ['sopravvivenza','90.28%'], ['tattiche','91.25%'],
+    ['valutare','92.22%']
+  ];
+  var _p1f = [
+    _sf('nome',      'i','48%','8.5%', '49%'), _sf('giocatore', 'i','48%','11.5%','49%'),
+    _sf('cronaca',   'i','48%','14.5%','49%'),
+    _sf('ordini',     'i','1%','18%',  '28%'), _sf('ord_scelti', 'i','1%','21%',  '28%'),
+    _sf('avanzamenti','i','1%','24%',  '28%'),
+    _sf('razza','i','35%','18%','14%'), _sf('eta',  'i','35%','21%','14%'), _sf('sesso','i','35%','24%','14%'),
+    _sf('taglia','i','57%','18%','9%'), _sf('capelli','i','57%','21%','9%'), _sf('occhi','i','57%','24%','9%'),
+    _sf('altezza','i','75%','21%','14%'), _sf('peso','i','75%','24%','14%'),
+    /* attributi */
+    _sf('agi_r','i','8%', '30.5%','5%'),_sf('agi_t','i','14%','30.5%','5%'),_sf('agi_a','i','20%','30.5%','5%'),
+    _sf('for_r','i','8%', '34.5%','5%'),_sf('for_t','i','14%','34.5%','5%'),_sf('for_a','i','20%','34.5%','5%'),
+    _sf('int_r','i','8%', '38.5%','5%'),_sf('int_t','i','14%','38.5%','5%'),_sf('int_a','i','20%','38.5%','5%'),
+    _sf('per_r','i','8%', '42.5%','5%'),_sf('per_t','i','14%','42.5%','5%'),_sf('per_a','i','20%','42.5%','5%'),
+    _sf('por_r','i','8%', '46.5%','5%'),_sf('por_t','i','14%','46.5%','5%'),_sf('por_a','i','20%','46.5%','5%'),
+    _sf('vit_r','i','8%', '50.5%','5%'),_sf('vit_t','i','14%','50.5%','5%'),_sf('vit_a','i','20%','50.5%','5%'),
+    /* reazioni */
+    _sf('rap_att','i','31%','30.5%','4%'),_sf('rap_var','i','37%','30.5%','4%'),_sf('rap_tot','i','43%','30.5%','5%'),
+    _sf('res_att','i','31%','34.5%','4%'),_sf('res_var','i','37%','34.5%','4%'),_sf('res_tot','i','43%','34.5%','5%'),
+    _sf('sag_att','i','31%','38.5%','4%'),_sf('sag_var','i','37%','38.5%','4%'),_sf('sag_tot','i','43%','38.5%','5%'),
+    _sf('vol_att','i','31%','42.5%','4%'),_sf('vol_var','i','37%','42.5%','4%'),_sf('vol_tot','i','43%','42.5%','5%'),
+    _sf('corr_att','i','31%','49.5%','4%'),_sf('corr_var','i','37%','49.5%','4%'),_sf('corr_tot','i','43%','49.5%','5%'),
+    /* combattimento / fama / coraggio */
+    _sf('iniz_r','i','70%','30.5%','4%'),_sf('iniz_v','i','76%','30.5%','4%'),_sf('iniz_t','i','82%','30.5%','7%'),
+    _sf('dif_a', 'i','70%','37%',  '4%'),_sf('dif_v', 'i','76%','37%',  '4%'),_sf('dif_t', 'i','82%','37%',  '7%'),
+    _sf('fama_m','i','78%','43%',  '4%'),_sf('fama_t','i','84%','43%',  '6%'),
+    _sf('cor_m', 'i','78%','50%',  '4%'),_sf('cor_t', 'i','84%','50%',  '6%'),
+    /* testi */
+    _sf('cap_razziali','a','1%','57%','27%','7%'),
+    _sf('cap_ordine',  'a','1%','67%','27%','7%'),
+    _sf('pregi',       'a','1%','77%','27%','6.5%'),
+    _sf('difetti',     'a','1%','87%','27%','6.5%'),
+  ];
+  _lsk.forEach(function(s) {
+    _p1f.push(_sf('sk_'+s[0]+'_att','i','52%',s[1],'4%'));
+    _p1f.push(_sf('sk_'+s[0]+'_gr', 'i','59%',s[1],'5%'));
+    _p1f.push(_sf('sk_'+s[0]+'_var','i','67%',s[1],'4%'));
+    _p1f.push(_sf('sk_'+s[0]+'_tot','i','75%',s[1],'6%'));
+  });
+  f['lotr'][0] = _p1f;
+
+  f['lotr'][1] = [
+    _sf('attrezzatura','a','1%','8%','35%','44%'),
+    _sf('sal_sano',  'i','46%','20%',  '5%'), _sf('sal_frast', 'i','46%','23%',  '5%'),
+    _sf('sal_cont',  'i','46%','26.5%','5%'), _sf('sal_ferito','i','46%','30%',  '5%'),
+    _sf('sal_incap', 'i','46%','33.5%','5%'), _sf('sal_morib', 'i','46%','37%',  '5%'),
+    _sf('background','a','1%','55%','33%','17%'),
+    _sf('d_rame','i','36%','56%','7%'), _sf('d_parg','i','36%','59%','7%'),
+    _sf('d_marg','i','36%','62%','7%'), _sf('d_poro','i','36%','65%','7%'),
+    _sf('d_moro','i','36%','68%','7%'),
+    _sf('st_vig',  'i','76%','58%',  '7%'), _sf('st_aff',  'i','76%','61.5%','7%'),
+    _sf('st_stan', 'i','76%','65%',  '7%'), _sf('st_fiacc','i','76%','68.5%','7%'),
+    _sf('st_logor','i','76%','72%',  '7%'), _sf('st_esau', 'i','76%','75.5%','7%'),
+    _sf('note','a','1%','77%','33%','13%'),
+    _sf('simbolo_desc','a','55%','72%','22%','12%'),
+    _sf('ar1_nome','i','2%', '93.5%','13%'), _sf('ar1_gitt','i','17%','93.5%','8%'),
+    _sf('ar1_dann','i','27%','93.5%','8%'),  _sf('ar1_bon', 'i','37%','93.5%','8%'),
+    _sf('ar1_tag', 'i','47%','93.5%','7%'),  _sf('ar1_spec','i','56%','93.5%','12%'),
+    _sf('ar2_nome','i','2%', '95.5%','13%'), _sf('ar2_gitt','i','17%','95.5%','8%'),
+    _sf('ar2_dann','i','27%','95.5%','8%'),  _sf('ar2_bon', 'i','37%','95.5%','8%'),
+    _sf('ar2_tag', 'i','47%','95.5%','7%'),  _sf('ar2_spec','i','56%','95.5%','12%'),
+    _sf('ar3_nome','i','2%', '97.5%','13%'), _sf('ar3_gitt','i','17%','97.5%','8%'),
+    _sf('ar3_dann','i','27%','97.5%','8%'),  _sf('ar3_bon', 'i','37%','97.5%','8%'),
+    _sf('ar3_tag', 'i','47%','97.5%','7%'),  _sf('ar3_spec','i','56%','97.5%','12%'),
+  ];
+
+  return f;
+}());
+
+/* Renderizza una scheda alternativa con campi fissi sovrapposti all'immagine */
+function _renderAltSheet(tipo) {
+  var def = SHEET_DEFS[tipo];
+  var fieldsMap = SHEET_FIELDS[tipo];
+  if (!def || !fieldsMap) return document.createElement('div');
+
+  var _dmView = state.schedePGViewMode;
   if (typeof state.scheda.annotPage !== 'number') state.scheda.annotPage = 0;
-  var curPage = Math.min(state.scheda.annotPage, def.pages.length - 1);
-  var pageKey = 'p' + curPage;
-  if (!state.scheda.annotations[pageKey]) state.scheda.annotations[pageKey] = {};
-  var pageAnns = state.scheda.annotations[pageKey];
+  var curPage = Math.min(state.scheda.annotPage || 0, def.pages.length - 1);
+  var pageFields = fieldsMap[curPage] || [];
 
   var wrap = document.createElement('div');
   wrap.style.cssText = 'min-height:100vh;display:flex;flex-direction:column;background:#5a5a5a;';
@@ -6749,6 +6922,21 @@ function _renderSchedaAnnotata(tipo) {
   nameInp.oninput = function() { state.scheda.nome = this.value; if (!_dmView) fbSaveScheda(); };
   nav.appendChild(nameInp);
 
+  if (!_dmView) {
+    var delB = document.createElement('button');
+    delB.textContent = '🗑 Elimina';
+    delB.style.cssText = 'background:#4a1010;border:1px solid #c04040;color:#f08080;border-radius:3px;padding:0.3rem 0.7rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;';
+    delB.onclick = function() {
+      if (!confirm('Eliminare "' + (state.scheda.nome || 'questa scheda') + '"? Non recuperabile.')) return;
+      var _did = state.schedaAttivaId;
+      state.schedeList = state.schedeList.filter(function(x) { return x.id !== _did; });
+      fbDeleteSchedaItem(_did);
+      state.schedaAttivaId = null; state.scheda = {};
+      renderMain();
+    };
+    nav.appendChild(delB);
+  }
+
   if (_dmView) {
     var badge = document.createElement('span');
     badge.textContent = '⚔ Vista Master — sola lettura';
@@ -6756,7 +6944,6 @@ function _renderSchedaAnnotata(tipo) {
     nav.appendChild(badge);
   }
 
-  /* Tabs pagine */
   if (def.pages.length > 1) {
     var tabsWrap = document.createElement('div');
     tabsWrap.style.cssText = 'display:flex;gap:0.3rem;margin-left:auto;';
@@ -6773,17 +6960,9 @@ function _renderSchedaAnnotata(tipo) {
     });
     nav.appendChild(tabsWrap);
   }
-
-  /* Istruzioni uso */
-  if (!_dmView) {
-    var hint = document.createElement('div');
-    hint.style.cssText = 'width:100%;font-size:10px;color:#888;padding:0.1rem 0;';
-    hint.textContent = '✏ Clicca in un punto vuoto della scheda per aggiungere testo · Clicca su un testo per modificarlo · Tasto destro per eliminarlo · Invio per confermare · ESC per annullare';
-    nav.appendChild(hint);
-  }
   wrap.appendChild(nav);
 
-  /* ---- SHEET + OVERLAY ---- */
+  /* ---- IMMAGINE + CAMPI ---- */
   var sheetOuter = document.createElement('div');
   sheetOuter.style.cssText = 'flex:1;overflow-y:auto;padding:1rem;display:flex;justify-content:center;';
 
@@ -6795,64 +6974,43 @@ function _renderSchedaAnnotata(tipo) {
   img.style.cssText = 'width:100%;display:block;pointer-events:none;border:2px solid #333;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
   sheetWrap.appendChild(img);
 
-  var overlay = document.createElement('div');
-  overlay.style.cssText = 'position:absolute;inset:0;' + (_dmView ? '' : 'cursor:crosshair;');
+  var fieldsLayer = document.createElement('div');
+  fieldsLayer.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
 
-  /* Render annotazioni esistenti */
-  Object.keys(pageAnns).forEach(function(aid) {
-    var ann = pageAnns[aid];
-    if (!ann || !ann.text) return;
+  var _baseStyle = 'position:absolute;pointer-events:auto;background:transparent;border:none;outline:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:clamp(8px,1.05vw,13px);padding:0 2px;line-height:1.25;box-sizing:border-box;';
 
-    var el = document.createElement('div');
-    el.style.cssText =
-      'position:absolute;left:'+ann.x+'%;top:'+ann.y+'%;transform:translateY(-50%);' +
-      'color:rgba(0,0,0,0.9);font-size:clamp(7px,1.05vw,12px);' +
-      'white-space:pre-wrap;word-break:break-word;max-width:28%;' +
-      'pointer-events:' + (_dmView ? 'none' : 'auto') + ';' +
-      'cursor:' + (_dmView ? 'default' : 'pointer') + ';z-index:5;line-height:1.25;' +
-      'background:transparent;';
-    el.textContent = ann.text;
-
-    if (!_dmView) {
-      el.onclick = function(e) {
-        e.stopPropagation();
-        _showAnnotInput(overlay, ann.x, ann.y, ann.text, function(newText) {
-          if (newText === null || newText === '') {
-            delete pageAnns[aid];
-          } else {
-            pageAnns[aid].text = newText;
-          }
-          state.scheda.annotations[pageKey] = pageAnns;
-          fbSaveScheda(); renderMain();
-        });
-      };
-      el.oncontextmenu = function(e) {
-        e.preventDefault();
-        delete pageAnns[aid];
-        state.scheda.annotations[pageKey] = pageAnns;
-        fbSaveScheda(); renderMain();
-      };
+  pageFields.forEach(function(fd) {
+    var el, isArea = (fd.tp === 'a');
+    if (isArea) {
+      el = document.createElement('textarea');
+      el.rows = 1;
+      el.style.cssText = _baseStyle + 'left:'+fd.l+';top:'+fd.t+';width:'+fd.w+';height:'+(fd.h||'5%')+';resize:none;overflow:hidden;vertical-align:top;';
+    } else {
+      el = document.createElement('input');
+      el.type = 'text';
+      el.style.cssText = _baseStyle + 'left:'+fd.l+';top:'+fd.t+';width:'+fd.w+';height:2%;';
     }
-    overlay.appendChild(el);
+    el.value = (state.scheda[fd.key] !== undefined) ? state.scheda[fd.key] : '';
+    if (_dmView) {
+      el.readOnly = true;
+    } else {
+      if (isArea) {
+        el.style.border = '1px solid rgba(0,0,0,0.1)';
+        el.onfocus = function() { el.style.border='1px solid rgba(30,80,180,0.4)'; el.style.background='rgba(255,255,255,0.45)'; };
+        el.onblur  = function() { el.style.border='1px solid rgba(0,0,0,0.1)';   el.style.background='transparent'; };
+      } else {
+        el.style.borderBottom = '1px solid rgba(0,0,0,0.15)';
+        el.onfocus = function() { el.style.borderBottom='2px solid rgba(30,80,180,0.5)'; el.style.background='rgba(255,255,255,0.45)'; };
+        el.onblur  = function() { el.style.borderBottom='1px solid rgba(0,0,0,0.15)';    el.style.background='transparent'; };
+      }
+      (function(key, element) {
+        element.oninput = function() { state.scheda[key] = element.value; fbSaveScheda(); };
+      }(fd.key, el));
+    }
+    fieldsLayer.appendChild(el);
   });
 
-  /* Click per aggiungere nuova annotazione */
-  if (!_dmView) {
-    overlay.onclick = function(e) {
-      if (e.target !== overlay) return;
-      var rect = overlay.getBoundingClientRect();
-      var x = (e.clientX - rect.left) / rect.width * 100;
-      var y = (e.clientY - rect.top) / rect.height * 100;
-      _showAnnotInput(overlay, x, y, '', function(newText) {
-        if (!newText) return;
-        var aid = 'a' + Date.now();
-        state.scheda.annotations[pageKey][aid] = { x: x, y: y, text: newText };
-        fbSaveScheda(); renderMain();
-      });
-    };
-  }
-
-  sheetWrap.appendChild(overlay);
+  sheetWrap.appendChild(fieldsLayer);
   sheetOuter.appendChild(sheetWrap);
   wrap.appendChild(sheetOuter);
   return wrap;
@@ -13317,7 +13475,7 @@ function renderScheda() {
 
   /* Routing per schede alternative */
   var _sTipo = state.scheda.schedaTipo || 'normale';
-  if (_sTipo !== 'normale' && SHEET_DEFS[_sTipo]) return _renderSchedaAnnotata(_sTipo);
+  if (_sTipo !== 'normale' && SHEET_DEFS[_sTipo]) return _renderAltSheet(_sTipo);
 
   var wrap=document.createElement('div');
   wrap.style.cssText='display:flex;flex-direction:column;background:#5a5a5a;';
