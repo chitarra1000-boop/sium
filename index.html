@@ -6949,13 +6949,11 @@ function _render7thSeaSheet() {
   }
 
   /* ===================== SPIRALE DELLA MORTE — immagine reale + dot overlay =====================
-     L'immagine (438×280) ha già disegnati i cerchi e la legenda.
-     Sovrapponiamo 15 div cliccabili sui pallini pre-disegnati (coordinate in % sull'immagine).
-     Sezioni in senso orario: 1=sinistra (4 dot), 2=alto (4), 3=destra (4), 4=basso (3).
+     Coordinate calcolate analizzando i cluster di pixel bianchi nell'immagine 438×280.
+     Sezioni orarie: 1=sinistra(4), 2=alto(4), 3=destra(4), 4=basso(3) + 4 stelle ferite critiche.
   ============================================================ */
   function _buildSpiral(container){
     container.innerHTML='';
-    /* Wrapper con aspect ratio fisso 438:280 = 63.93% */
     var wr=document.createElement('div');
     wr.style.cssText='position:relative;width:100%;padding-top:63.93%;user-select:none;';
     var img=document.createElement('img');
@@ -6964,23 +6962,24 @@ function _render7thSeaSheet() {
     img.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;';
     wr.appendChild(img);
 
-    /* 15 dot: [sec, idx_nella_sezione, left%, top%] */
+    /* ---- 15 dot cliccabili: [sec, idx, left%, top%] ----
+       Sec1=sinistra(su), Sec2=alto(dx), Sec3=destra(giù), Sec4=basso(sx) */
     var DOTS=[
-      ['spir1',0, 33.0,76.0],
-      ['spir1',1, 31.5,61.5],
-      ['spir1',2, 32.5,47.0],
-      ['spir1',3, 36.5,33.5],
-      ['spir2',0, 47.0,18.5],
-      ['spir2',1, 55.0,11.5],
-      ['spir2',2, 63.5,10.5],
-      ['spir2',3, 71.5,15.5],
-      ['spir3',0, 83.5,29.0],
-      ['spir3',1, 90.0,44.5],
-      ['spir3',2, 90.5,60.0],
-      ['spir3',3, 87.0,74.5],
-      ['spir4',0, 78.5,87.5],
-      ['spir4',1, 66.0,93.0],
-      ['spir4',2, 54.0,88.5],
+      ['spir1',0, 44.0,68.0],  // sinistra basso
+      ['spir1',1, 42.0,57.0],
+      ['spir1',2, 42.0,46.0],
+      ['spir1',3, 44.0,35.0],  // sinistra alto
+      ['spir2',0, 56.0,18.0],  // alto sx
+      ['spir2',1, 63.0,16.0],
+      ['spir2',2, 72.0,16.0],
+      ['spir2',3, 79.0,20.0],  // alto dx
+      ['spir3',0, 92.0,38.0],  // destra alto
+      ['spir3',1, 92.0,50.0],
+      ['spir3',2, 91.0,61.0],
+      ['spir3',3, 86.0,71.0],  // destra basso
+      ['spir4',0, 72.0,80.0],  // basso dx
+      ['spir4',1, 63.0,79.0],
+      ['spir4',2, 49.0,79.0],  // basso sx
     ];
 
     DOTS.forEach(function(d){
@@ -6991,8 +6990,8 @@ function _render7thSeaSheet() {
         +'left:'+lp+'%;top:'+tp+'%;'
         +'width:6%;aspect-ratio:1;border-radius:50%;'
         +'transform:translate(-50%,-50%);'
-        +'background:'+(filled?'rgba(160,110,20,0.72)':'transparent')+';'
-        +'box-sizing:border-box;transition:background .12s;'
+        +'background:'+(filled?'rgba(150,100,10,0.75)':'transparent')+';'
+        +'transition:background .12s;'
         +(_dm?'':'cursor:pointer;');
       if(!_dm){
         (function(sec,idx,el){
@@ -7003,13 +7002,52 @@ function _render7thSeaSheet() {
           });
           el.addEventListener('mouseenter',function(){
             var f=(parseInt(s[sec])||0)>idx;
-            this.style.background=f?'rgba(160,110,20,0.9)':'rgba(201,165,92,0.4)';
+            this.style.background=f?'rgba(150,100,10,0.9)':'rgba(201,165,92,0.45)';
           });
           el.addEventListener('mouseleave',function(){
             var f=(parseInt(s[sec])||0)>idx;
-            this.style.background=f?'rgba(160,110,20,0.72)':'transparent';
+            this.style.background=f?'rgba(150,100,10,0.75)':'transparent';
           });
         }(sec,idx,el));
+      }
+      wr.appendChild(el);
+    });
+
+    /* ---- 4 stelle ferite critiche: [chiave_stato, left%, top%] ---- */
+    var STARS=[
+      ['crit1', 49.0, 25.0],  // stella sx-alto
+      ['crit2', 86.0, 25.0],  // stella dx-alto
+      ['crit3', 79.0, 79.0],  // stella dx-basso
+      ['crit4', 56.0, 71.0],  // stella sx-basso
+    ];
+
+    STARS.forEach(function(st){
+      var key=st[0],lp=st[1],tp=st[2];
+      var marked=!!s[key];
+      var el=document.createElement('div');
+      el.style.cssText='position:absolute;'
+        +'left:'+lp+'%;top:'+tp+'%;'
+        +'width:6.5%;aspect-ratio:1;border-radius:50%;'
+        +'transform:translate(-50%,-50%);'
+        +'background:'+(marked?'rgba(180,30,30,0.65)':'transparent')+';'
+        +'transition:background .12s;'
+        +'display:flex;align-items:center;justify-content:center;'
+        +'font-size:1.4em;line-height:1;'
+        +(_dm?'':'cursor:pointer;');
+      /* X rossa visibile solo se segnato */
+      if(marked){var x=document.createElement('span');x.textContent='✕';x.style.cssText='color:#fff;font-weight:900;font-size:0.65em;';el.appendChild(x);}
+      if(!_dm){
+        (function(key,el){
+          el.addEventListener('click',function(){
+            s[key]=!s[key];fbSaveScheda();_buildSpiral(container);
+          });
+          el.addEventListener('mouseenter',function(){
+            if(!s[key])this.style.background='rgba(180,30,30,0.3)';
+          });
+          el.addEventListener('mouseleave',function(){
+            this.style.background=s[key]?'rgba(180,30,30,0.65)':'transparent';
+          });
+        }(key,el));
       }
       wr.appendChild(el);
     });
