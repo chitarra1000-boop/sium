@@ -6882,7 +6882,269 @@ var SHEET_FIELDS = (function() {
 }());
 
 /* Renderizza una scheda alternativa con campi fissi sovrapposti all'immagine */
+/* ============================================================
+   7TH SEA — scheda HTML custom
+   ============================================================ */
+function _render7thSeaSheet() {
+  var _dm = state.schedePGViewMode;
+  var s   = state.scheda;
+
+  function gv(k, d) { return (s[k] !== undefined) ? s[k] : (d !== undefined ? d : ''); }
+  function sv(k, v) { if (!_dm) { s[k] = v; fbSaveScheda(); } }
+
+  /* testo singola riga */
+  function _inp(key, ph, xtra) {
+    var el = document.createElement('input'); el.type='text';
+    el.value = gv(key); el.placeholder = ph||''; el.readOnly = _dm;
+    el.style.cssText = 'width:100%;border:none;border-bottom:1px solid rgba(28,58,92,0.4);background:transparent;font-size:12px;font-family:Arial,sans-serif;padding:2px 4px;outline:none;color:#111;box-sizing:border-box;'+(xtra||'');
+    el.oninput = function() { sv(key, this.value); };
+    return el;
+  }
+  /* textarea */
+  function _ta(key, rows) {
+    var el = document.createElement('textarea');
+    el.value = gv(key); el.rows = rows||3; el.readOnly = _dm;
+    el.style.cssText = 'width:100%;border:1px solid rgba(28,58,92,0.3);background:rgba(255,255,255,0.25);font-size:11px;font-family:Arial,sans-serif;padding:4px;outline:none;color:#111;resize:vertical;box-sizing:border-box;line-height:1.4;';
+    el.oninput = function() { sv(key, this.value); };
+    return el;
+  }
+  /* numero 0-99 */
+  function _num(key, d) {
+    var el = document.createElement('input'); el.type='number'; el.min=0; el.max=99;
+    el.value = gv(key, d||0); el.readOnly = _dm;
+    el.style.cssText = 'width:56px;border:2px solid #1c3a5c;border-radius:4px;background:rgba(255,255,255,0.5);font-size:22px;font-weight:700;font-family:\'Cinzel\',serif;padding:2px 0;outline:none;color:#1c3a5c;text-align:center;box-sizing:border-box;-moz-appearance:textfield;';
+    el.oninput = function() { sv(key, parseInt(this.value)||0); };
+    return el;
+  }
+  /* intestazione sezione */
+  function _hdr(txt, sm) {
+    var d = document.createElement('div');
+    d.style.cssText = 'background:#1c3a5c;color:#f0e8c8;font-family:\'Cinzel\',serif;font-size:'+(sm?'8':'10')+'px;font-weight:700;letter-spacing:0.1em;text-align:center;padding:'+(sm?'2':'4')+'px 6px;text-transform:uppercase;';
+    d.textContent = txt; return d;
+  }
+  /* pallini cliccabili */
+  function _dots(key, max, sz) {
+    sz = sz||13;
+    var ctn = document.createElement('span');
+    ctn.style.cssText = 'display:inline-flex;align-items:center;gap:3px;flex-wrap:wrap;';
+    function refresh() {
+      ctn.innerHTML = '';
+      var val = parseInt(s[key])||0;
+      for (var i=1; i<=max; i++) { (function(n) {
+        var d = document.createElement('span');
+        d.style.cssText = 'display:inline-block;width:'+sz+'px;height:'+sz+'px;border-radius:50%;border:2px solid #1c3a5c;cursor:'+(_dm?'default':'pointer')+';background:'+(n<=val?'#1c3a5c':'transparent')+';box-sizing:border-box;flex-shrink:0;transition:background .1s;';
+        if (!_dm) d.onclick = function() { s[key]=(n===(parseInt(s[key])||0))?n-1:n; fbSaveScheda(); refresh(); };
+        ctn.appendChild(d);
+      }(i)); }
+    }
+    refresh(); return ctn;
+  }
+
+  /* ---- wrapper ---- */
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'min-height:100vh;display:flex;flex-direction:column;background:#5a5a5a;';
+
+  /* NAV BAR */
+  var nav = document.createElement('div');
+  nav.style.cssText = 'background:#1a1a1a;border-bottom:1px solid #333;padding:0.45rem 1rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;position:sticky;top:0;z-index:50;';
+  var bk = document.createElement('button');
+  bk.textContent = '← Indietro';
+  bk.style.cssText = 'background:#333;border:1px solid #555;color:#ccc;border-radius:3px;padding:0.3rem 0.7rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;';
+  bk.onclick = function() {
+    if (_dm) { state.schedePGViewMode=false; state.schedePGOpenChar=null; state.schedaAttivaId=null; state.scheda={}; state.companions={}; }
+    else { state.schedaAttivaId=null; }
+    renderMain();
+  };
+  nav.appendChild(bk);
+  var nameInp = document.createElement('input'); nameInp.type='text';
+  nameInp.value = s.nome||''; nameInp.placeholder='Nome personaggio'; nameInp.readOnly = _dm;
+  nameInp.style.cssText = 'flex:1;min-width:0;background:transparent;border:none;border-bottom:1px solid #c9a55c;color:#f0e4cc;font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;outline:none;padding:0.2rem 0.4rem;';
+  nameInp.oninput = function() { sv('nome', this.value); };
+  nav.appendChild(nameInp);
+  if (!_dm) {
+    var delB = document.createElement('button'); delB.textContent = '🗑 Elimina';
+    delB.style.cssText = 'background:#4a1010;border:1px solid #c04040;color:#f08080;border-radius:3px;padding:0.3rem 0.7rem;cursor:pointer;font-size:11px;font-family:\'Cinzel\',serif;';
+    delB.onclick = function() {
+      if (!confirm('Eliminare "' + (s.nome||'questa scheda') + '"?')) return;
+      var did = state.schedaAttivaId;
+      state.schedeList = state.schedeList.filter(function(x){return x.id!==did;});
+      fbDeleteSchedaItem(did); state.schedaAttivaId=null; state.scheda={}; renderMain();
+    };
+    nav.appendChild(delB);
+  }
+  if (_dm) {
+    var badge = document.createElement('span');
+    badge.textContent = '⚔ Vista Master — sola lettura';
+    badge.style.cssText = 'font-size:10px;color:#c9a55c;background:rgba(201,165,92,0.1);border:1px solid rgba(201,165,92,0.3);border-radius:3px;padding:0.2rem 0.6rem;';
+    nav.appendChild(badge);
+  }
+  wrap.appendChild(nav);
+
+  /* SHEET */
+  var outer = document.createElement('div');
+  outer.style.cssText = 'flex:1;overflow-y:auto;padding:1rem;display:flex;justify-content:center;';
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'width:100%;max-width:850px;background:#f0e8d0;border:3px solid #1c3a5c;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-family:\'Cinzel\',serif;';
+
+  /* --- TOP HEADER --- */
+  var topHdr = document.createElement('div');
+  topHdr.style.cssText = 'background:#0d2440;padding:8px 14px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #c9a55c;';
+  var logoTxt = document.createElement('div');
+  logoTxt.style.cssText = 'font-family:\'Cinzel\',serif;font-size:30px;font-weight:900;color:#c9a55c;letter-spacing:0.04em;text-shadow:1px 1px 3px rgba(0,0,0,0.7);white-space:nowrap;min-width:130px;';
+  logoTxt.innerHTML = '7<sup style="font-size:18px">TH</sup> SEA';
+  topHdr.appendChild(logoTxt);
+  var hFlds = document.createElement('div');
+  hFlds.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:5px;';
+  [['eroe','EROE'],['nazione','NAZIONE'],['concetto','CONCETTO']].forEach(function(p) {
+    var row = document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:8px;';
+    var lbl = document.createElement('span'); lbl.style.cssText='color:#c9a55c;font-size:9px;font-weight:700;letter-spacing:0.1em;min-width:68px;text-align:right;'; lbl.textContent=p[1]; row.appendChild(lbl);
+    var inp = _inp(p[0],''); inp.style.color='#f0e8c8'; inp.style.borderBottomColor='#c9a55c'; inp.style.fontSize='13px'; row.appendChild(inp);
+    hFlds.appendChild(row);
+  });
+  topHdr.appendChild(hFlds);
+  sheet.appendChild(topHdr);
+
+  /* --- CORPO (3 colonne) --- */
+  var body = document.createElement('div');
+  body.style.cssText = 'display:grid;grid-template-columns:180px 1fr 1fr;gap:8px;padding:8px;';
+
+  /* COL 1 — Attributi */
+  var col1 = document.createElement('div'); col1.style.cssText='display:flex;flex-direction:column;gap:5px;';
+  [
+    {key:'vigore',      label:'Vigore',       desc:'Forza e potenza fisica'},
+    {key:'grazia',      label:'Grazia',        desc:'Coordinazione e agilità'},
+    {key:'risolutezza', label:'Risolutezza',   desc:'Forza di volontà e resistenza'},
+    {key:'acume',       label:'Acume',         desc:'Rapidità di pensiero'},
+    {key:'panache',     label:'Panache',       desc:'Fascino e personalità'},
+  ].forEach(function(a) {
+    var blk = document.createElement('div');
+    blk.style.cssText = 'border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+    blk.appendChild(_hdr(a.label));
+    var inn = document.createElement('div');
+    inn.style.cssText = 'padding:6px;background:rgba(255,255,255,0.3);display:flex;flex-direction:column;align-items:center;gap:3px;';
+    inn.appendChild(_num(a.key, 2));
+    var desc = document.createElement('div'); desc.style.cssText='font-size:8px;color:#3a5a7c;font-family:Arial,sans-serif;text-align:center;font-style:italic;'; desc.textContent=a.desc;
+    inn.appendChild(desc);
+    blk.appendChild(inn); col1.appendChild(blk);
+  });
+  body.appendChild(col1);
+
+  /* COL 2 — Ricchezza / Fama / Vantaggi */
+  var col2 = document.createElement('div'); col2.style.cssText='display:flex;flex-direction:column;gap:5px;';
+
+  var ricBlk = document.createElement('div'); ricBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+  ricBlk.appendChild(_hdr('Ricchezza'));
+  var ricInn = document.createElement('div'); ricInn.style.cssText='padding:6px;background:rgba(255,255,255,0.3);display:flex;justify-content:center;'; ricInn.appendChild(_num('ricchezza',0));
+  ricBlk.appendChild(ricInn); col2.appendChild(ricBlk);
+
+  function _secTA(hdrTxt, key, rows) {
+    var blk=document.createElement('div'); blk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;flex:1;';
+    blk.appendChild(_hdr(hdrTxt));
+    var inn=document.createElement('div'); inn.style.cssText='padding:4px;background:rgba(255,255,255,0.3);height:100%;box-sizing:border-box;';
+    inn.appendChild(_ta(key,rows)); blk.appendChild(inn); return blk;
+  }
+  col2.appendChild(_secTA('Fama','fama',3));
+  col2.appendChild(_secTA('Vantaggi','vantaggi',6));
+  body.appendChild(col2);
+
+  /* COL 3 — Background / Storie / Arcani */
+  var col3 = document.createElement('div'); col3.style.cssText='display:flex;flex-direction:column;gap:5px;';
+  col3.appendChild(_secTA('Background','background',4));
+
+  var storieBlk = document.createElement('div'); storieBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+  storieBlk.appendChild(_hdr('Storie'));
+  var storieInn = document.createElement('div'); storieInn.style.cssText='padding:6px 8px;background:rgba(255,255,255,0.3);display:flex;flex-direction:column;gap:4px;';
+  [['s_titolo','Titolo'],['s_scopo','Scopo'],['s_ricompensa','Ricompensa'],['s_atto','Atto']].forEach(function(p) {
+    var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:4px;';
+    var lbl=document.createElement('span'); lbl.style.cssText='font-size:8px;font-weight:700;color:#1c3a5c;letter-spacing:0.05em;min-width:66px;'; lbl.textContent=p[1].toUpperCase(); row.appendChild(lbl);
+    row.appendChild(_inp(p[0],''));
+    storieInn.appendChild(row);
+  });
+  storieBlk.appendChild(storieInn); col3.appendChild(storieBlk);
+
+  var arcaniBlk = document.createElement('div'); arcaniBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+  arcaniBlk.appendChild(_hdr('Arcani'));
+  var arcaniInn = document.createElement('div'); arcaniInn.style.cssText='padding:6px 8px;background:rgba(255,255,255,0.3);display:flex;flex-direction:column;gap:4px;';
+  [['virtu','Virtù'],['hubris','Hubris']].forEach(function(p) {
+    var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:4px;';
+    var lbl=document.createElement('span'); lbl.style.cssText='font-size:8px;font-weight:700;color:#1c3a5c;letter-spacing:0.05em;min-width:50px;'; lbl.textContent=p[1].toUpperCase(); row.appendChild(lbl);
+    row.appendChild(_inp(p[0],''));
+    arcaniInn.appendChild(row);
+  });
+  arcaniBlk.appendChild(arcaniInn); col3.appendChild(arcaniBlk);
+  body.appendChild(col3);
+  sheet.appendChild(body);
+
+  /* --- FOOTER (Abilità + Spirale + Punti Eroe) --- */
+  var footer = document.createElement('div');
+  footer.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 8px 8px;';
+
+  /* Abilità */
+  var abBlk = document.createElement('div'); abBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+  abBlk.appendChild(_hdr('Abilità'));
+  var abInn = document.createElement('div'); abInn.style.cssText='padding:4px;background:rgba(255,255,255,0.3);';
+  [
+    {key:'sk_allettare',  lbl:'Allettare',   attr:'Pan'},
+    {key:'sk_adguerra',   lbl:'A.d.Guerra',  attr:'Ris'},
+    {key:'sk_atletica',   lbl:'Atletica',    attr:'Vig'},
+    {key:'sk_cavalcare',  lbl:'Cavalcare',   attr:'Gra'},
+    {key:'sk_convincere', lbl:'Convincere',  attr:'Pan'},
+    {key:'sk_empatia',    lbl:'Empatia',     attr:'Pan'},
+    {key:'sk_esibirsi',   lbl:'Esibirsi',    attr:'Pan'},
+    {key:'sk_furto',      lbl:'Furto',       attr:'Gra'},
+    {key:'sk_intimidire', lbl:'Intimidire',  attr:'Pan'},
+    {key:'sk_istruzione', lbl:'Istruzione',  attr:'Acu'},
+    {key:'sk_mira',       lbl:'Mira',        attr:'Acu'},
+    {key:'sk_mischia',    lbl:'Mischia',     attr:'Vig'},
+    {key:'sk_nascond',    lbl:'Nascondersi', attr:'Gra'},
+    {key:'sk_navigaz',    lbl:'Navigazione', attr:'Acu'},
+    {key:'sk_notare',     lbl:'Notare',      attr:'Acu'},
+    {key:'sk_rissa',      lbl:'Rissa',       attr:'Vig'},
+  ].forEach(function(sk) {
+    var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:4px;padding:2px 2px;border-bottom:1px solid rgba(28,58,92,0.12);';
+    var lbl=document.createElement('span'); lbl.style.cssText='font-family:Arial,sans-serif;font-size:10px;color:#111;min-width:88px;'; lbl.textContent=sk.lbl; row.appendChild(lbl);
+    row.appendChild(_dots(sk.key,5,12));
+    var aLbl=document.createElement('span'); aLbl.style.cssText='font-family:Arial,sans-serif;font-size:8px;color:#3a5a7c;margin-left:auto;font-style:italic;'; aLbl.textContent=sk.attr; row.appendChild(aLbl);
+    abInn.appendChild(row);
+  });
+  abBlk.appendChild(abInn); footer.appendChild(abBlk);
+
+  /* Spirale + Punti Eroe */
+  var rFoot = document.createElement('div'); rFoot.style.cssText='display:flex;flex-direction:column;gap:5px;';
+
+  var spirBlk = document.createElement('div'); spirBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;flex:1;';
+  spirBlk.appendChild(_hdr('Spirale della Morte'));
+  var spirInn = document.createElement('div'); spirInn.style.cssText='padding:6px 8px;background:rgba(255,255,255,0.3);display:flex;flex-direction:column;gap:5px;';
+  [
+    {key:'spir1', num:1, desc:'+1 Dado Bonus a tutti i Rischi', n:4},
+    {key:'spir2', num:2, desc:'I Malvagi ottengono +2 Dadi Bonus', n:4},
+    {key:'spir3', num:3, desc:'Tutti i 10 esplodono', n:4},
+    {key:'spir4', num:4, desc:'Inerme', n:3},
+  ].forEach(function(lv) {
+    var row=document.createElement('div'); row.style.cssText='display:flex;align-items:flex-start;gap:6px;padding-bottom:4px;border-bottom:1px solid rgba(28,58,92,0.15);';
+    var nb=document.createElement('span'); nb.style.cssText='display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1c3a5c;color:#f0e8c8;font-size:9px;font-weight:700;flex-shrink:0;margin-top:2px;'; nb.textContent=lv.num; row.appendChild(nb);
+    var ta=document.createElement('div'); ta.style.cssText='flex:1;';
+    var desc=document.createElement('div'); desc.style.cssText='font-family:Arial,sans-serif;font-size:9px;color:#111;margin-bottom:3px;'; desc.textContent=lv.desc; ta.appendChild(desc);
+    ta.appendChild(_dots(lv.key, lv.n, 13)); row.appendChild(ta);
+    spirInn.appendChild(row);
+  });
+  spirBlk.appendChild(spirInn); rFoot.appendChild(spirBlk);
+
+  var peBlk = document.createElement('div'); peBlk.style.cssText='border:2px solid #1c3a5c;border-radius:3px;overflow:hidden;';
+  peBlk.appendChild(_hdr('Punti Eroe'));
+  var peInn = document.createElement('div'); peInn.style.cssText='padding:8px;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;';
+  peInn.appendChild(_num('punti_eroe',0));
+  peBlk.appendChild(peInn); rFoot.appendChild(peBlk);
+  footer.appendChild(rFoot);
+
+  sheet.appendChild(footer);
+  outer.appendChild(sheet);
+  wrap.appendChild(outer);
+  return wrap;
+}
+
 function _renderAltSheet(tipo) {
+  if (tipo === '7thsea') return _render7thSeaSheet();
   var def = SHEET_DEFS[tipo];
   var fieldsMap = SHEET_FIELDS[tipo];
   if (!def || !fieldsMap) return document.createElement('div');
