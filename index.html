@@ -6948,118 +6948,73 @@ function _render7thSeaSheet() {
     rf();return c;
   }
 
-  /* ===================== SPIRALE DELLA MORTE SVG =====================
-     Spirale di Archimede in senso orario, partendo da in alto a destra.
-     Angoli in gradi SVG: 0=destra, 90=giù, 180=sinistra, 270=su.
-     Ogni dot: Δa=+24°, Δr=+3.8 — così la spirale cresce verso l'esterno.
+  /* ===================== SPIRALE DELLA MORTE — immagine reale + dot overlay =====================
+     L'immagine (438×280) ha già disegnati i cerchi e la legenda.
+     Sovrapponiamo 15 div cliccabili sui pallini pre-disegnati (coordinate in % sull'immagine).
+     Sezioni in senso orario: 1=sinistra (4 dot), 2=alto (4), 3=destra (4), 4=basso (3).
   ============================================================ */
   function _buildSpiral(container){
     container.innerHTML='';
-    var NS='http://www.w3.org/2000/svg';
-    var svg=document.createElementNS(NS,'svg');
-    svg.setAttribute('viewBox','0 0 300 300');
-    svg.style.cssText='width:100%;max-width:310px;display:block;margin:0 auto;';
-    var cx=150,cy=150;
+    /* Wrapper con aspect ratio fisso 438:280 = 63.93% */
+    var wr=document.createElement('div');
+    wr.style.cssText='position:relative;width:100%;padding-top:63.93%;user-select:none;';
+    var img=document.createElement('img');
+    img.src='schede/spirale_morte.png';
+    img.draggable=false;
+    img.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;';
+    wr.appendChild(img);
 
-    function xy(deg,r){var rad=deg*Math.PI/180;return[cx+r*Math.cos(rad),cy+r*Math.sin(rad)];}
-    function mkC(attr){var c=document.createElementNS(NS,'circle');Object.keys(attr).forEach(function(k){c.setAttribute(k,attr[k]);});return c;}
-    function mkT(txt,x,y,attr){var t=document.createElementNS(NS,'text');t.textContent=txt;t.setAttribute('x',x);t.setAttribute('y',y);Object.keys(attr).forEach(function(k){t.setAttribute(k,attr[k]);});return t;}
-
-    /* sfondo circolare */
-    svg.appendChild(mkC({cx:cx,cy:cy,r:'140',fill:'#060e1c',stroke:'#c9a55c','stroke-width':'2.5'}));
-    /* cerchio interno per teschio */
-    svg.appendChild(mkC({cx:cx,cy:cy,r:'46',fill:'#0a1828',stroke:'rgba(201,165,92,0.45)','stroke-width':'1.5'}));
-    /* teschio */
-    var sk=document.createElementNS(NS,'text');
-    sk.setAttribute('x',cx);sk.setAttribute('y',cy+16);
-    sk.setAttribute('text-anchor','middle');sk.setAttribute('font-size','46');
-    sk.textContent='💀';svg.appendChild(sk);
-
-    /* definizione dots:
-       Sezione 1 (4 dot): angoli -60→12, r 55→66.4
-       Sezione 2 (4 dot): angoli 60→132, r 70.2→81.6
-       Sezione 3 (4 dot): angoli 180→252, r 85.4→96.8
-       Sezione 4 (3 dot): angoli 300→348, r 100.6→108.4
-    */
-    var spirDots=[
-      {a:-60, r:55,   sec:'spir1'},
-      {a:-36, r:58.8, sec:'spir1'},
-      {a:-12, r:62.6, sec:'spir1'},
-      {a:12,  r:66.4, sec:'spir1'},
-      /* separatore */
-      {a:60,  r:70.2, sec:'spir2'},
-      {a:84,  r:74,   sec:'spir2'},
-      {a:108, r:77.8, sec:'spir2'},
-      {a:132, r:81.6, sec:'spir2'},
-      /* separatore */
-      {a:180, r:85.4, sec:'spir3'},
-      {a:204, r:89.2, sec:'spir3'},
-      {a:228, r:93,   sec:'spir3'},
-      {a:252, r:96.8, sec:'spir3'},
-      /* separatore */
-      {a:300, r:100.6,sec:'spir4'},
-      {a:324, r:104.4,sec:'spir4'},
-      {a:348, r:108.2,sec:'spir4'},
+    /* 15 dot: [sec, idx_nella_sezione, left%, top%] */
+    var DOTS=[
+      ['spir1',0, 33.0,76.0],
+      ['spir1',1, 31.5,61.5],
+      ['spir1',2, 32.5,47.0],
+      ['spir1',3, 36.5,33.5],
+      ['spir2',0, 47.0,18.5],
+      ['spir2',1, 55.0,11.5],
+      ['spir2',2, 63.5,10.5],
+      ['spir2',3, 71.5,15.5],
+      ['spir3',0, 83.5,29.0],
+      ['spir3',1, 90.0,44.5],
+      ['spir3',2, 90.5,60.0],
+      ['spir3',3, 87.0,74.5],
+      ['spir4',0, 78.5,87.5],
+      ['spir4',1, 66.0,93.0],
+      ['spir4',2, 54.0,88.5],
     ];
 
-    /* linea guida della spirale (polyline sottile) */
-    var pts=spirDots.map(function(d){var p=xy(d.a,d.r);return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
-    var pl=document.createElementNS(NS,'polyline');
-    pl.setAttribute('points',pts);pl.setAttribute('fill','none');
-    pl.setAttribute('stroke','rgba(201,165,92,0.2)');pl.setAttribute('stroke-width','1.5');
-    pl.setAttribute('stroke-linejoin','round');
-    svg.appendChild(pl);
-
-    /* stelle separatrici a metà angolo tra le sezioni */
-    [{a:36,r:68},{a:156,r:83},{a:276,r:98.7}].forEach(function(st){
-      var p=xy(st.a,st.r);
-      svg.appendChild(mkT('✦',p[0].toFixed(1),(parseFloat(p[1])+5).toFixed(1),
-        {'text-anchor':'middle','font-size':'13',fill:'#c9a55c',opacity:'0.85'}));
-    });
-
-    /* numeri di sezione: piccoli badge DENTRO il cerchio, vicino al centro */
-    [
-      {a:-24, r:38, n:'1'},
-      {a:96,  r:53, n:'2'},
-      {a:216, r:68, n:'3'},
-      {a:324, r:83, n:'4'},
-    ].forEach(function(nl){
-      var p=xy(nl.a,nl.r);
-      svg.appendChild(mkC({cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:'11',fill:'#0d2440',stroke:'#c9a55c','stroke-width':'1.5'}));
-      svg.appendChild(mkT(nl.n,p[0].toFixed(1),(parseFloat(p[1])+5).toFixed(1),
-        {'text-anchor':'middle','font-size':'13','font-weight':'bold',fill:'#c9a55c','font-family':'Cinzel,serif'}));
-    });
-
-    /* pallini cliccabili */
-    var secIdx={spir1:0,spir2:0,spir3:0,spir4:0};
-    spirDots.forEach(function(dot){
-      var li=secIdx[dot.sec]++;
-      var val=parseInt(s[dot.sec])||0;
-      var filled=li<val;
-      var p=xy(dot.a,dot.r);
-      /* alone glow per pallino pieno */
-      if(filled){
-        var gl=mkC({cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:'14',fill:'rgba(201,165,92,0.18)',stroke:'none'});
-        svg.appendChild(gl);
-      }
-      var c=mkC({cx:p[0].toFixed(1),cy:p[1].toFixed(1),r:'10',
-        fill:filled?'#c9a55c':'rgba(255,255,255,0.06)',
-        stroke:'#c9a55c','stroke-width':'2'});
-      if(!_dm)c.style.cursor='pointer';
-      /* area clic più grande (cerchio trasparente sopra) */
+    DOTS.forEach(function(d){
+      var sec=d[0],idx=d[1],lp=d[2],tp=d[3];
+      var filled=(parseInt(s[sec])||0)>idx;
+      var el=document.createElement('div');
+      el.style.cssText='position:absolute;'
+        +'left:'+lp+'%;top:'+tp+'%;'
+        +'width:6%;aspect-ratio:1;border-radius:50%;'
+        +'transform:translate(-50%,-50%);'
+        +'background:'+(filled?'rgba(160,110,20,0.72)':'transparent')+';'
+        +'box-sizing:border-box;transition:background .12s;'
+        +(_dm?'':'cursor:pointer;');
       if(!_dm){
-        (function(sec,idx){
-          c.addEventListener('click',function(){
+        (function(sec,idx,el){
+          el.addEventListener('click',function(){
             var cur=parseInt(s[sec])||0;
             s[sec]=(idx+1===cur)?idx:idx+1;
             fbSaveScheda();_buildSpiral(container);
           });
-        }(dot.sec,li));
+          el.addEventListener('mouseenter',function(){
+            var f=(parseInt(s[sec])||0)>idx;
+            this.style.background=f?'rgba(160,110,20,0.9)':'rgba(201,165,92,0.4)';
+          });
+          el.addEventListener('mouseleave',function(){
+            var f=(parseInt(s[sec])||0)>idx;
+            this.style.background=f?'rgba(160,110,20,0.72)':'transparent';
+          });
+        }(sec,idx,el));
       }
-      svg.appendChild(c);
+      wr.appendChild(el);
     });
 
-    container.appendChild(svg);
+    container.appendChild(wr);
   }
 
   /* ========================= RENDER ========================= */
@@ -7270,11 +7225,6 @@ function _render7thSeaSheet() {
   var spirCtn=document.createElement('div');spirCtn.style.cssText='width:100%;';
   _buildSpiral(spirCtn);spirBody.appendChild(spirCtn);
 
-  /* legenda sotto la spirale */
-  var spirLeg=document.createElement('div');
-  spirLeg.style.cssText='font-family:Arial,sans-serif;font-size:12px;color:#0d2440;line-height:1.8;text-align:left;width:100%;padding:0 4px;box-sizing:border-box;';
-  spirLeg.innerHTML='<b>1:</b> +1 Dado Bonus a tutti i Rischi &nbsp; <b>2:</b> I Malvagi ottengono +2 Dadi<br><b>3:</b> Tutti i 10 esplodono &nbsp; <b>4:</b> Inerme';
-  spirBody.appendChild(spirLeg);
   spirBlk._i.appendChild(spirBody);rFoot.appendChild(spirBlk);
 
   /* Punti Eroe */
