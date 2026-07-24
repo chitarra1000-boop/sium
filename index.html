@@ -5546,8 +5546,8 @@ function updateSchedaDerived() {
     var el=document.getElementById('pd-ts-'+p[0]);if(el)el.textContent=fmt(st[p[0]]+(s[p[1]]?bc:0));
   });
   var skMap=[['des','skAcrobazia','acrobazia'],['sag','skAnimali','animali'],['int','skArcano','arcano'],['for','skAtletica','atletica'],['des','skFurtivita','furtivita'],['int','skIndagare','indagare'],['car','skInganno','inganno'],['car','skIntimidire','intimidire'],['car','skIntrattenere','intrattenere'],['sag','skIntuizione','intuizione'],['sag','skMedicina','medicina'],['int','skNatura','natura'],['sag','skPercezione','percezione'],['car','skPersuasione','persuasione'],['des','skRapidita','rapidita'],['int','skReligione','religione'],['sag','skSopravvivenza','sopravvivenza'],['int','skStoria','storia'],['int','skTecnologia','tecnologia']];
-  skMap.forEach(function(sk){var el=document.getElementById('pd-sk-'+sk[2]);if(el)el.textContent=fmt(st[sk[0]]+(s[sk[1]]?bc:0));});
-  var pp=document.getElementById('pd-pass-perc');if(pp)pp.textContent=10+st.sag+(s.skPercezione?bc:0);
+  skMap.forEach(function(sk){var el=document.getElementById('pd-sk-'+sk[2]);if(el)el.textContent=fmt(st[sk[0]]+(s[sk[1]]?bc*(s[sk[1]+'_m']?2:1):0));});
+  var pp=document.getElementById('pd-pass-perc');if(pp)pp.textContent=10+st.sag+(s.skPercezione?bc*(s['skPercezione_m']?2:1):0);
 }
 
 var _wbLocalWrite = false;
@@ -14092,6 +14092,7 @@ function renderScheda() {
   function m(v){return Math.floor(((parseInt(v)||10)-10)/2);}
   function fmt(n){return(n>=0?'+':'')+n;}
   function fsv(stat,profi){var bc=parseInt(s.bonusCompetenza)||2;return fmt(m(stat)+(profi?bc:0));}
+  function fsvM(statVal,profKey,maestKey){var bc=parseInt(s.bonusCompetenza)||2;return fmt(m(statVal)+(s[profKey]?bc*(s[maestKey]?2:1):0));}
 
   /* ---- ZOOM BAR ---- */
   var zBar=document.createElement('div');
@@ -14176,11 +14177,27 @@ function renderScheda() {
     row.appendChild(bub); row.appendChild(val); row.appendChild(nm); return row;
   }
   function makeSkillRow(name,statKey,profKey,idSuffix,abbr){
+    var maestKey=profKey+'_m';
     var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:2px;padding:1px 0;border-bottom:1px solid rgba(0,0,0,0.06);';
-    var bub=makeBubble(!!s[profKey],function(v){s[profKey]=v;updateSchedaDerived();ss();});
-    var val=document.createElement('span'); val.id='pd-sk-'+idSuffix; val.style.cssText='font-size:9px;font-weight:bold;min-width:18px;text-align:right;'; val.textContent=fsv(s[statKey],s[profKey]);
+    var star=document.createElement('span');
+    star.textContent=s[maestKey]?'★':'☆';
+    star.title='Maestria: raddoppia il bonus di competenza';
+    star.style.cssText='font-size:9px;cursor:pointer;flex-shrink:0;line-height:1;user-select:none;color:'+(s[maestKey]?'#c8a000':'#bbb')+';';
+    var bub=makeBubble(!!s[profKey],function(v){
+      s[profKey]=v;
+      if(!v){s[maestKey]=false;star.textContent='☆';star.style.color='#bbb';}
+      updateSchedaDerived();ss();
+    });
+    star.onclick=function(){
+      if(!s[profKey])return;
+      s[maestKey]=!s[maestKey];
+      star.textContent=s[maestKey]?'★':'☆';
+      star.style.color=s[maestKey]?'#c8a000':'#bbb';
+      updateSchedaDerived();ss();
+    };
+    var val=document.createElement('span'); val.id='pd-sk-'+idSuffix; val.style.cssText='font-size:9px;font-weight:bold;min-width:18px;text-align:right;'; val.textContent=fsvM(s[statKey],profKey,maestKey);
     var nm=document.createElement('span'); nm.style.cssText='font-size:8px;margin-left:1px;'; nm.innerHTML=name+' <em style="color:#888;font-size:7px;">('+abbr+')</em>';
-    row.appendChild(bub); row.appendChild(val); row.appendChild(nm); return row;
+    row.appendChild(star); row.appendChild(bub); row.appendChild(val); row.appendChild(nm); return row;
   }
   function makeHdrCell(label,key,isFirst){
     var cell=document.createElement('div'); cell.style.cssText=(isFirst?'':'border-left:1px solid #aaa;')+'padding:2px 4px;';
