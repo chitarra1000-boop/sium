@@ -6133,6 +6133,7 @@ var state = {
   theme: 'dark',
   section: 'emporio',
   sidebarOpen: false,
+  lavagnaOpen: false,
   armi: SAMPLE_DATA.slice(),
   filtroTipo: '',
   filtroValuta: '',
@@ -6580,16 +6581,15 @@ function render() {
   else if (state.section === 'generatore') main.appendChild(renderGeneratore());
   else if (state.section === 'dadi') main.appendChild(renderDadi());
   else if (state.section === 'mappa') main.appendChild(renderMappa());
-  else if (state.section === 'scheda') main.appendChild(renderScheda());
+  else if (state.section === 'scheda') { main.appendChild(_buildSchedaWithLavagna()); }
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'incantesimi') { if (isDM()) main.appendChild(renderIncantesimiAggiuntivi()); else main.appendChild(renderDadi()); }
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
-  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(renderScheda()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
   else if (state.section === 'libri') main.appendChild(renderLibri());
-  else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.cssText+=';height:calc(100vh - 120px);';main.appendChild(_twrap); }
-  else if (state.section === 'lavagna') { var _lwrap=renderLavagna();_lwrap.style.cssText+=';height:calc(100vh - 120px);';main.appendChild(_lwrap); }
+  else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.height='calc(100vh - 120px)';main.appendChild(_twrap); }
   contentWrap.appendChild(main);
 
   if (state.regiaActive) {
@@ -6626,16 +6626,15 @@ function renderMain() {
   else if (state.section === 'generatore') main.appendChild(renderGeneratore());
   else if (state.section === 'dadi') main.appendChild(renderDadi());
   else if (state.section === 'mappa') main.appendChild(renderMappa());
-  else if (state.section === 'scheda') main.appendChild(renderScheda());
+  else if (state.section === 'scheda') { main.appendChild(_buildSchedaWithLavagna()); }
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'incantesimi') { if (isDM()) main.appendChild(renderIncantesimiAggiuntivi()); else main.appendChild(renderDadi()); }
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
-  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(renderScheda()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
   else if (state.section === 'libri') main.appendChild(renderLibri());
-  else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.cssText+=';height:calc(100vh - 120px);';main.appendChild(_twrap); }
-  else if (state.section === 'lavagna') { var _lwrap=renderLavagna();_lwrap.style.cssText+=';height:calc(100vh - 120px);';main.appendChild(_lwrap); }
+  else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.height='calc(100vh - 120px)';main.appendChild(_twrap); }
 
   var sb = document.querySelector('.sidebar');
   if (sb) sb.replaceWith(renderSidebar());
@@ -7650,6 +7649,51 @@ function renderLibri() {
   return wrap;
 }
 
+/* ========================= SCHEDA + LAVAGNA WRAPPER ========================= */
+function _buildSchedaWithLavagna(){
+  var wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;height:100%;overflow:hidden;position:relative;';
+
+  var schedaPane=document.createElement('div');
+  schedaPane.style.cssText='flex:1;overflow-y:auto;min-width:0;position:relative;';
+  schedaPane.appendChild(renderScheda());
+
+  // Toggle button (floating top-right of scheda pane)
+  var toggleBtn=document.createElement('button');
+  toggleBtn.title='Lavagna Abilità';
+  toggleBtn.innerHTML='📷';
+  toggleBtn.style.cssText='position:absolute;top:10px;right:14px;z-index:30;'
+    +'background:'+(state.lavagnaOpen?'rgba(201,165,92,0.25)':'rgba(10,22,40,0.85)')
+    +';border:1px solid rgba(201,165,92,'+(state.lavagnaOpen?'0.8':'0.4')+');'
+    +'color:#c9a55c;border-radius:5px;padding:5px 9px;cursor:pointer;font-size:16px;'
+    +'box-shadow:0 2px 8px rgba(0,0,0,0.5);';
+  toggleBtn.addEventListener('click',function(){
+    state.lavagnaOpen=!state.lavagnaOpen;
+    if(state.lavagnaOpen){
+      lavPane.style.width='300px';
+      toggleBtn.style.background='rgba(201,165,92,0.25)';
+      toggleBtn.style.borderColor='rgba(201,165,92,0.8)';
+    } else {
+      lavPane.style.width='0';
+      toggleBtn.style.background='rgba(10,22,40,0.85)';
+      toggleBtn.style.borderColor='rgba(201,165,92,0.4)';
+    }
+  });
+  schedaPane.appendChild(toggleBtn);
+  wrap.appendChild(schedaPane);
+
+  var lavPane=document.createElement('div');
+  lavPane.style.cssText='width:'+(state.lavagnaOpen?'300px':'0')+';flex-shrink:0;overflow:hidden;'
+    +'border-left:1px solid rgba(201,165,92,0.25);transition:width 0.2s ease;';
+  var lavInner=document.createElement('div');
+  lavInner.style.cssText='width:300px;height:100%;overflow:hidden;';
+  lavInner.appendChild(renderLavagna());
+  lavPane.appendChild(lavInner);
+  wrap.appendChild(lavPane);
+
+  return wrap;
+}
+
 /* ========================= TAVOLO DA GIOCO (VTT) ========================= */
 var _tavoloRef=null;
 var _sectionCleanup=null;
@@ -7693,7 +7737,8 @@ function renderTavolo(){
       var sz=g.s*(t.size||1)*0.85;
       var te=document.createElement('div');
       te.style.cssText='position:absolute;left:'+t.x+'%;top:'+t.y+'%;transform:translate(-50%,-50%);width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:'+t.color+';border:2.5px solid rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;cursor:move;user-select:none;z-index:10;flex-direction:column;'+(t.hidden?'opacity:0.55;border-style:dashed;':'');
-      var ab=document.createElement('span');ab.style.cssText='font-size:'+Math.max(9,sz*0.28)+'px;font-weight:700;color:#fff;text-shadow:1px 1px 2px #000;pointer-events:none;';ab.textContent=t.label.slice(0,3).toUpperCase();te.appendChild(ab);
+      if(t.img){te.style.backgroundImage='url('+t.img+')';te.style.backgroundSize='cover';te.style.backgroundPosition='center';}
+      var ab=document.createElement('span');ab.style.cssText='font-size:'+Math.max(9,sz*0.28)+'px;font-weight:700;color:#fff;text-shadow:1px 1px 2px #000,-1px -1px 2px #000;pointer-events:none;'+(t.img?'display:none;':'');ab.textContent=t.label.slice(0,3).toUpperCase();te.appendChild(ab);
       var lb=document.createElement('div');lb.style.cssText='position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);font-size:'+Math.max(9,sz*0.2)+'px;color:#fff;text-shadow:1px 1px 2px #000,-1px -1px 2px #000;white-space:nowrap;font-weight:700;pointer-events:none;background:rgba(0,0,0,0.5);padding:1px 5px;border-radius:3px;';lb.textContent=t.label;te.appendChild(lb);
       te.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();showTokMenu(id,t,e.clientX,e.clientY);});
       var canMv=isDM()||t.owner===(state.currentUser&&state.currentUser.username);
@@ -7714,7 +7759,13 @@ function renderTavolo(){
     var men=document.createElement('div');men.id='_tmenu';men.style.cssText='position:fixed;left:'+cx+'px;top:'+cy+'px;z-index:9999;background:#0d2440;border:1px solid rgba(201,165,92,0.55);border-radius:5px;padding:4px;min-width:155px;box-shadow:0 4px 16px rgba(0,0,0,0.6);';
     function mi(txt,fn){var it=document.createElement('div');it.textContent=txt;it.style.cssText='padding:6px 12px;cursor:pointer;color:#f0e4cc;font-size:12px;border-radius:3px;';it.onmouseenter=function(){it.style.background='rgba(201,165,92,0.15)';};it.onmouseleave=function(){it.style.background='';};it.onclick=function(){men.remove();fn();};men.appendChild(it);}
     mi('✏️ Rinomina',function(){var n=prompt('Nome:',t.label);if(n)_ref.child('tokens/'+id).update({label:n});});
-    mi('🎨 Colore',function(){var cp=document.createElement('input');cp.type='color';cp.value=t.color;cp.style.display='none';document.body.appendChild(cp);cp.oninput=function(){_ref.child('tokens/'+id).update({color:cp.value});};cp.onchange=function(){document.body.removeChild(cp);};cp.click();});
+    mi('🎨 Colore sfondo',function(){var cp=document.createElement('input');cp.type='color';cp.value=t.color;cp.style.display='none';document.body.appendChild(cp);cp.oninput=function(){_ref.child('tokens/'+id).update({color:cp.value});};cp.onchange=function(){document.body.removeChild(cp);};cp.click();});
+    mi('🖼 '+(t.img?'Cambia immagine':'Imposta immagine'),function(){
+      var fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.style.display='none';document.body.appendChild(fi);
+      fi.onchange=function(){var f=fi.files[0];if(!f)return;document.body.removeChild(fi);var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var sz=120;var cv=document.createElement('canvas');cv.width=sz;cv.height=sz;var ctx=cv.getContext('2d');ctx.beginPath();ctx.arc(sz/2,sz/2,sz/2,0,Math.PI*2);ctx.clip();var sc=Math.max(sz/i.width,sz/i.height),ox=(sz-i.width*sc)/2,oy=(sz-i.height*sc)/2;ctx.drawImage(i,ox,oy,i.width*sc,i.height*sc);_ref.child('tokens/'+id).update({img:cv.toDataURL('image/jpeg',0.82)});};i.src=ev.target.result;};r.readAsDataURL(f);};
+      fi.click();
+    });
+    if(t.img)mi('❌ Rimuovi immagine',function(){_ref.child('tokens/'+id).update({img:null});});
     mi('📏 Taglia ('+( t.size||1)+')',function(){var s=prompt('Taglia (1=1x1, 2=2x2):',t.size||1);if(s)_ref.child('tokens/'+id).update({size:+s});});
     if(isDM())mi(t.hidden?'👁 Mostra ai giocatori':'🙈 Nascondi ai giocatori',function(){_ref.child('tokens/'+id).update({hidden:!t.hidden});});
     mi('🗑 Elimina',function(){_ref.child('tokens/'+id).remove();});
@@ -7889,16 +7940,6 @@ function renderSidebar() {
   tavoloItem.innerHTML=tavoloIcon+'<span>Tavolo da Gioco</span>';
   tavoloItem.onclick=function(){state.section='tavolo';state.sidebarOpen=false;renderMain();};
   sb.appendChild(tavoloItem);
-
-  /* Lavagna Abilità — visibile solo nella scheda PG attiva */
-  if(state.schedaAttivaId){
-    var lavagnaIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="16" rx="2"/><path d="M7 22h10M12 18v4"/><path d="M7 8h10M7 12h6"/></svg>';
-    var lavagnaItem=document.createElement('div');
-    lavagnaItem.className='nav-item'+(state.section==='lavagna'?' active':'');
-    lavagnaItem.innerHTML=lavagnaIcon+'<span>Lavagna Abilità</span>';
-    lavagnaItem.onclick=function(){state.section='lavagna';state.sidebarOpen=false;renderMain();};
-    sb.appendChild(lavagnaItem);
-  }
 
   var footer = document.createElement('div');
   footer.className = 'sidebar-footer';
