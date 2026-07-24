@@ -6962,24 +6962,26 @@ function _render7thSeaSheet() {
     img.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;display:block;pointer-events:none;';
     wr.appendChild(img);
 
-    /* ---- 15 dot cliccabili: [sec, idx, left%, top%] ----
-       Sec1=sinistra(su), Sec2=alto(dx), Sec3=destra(giù), Sec4=basso(sx) */
+    /* ---- 15 dot cliccabili (3 per sezione × 5 sezioni): [sec, idx, left%, top%]
+       Struttura: ★crit1 → spir1(3) → ★crit2 → spir2(3) → ★crit3 →
+                  spir3(3) → ★crit4 → spir4(3) → ★crit5 → spir5(3) → ★crit1
+    ---- */
     var DOTS=[
-      ['spir1',0, 44.0,68.0],  // sinistra basso
-      ['spir1',1, 42.0,57.0],
-      ['spir1',2, 42.0,46.0],
-      ['spir1',3, 44.0,35.0],  // sinistra alto
-      ['spir2',0, 56.0,18.0],  // alto sx
-      ['spir2',1, 63.0,16.0],
-      ['spir2',2, 72.0,16.0],
-      ['spir2',3, 79.0,20.0],  // alto dx
-      ['spir3',0, 92.0,38.0],  // destra alto
-      ['spir3',1, 92.0,50.0],
-      ['spir3',2, 91.0,61.0],
-      ['spir3',3, 86.0,71.0],  // destra basso
-      ['spir4',0, 72.0,80.0],  // basso dx
-      ['spir4',1, 63.0,79.0],
-      ['spir4',2, 49.0,79.0],  // basso sx
+      ['spir1',0, 41.6,46.4],  // sx colonna GIÙ (crit1→crit4, antiorario)
+      ['spir1',1, 42.0,57.1],
+      ['spir1',2, 43.8,67.5],
+      ['spir2',0, 56.6,71.4],  // basso→dx (crit4→crit3, antiorario)
+      ['spir2',1, 71.2,80.4],
+      ['spir2',2, 79.5,77.5],
+      ['spir3',0, 90.9,60.7],  // dx colonna SU (crit3→crit2, antiorario)
+      ['spir3',1, 92.2,50.0],
+      ['spir3',2, 91.8,37.9],
+      ['spir4',0, 71.2,15.7],  // alto→sx (crit2→crit5, antiorario)
+      ['spir4',1, 63.5,15.7],
+      ['spir4',2, 56.6,17.9],
+      ['spir5',0, 67.0,30.0],  // interno crit5→crit1 (stima)
+      ['spir5',1, 58.0,28.0],
+      ['spir5',2, 49.3,23.6],
     ];
 
     DOTS.forEach(function(d){
@@ -7013,12 +7015,13 @@ function _render7thSeaSheet() {
       wr.appendChild(el);
     });
 
-    /* ---- 4 stelle ferite critiche: [chiave_stato, left%, top%] ---- */
+    /* ---- 5 stelle ferite drammatiche: [chiave, left%, top%] ---- */
     var STARS=[
-      ['crit1', 49.0, 25.0],  // stella sx-alto
-      ['crit2', 86.0, 25.0],  // stella dx-alto
-      ['crit3', 79.0, 79.0],  // stella dx-basso
-      ['crit4', 56.0, 71.0],  // stella sx-basso
+      ['crit1', 43.6, 39.3],  // alto-sx (+5% giù)
+      ['crit2', 79.0, 24.3],  // alto-dx (+5% giù)
+      ['crit3', 85.8, 75.4],  // destra-basso (+5% giù)
+      ['crit4', 51.1, 66.1],  // centro-sx (+5% giù)
+      ['crit5', 76.0, 38.5],  // centro-dx (+5% giù)
     ];
 
     STARS.forEach(function(st){
