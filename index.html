@@ -5195,8 +5195,19 @@ function setupRealtimeListeners() {
     var existing = (v && Array.isArray(v)) ? v : SAMPLE_DATA.slice();
     var nomi = {};
     existing.forEach(function(x){ nomi[(x.nome||'').toLowerCase()] = 1; });
+    // Aggiorna immagini SRD esistenti che hanno immagine vuota
+    var srdById = {};
+    (typeof SRD_OGGETTI !== 'undefined' ? SRD_OGGETTI : []).forEach(function(x){ if(x.id) srdById[x.id]=x; });
+    var imgChanged = false;
+    existing = existing.map(function(x){
+      if (x.id && srdById[x.id] && !x.immagine && srdById[x.id].immagine) {
+        imgChanged = true;
+        return Object.assign({}, x, {immagine: srdById[x.id].immagine});
+      }
+      return x;
+    });
     var toAdd = (typeof SRD_OGGETTI !== 'undefined' ? SRD_OGGETTI : []).filter(function(x){ return !nomi[(x.nome||'').toLowerCase()]; });
-    if (toAdd.length) {
+    if (toAdd.length || imgChanged) {
       var merged = existing.concat(toAdd).sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||'','it'); });
       _localWrite.armi = true;
       _db.ref('state/armi').set(merged, function(){ _localWrite.armi = false; });
@@ -5293,8 +5304,19 @@ function setupRealtimeListeners() {
     var existing = (v && Array.isArray(v)) ? v : [];
     var nomi = {};
     existing.forEach(function(x){ nomi[(x.nome||'').toLowerCase()] = 1; });
+    // Aggiorna immagini SRD esistenti che hanno immagine vuota
+    var srdBById = {};
+    (typeof SRD_BESTIARIO !== 'undefined' ? SRD_BESTIARIO : []).forEach(function(x){ if(x.id) srdBById[x.id]=x; });
+    var bImgChanged = false;
+    existing = existing.map(function(x){
+      if (x.id && srdBById[x.id] && !x.immagine && srdBById[x.id].immagine) {
+        bImgChanged = true;
+        return Object.assign({}, x, {immagine: srdBById[x.id].immagine});
+      }
+      return x;
+    });
     var toAdd = (typeof SRD_BESTIARIO !== 'undefined' ? SRD_BESTIARIO : []).filter(function(x){ return !nomi[(x.nome||'').toLowerCase()]; });
-    if (toAdd.length) {
+    if (toAdd.length || bImgChanged) {
       var merged = existing.concat(toAdd).sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||'','it'); });
       _localWrite.bestiario = true;
       _db.ref('state/bestiario').set(merged, function(){ _localWrite.bestiario = false; });
