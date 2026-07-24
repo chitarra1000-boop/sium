@@ -13833,7 +13833,49 @@ function _renderSchedaList() {
       var info=document.createElement('div'); info.style.cssText='padding:0.6rem 0.75rem;text-align:center;';
       var nm=document.createElement('div'); nm.style.cssText='font-family:\'Cinzel\',serif;font-size:12px;font-weight:bold;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; nm.textContent=sch.nomePersonaggio||'Senza nome';
       var cl=document.createElement('div'); cl.style.cssText='font-size:10px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'; cl.textContent=sch.classelivello||'';
-      info.appendChild(nm); if(sch.classelivello)info.appendChild(cl); card.appendChild(info); grid.appendChild(card);
+      info.appendChild(nm); if(sch.classelivello)info.appendChild(cl); card.appendChild(info);
+      /* Selettore stato personaggio */
+      var STATI=[
+        {v:'',     lbl:'Non ancora usato', dot:'○', bg:'#f5f5f5', col:'#999', bord:'#ddd'},
+        {v:'in_uso',    lbl:'In uso',            dot:'●', bg:'#fff8e8', col:'#8b5e00', bord:'#c8940c'},
+        {v:'gia_usato', lbl:'Già usato',          dot:'✓', bg:'#f0f0f0', col:'#777', bord:'#bbb'}
+      ];
+      var curSt=sch.stato||'';
+      function _getStato(){return STATI.find(function(x){return x.v===curSt;})||STATI[0];}
+      var stWrap=document.createElement('div');
+      stWrap.style.cssText='border-top:1px solid #eee;padding:5px 6px;display:flex;gap:3px;justify-content:center;background:#fafafa;';
+      stWrap.addEventListener('click',function(e){e.stopPropagation();});
+      STATI.forEach(function(st){
+        var btn=document.createElement('button');
+        btn.title=st.lbl;
+        btn.textContent=st.dot;
+        var isActive=(curSt===st.v);
+        btn.style.cssText='font-size:11px;width:22px;height:22px;border-radius:50%;cursor:pointer;border:1.5px solid '+(isActive?st.bord:'#ccc')+';background:'+(isActive?st.bg:'transparent')+';color:'+(isActive?st.col:'#bbb')+';transition:all 0.12s;padding:0;line-height:1;';
+        (function(stVal,stObj){btn.onclick=function(e){
+          e.stopPropagation();
+          curSt=stVal;
+          sch.stato=stVal;
+          /* Aggiorna stile bordo card */
+          var act=_getStato();
+          card.style.borderTop='3px solid '+(act.bord);
+          /* Aggiorna tutti i bottoni nel stWrap */
+          Array.from(stWrap.children).forEach(function(b,i){
+            var s2=STATI[i]; var act2=(curSt===s2.v);
+            b.style.border='1.5px solid '+(act2?s2.bord:'#ccc');
+            b.style.background=act2?s2.bg:'transparent';
+            b.style.color=act2?s2.col:'#bbb';
+          });
+          /* Salva su Firebase */
+          if(_db&&state.currentUser){
+            _db.ref('schedePG/'+state.currentUser.username+'/chars/'+sch.id+'/stato').set(stVal);
+          }
+        };})(st.v,st);
+        stWrap.appendChild(btn);
+      });
+      card.appendChild(stWrap);
+      /* Bordo top iniziale basato su stato attuale */
+      var initSt=_getStato(); card.style.borderTop='3px solid '+initSt.bord;
+      grid.appendChild(card);
     });
     content.appendChild(grid);
   }
