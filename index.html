@@ -6295,22 +6295,7 @@ function renderSettingsPanel() {
   logoutBtn.className = 'btn-blood';
   logoutBtn.style.cssText += 'margin-top:0.5rem;width:100%;justify-content:center;';
   logoutBtn.textContent = '⬤ Disconnetti';
-  logoutBtn.onclick = function() {
-    if (_db && state.currentUser) {
-      _db.ref('presence/' + state.currentUser.username).set({ online: false });
-    }
-    state.currentUser = null;
-    state.scheda = {}; state.schedeList = []; state.schedaAttivaId = null; state.companions = {}; state.schedaLoaded = false;
-    try { localStorage.removeItem('mercante_session'); } catch(e){}
-    ov.remove();
-    document.getElementById('user-badge-el').remove();
-    document.getElementById('gear-btn-el').remove();
-    document.getElementById('login-overlay').style.display = 'flex';
-    document.getElementById('login-user').value = '';
-    document.getElementById('login-pass').value = '';
-    var appEl = document.getElementById('app');
-    if (appEl) appEl.innerHTML = '';
-  };
+  logoutBtn.onclick = function() { ov.remove(); googleSignOut(); };
   body.appendChild(logoutBtn);
 
   box.appendChild(body);
