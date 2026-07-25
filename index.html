@@ -6218,76 +6218,63 @@ function renderSettingsPanel() {
     body.appendChild(infoRow);
   }
 
-  /* Lista Online/Offline */
-  var onlineLbl = document.createElement('div'); onlineLbl.className = 'settings-section-lbl'; onlineLbl.textContent = 'Giocatori';
-  body.appendChild(onlineLbl);
-  var onlineWrap = document.createElement('div');
-  onlineWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;';
+  /* Lista account unificata: online + privilegi */
+  var usersLbl = document.createElement('div'); usersLbl.className = 'settings-section-lbl'; usersLbl.textContent = 'Account';
+  body.appendChild(usersLbl);
+  var usersWrap = document.createElement('div');
+  usersWrap.style.cssText = 'display:flex;flex-direction:column;gap:0;';
   var allUsernames = Object.keys(_remoteUsers);
   if (allUsernames.length === 0) {
     var noUsers = document.createElement('div');
     noUsers.style.cssText = 'font-size:12px;color:var(--text-faint);font-family:\'EB Garamond\',serif;';
     noUsers.textContent = 'Nessun utente registrato.';
-    onlineWrap.appendChild(noUsers);
+    usersWrap.appendChild(noUsers);
   } else {
     allUsernames.forEach(function(uname) {
+      var ru = _remoteUsers[uname] || {};
       var pres = _presenceMap[uname] || {};
       var isOnline = !!pres.online;
+      var isDMUser = ru.role === 'DM';
       var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--border-subtle);';
+      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid var(--border-subtle);';
+      // Pallino online/offline
       var dot = document.createElement('span');
       dot.style.cssText = 'width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' + (isOnline ? '#4caf50' : '#555') + ';';
+      // Nome
       var nameEl = document.createElement('span');
       nameEl.style.cssText = 'flex:1;font-family:\'EB Garamond\',serif;font-size:14px;color:' + (isOnline ? 'var(--text-main)' : 'var(--text-faint)') + ';';
-      var ru = _remoteUsers[uname] || {};
-      var roleTag = ru.role === 'DM' ? ' 👑' : (ru.dmPriv ? ' ⚔' : '');
-      nameEl.textContent = uname + roleTag;
+      nameEl.textContent = uname + (isDMUser ? ' 👑' : '');
+      // Stato online
       var statusEl = document.createElement('span');
-      statusEl.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;color:' + (isOnline ? '#4caf50' : 'var(--text-faint)') + ';';
+      statusEl.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;color:' + (isOnline ? '#4caf50' : 'var(--text-faint)') + ';min-width:42px;text-align:right;';
       statusEl.textContent = isOnline ? 'Online' : 'Offline';
       row.appendChild(dot); row.appendChild(nameEl); row.appendChild(statusEl);
-      onlineWrap.appendChild(row);
+      // Bottone privilegi DM — solo admin, solo utenti non-admin
+      if (isAdmin() && !isDMUser) {
+        var hasDM = !!ru.dmPriv;
+        var togBtn = document.createElement('button');
+        togBtn.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;padding:0.2rem 0.55rem;border-radius:3px;cursor:pointer;border:1px solid ' + (hasDM ? 'var(--gold)' : 'var(--border-soft)') + ';background:transparent;color:' + (hasDM ? 'var(--gold)' : 'var(--text-muted)') + ';margin-left:0.3rem;';
+        togBtn.textContent = hasDM ? '⚔ DM' : '🛡 PG';
+        togBtn.onclick = (function(un, btn, cur) {
+          return function() {
+            var newVal = !cur;
+            if (!_db) return;
+            _db.ref('users/' + un + '/dmPriv').set(newVal, function() {
+              _remoteUsers[un] = Object.assign({}, _remoteUsers[un], { dmPriv: newVal });
+              cur = newVal;
+              btn.style.borderColor = newVal ? 'var(--gold)' : 'var(--border-soft)';
+              btn.style.color = newVal ? 'var(--gold)' : 'var(--text-muted)';
+              btn.textContent = newVal ? '⚔ DM' : '🛡 PG';
+              notify(un + (newVal ? ' ora ha i privilegi DM.' : ' è tornato Giocatore.'));
+            });
+          };
+        })(uname, togBtn, hasDM);
+        row.appendChild(togBtn);
+      }
+      usersWrap.appendChild(row);
     });
   }
-  body.appendChild(onlineWrap);
-
-  /* Gestione Privilegi DM — solo admin */
-  if (isAdmin() && Object.keys(_remoteUsers).length > 0) {
-    var privLbl = document.createElement('div'); privLbl.className = 'settings-section-lbl'; privLbl.textContent = 'Privilegi DM';
-    body.appendChild(privLbl);
-    var privWrap = document.createElement('div');
-    privWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;';
-    Object.keys(_remoteUsers).forEach(function(uname) {
-      var ru = _remoteUsers[uname] || {};
-      if (ru.role === 'DM') return; // non toccare l'admin
-      var row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--border-subtle);';
-      var nameEl = document.createElement('span');
-      nameEl.style.cssText = 'flex:1;font-family:\'EB Garamond\',serif;font-size:14px;color:var(--text-main);';
-      nameEl.textContent = uname;
-      var togBtn = document.createElement('button');
-      var hasDM = !!ru.dmPriv;
-      togBtn.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;padding:0.2rem 0.6rem;border-radius:3px;cursor:pointer;border:1px solid ' + (hasDM ? 'var(--gold)' : 'var(--border-soft)') + ';background:transparent;color:' + (hasDM ? 'var(--gold)' : 'var(--text-muted)') + ';';
-      togBtn.textContent = hasDM ? '⚔ DM' : '🛡 PG';
-      togBtn.onclick = (function(un, btn, cur) {
-        return function() {
-          var newVal = !cur;
-          if (!_db) return;
-          _db.ref('users/' + un + '/dmPriv').set(newVal, function() {
-            _remoteUsers[un] = Object.assign({}, _remoteUsers[un], { dmPriv: newVal });
-            cur = newVal;
-            btn.style.borderColor = newVal ? 'var(--gold)' : 'var(--border-soft)';
-            btn.style.color = newVal ? 'var(--gold)' : 'var(--text-muted)';
-            btn.textContent = newVal ? '⚔ DM' : '🛡 PG';
-            notify(un + (newVal ? ' ora ha i privilegi DM.' : ' è tornato Giocatore.'));
-          });
-        };
-      })(uname, togBtn, hasDM);
-      row.appendChild(nameEl); row.appendChild(togBtn);
-      privWrap.appendChild(row);
-    });
-    body.appendChild(privWrap);
-  }
+  body.appendChild(usersWrap);
 
   /* Cambio Password */
   if (cu && _db) {
