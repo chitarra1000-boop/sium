@@ -780,6 +780,43 @@
   .modal-head { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
   .modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
 
+  /* ── Detail modal (bestiari + emporio) ── */
+  .detail-modal-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-gold);
+    border-radius: 5px;
+    max-width: 860px;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-modal);
+  }
+  .detail-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  @media (min-width: 600px) {
+    .detail-modal-grid { grid-template-columns: 260px 1fr; }
+  }
+  .detail-modal-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .detail-modal-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .weapon-card { cursor: pointer; }
+
   .header-title {
     font-family: 'Uncial Antiqua', serif;
     font-size: clamp(2.2rem, 5.5vw, 3.8rem);
@@ -10496,6 +10533,7 @@ function updateResults() {
 function renderWeaponCard(w) {
   var card = document.createElement('article');
   card.className = 'weapon-card';
+  card.onclick = function() { openDetailModal('arma', w); };
 
   var img = document.createElement('div');
   img.className = 'card-image-wrap';
@@ -10538,8 +10576,9 @@ function renderWeaponCard(w) {
     foot.innerHTML = priceDiv +
       '<div class="flex gap-1"><button class="btn-dark edit-btn" title="Modifica" style="padding:0.4rem 0.65rem;">' + ICON.edit + '</button>' +
       '<button class="btn-blood del-btn" title="Elimina" style="padding:0.4rem 0.65rem;">' + ICON.trash + '</button></div>';
-    foot.querySelector('.edit-btn').onclick = function() { state.editingId = w.id; state.showForm = true; render(); };
-    foot.querySelector('.del-btn').onclick = function() {
+    foot.querySelector('.edit-btn').onclick = function(e) { e.stopPropagation(); state.editingId = w.id; state.showForm = true; render(); };
+    foot.querySelector('.del-btn').onclick = function(e) {
+      e.stopPropagation();
       if (confirm('Eliminare questa arma dal database?')) {
         state.armi = state.armi.filter(function(x){ return x.id !== w.id; });
         fbSaveArmi();
@@ -13730,9 +13769,170 @@ function updateBestiarioGrid() {
   filtered.forEach(function(m) { grid.appendChild(renderBestiarCard(m)); });
 }
 
+function openDetailModal(type, data) {
+  var existing = document.getElementById('detail-modal-root');
+  if (existing) existing.remove();
+
+  var back = document.createElement('div');
+  back.className = 'modal-backdrop';
+  back.id = 'detail-modal-root';
+  back.onclick = function(e) { if (e.target === back) { back.remove(); document.removeEventListener('keydown', kh); } };
+
+  var kh = function(e) { if (e.key === 'Escape') { back.remove(); document.removeEventListener('keydown', kh); } };
+  document.addEventListener('keydown', kh);
+
+  var panel = document.createElement('div');
+  panel.className = 'detail-modal-panel';
+  panel.onclick = function(e) { e.stopPropagation(); };
+
+  /* HEAD */
+  var head = document.createElement('div');
+  head.className = 'modal-head';
+  var headLeft = document.createElement('div');
+  var titleEl = document.createElement('h2');
+  titleEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:22px;font-weight:700;color:var(--gold-bright);margin:0;';
+  titleEl.textContent = data.nome;
+  headLeft.appendChild(titleEl);
+  var chipRow = document.createElement('div');
+  chipRow.style.cssText = 'display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;';
+  if (type === 'mostro') {
+    if (data.tipo) { var c1=document.createElement('span'); c1.className='type-chip'; c1.textContent=data.tipo; chipRow.appendChild(c1); }
+    if (data.taglia) { var c2=document.createElement('span'); c2.className='type-chip'; c2.style.cssText='background:rgba(120,80,20,0.75);border-color:#c9a55c88;'; c2.textContent=data.taglia; chipRow.appendChild(c2); }
+  } else {
+    if (data.tipo) { var c1=document.createElement('span'); c1.className='type-chip'; c1.textContent=data.tipo; chipRow.appendChild(c1); }
+    if (data.rarita) { var c2=document.createElement('span'); c2.className='rarity-tag '+rarityClass(data.rarita); c2.textContent=data.rarita; chipRow.appendChild(c2); }
+  }
+  if (chipRow.children.length) headLeft.appendChild(chipRow);
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'theme-toggle';
+  closeBtn.style.cssText = 'width:38px;height:38px;flex-shrink:0;';
+  closeBtn.innerHTML = ICON.x;
+  closeBtn.onclick = function() { back.remove(); document.removeEventListener('keydown', kh); };
+  head.appendChild(headLeft);
+  head.appendChild(closeBtn);
+  panel.appendChild(head);
+
+  /* BODY */
+  var body = document.createElement('div');
+  body.style.cssText = 'padding:1.5rem;';
+
+  var grid = document.createElement('div');
+  grid.className = 'detail-modal-grid';
+
+  /* Left: immagine */
+  var leftCol = document.createElement('div');
+  var imgWrap = document.createElement('div');
+  imgWrap.className = 'detail-modal-img-wrap';
+  if (data.immagine) {
+    var im = document.createElement('img');
+    im.src = data.immagine; im.alt = data.nome;
+    im.onerror = function() { imgWrap.innerHTML = '<div style="font-size:4rem;">'+(type==='mostro'?'🐉':'⚔')+'</div>'; };
+    imgWrap.appendChild(im);
+  } else {
+    imgWrap.innerHTML = '<div style="font-size:4rem;">'+(type==='mostro'?'🐉':'⚔')+'</div>';
+  }
+  leftCol.appendChild(imgWrap);
+  if (type === 'mostro' && data.url) {
+    var urlLnk = document.createElement('a');
+    urlLnk.href = data.url; urlLnk.target = '_blank';
+    urlLnk.style.cssText = 'display:block;text-align:center;margin-top:0.65rem;font-family:\'EB Garamond\',serif;font-size:13px;color:var(--gold-dim);text-decoration:none;';
+    urlLnk.textContent = '🔗 Scheda su dungeonedraghi.it';
+    leftCol.appendChild(urlLnk);
+  }
+  grid.appendChild(leftCol);
+
+  /* Right: stats */
+  var rightCol = document.createElement('div');
+
+  if (type === 'mostro') {
+    /* HP / CA / VEL pills */
+    var pillRow = document.createElement('div');
+    pillRow.style.cssText = 'display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem;';
+    [['HP',data.hp,'#c84040'],['CA',data.ca,'#c9a55c'],['VEL',data.velocita,'#5c9ec9']].forEach(function(s){
+      if (!s[1]) return;
+      var pill=document.createElement('div');
+      pill.style.cssText='background:'+s[2]+'22;border:1px solid '+s[2]+'55;border-radius:4px;padding:0.3rem 0.75rem;font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;color:'+s[2]+';';
+      pill.textContent=s[0]+': '+s[1];
+      pillRow.appendChild(pill);
+    });
+    rightCol.appendChild(pillRow);
+
+    /* Stat grid */
+    var sg = document.createElement('div');
+    sg.style.cssText = 'display:grid;grid-template-columns:repeat(6,1fr);gap:0.25rem;margin-bottom:1rem;border:1px solid var(--border-subtle);border-radius:4px;overflow:hidden;';
+    [['FOR',data.for],['DES',data.des],['COS',data.cos],['INT',data.int],['SAG',data.sag],['CAR',data.car]].forEach(function(s){
+      var cell=document.createElement('div');
+      cell.style.cssText='text-align:center;padding:0.4rem 0.1rem;background:var(--bg-base);';
+      var lbl=document.createElement('div'); lbl.style.cssText='font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;color:var(--gold-dim);letter-spacing:0.1em;';
+      lbl.textContent=s[0];
+      var val=document.createElement('div'); val.style.cssText='font-family:\'EB Garamond\',serif;font-size:18px;font-weight:700;color:var(--text-strong);line-height:1.2;';
+      val.textContent=s[1]||'—';
+      var mod=document.createElement('div'); mod.style.cssText='font-family:\'EB Garamond\',serif;font-size:12px;color:var(--text-muted);';
+      var mv=s[1]?Math.floor((s[1]-10)/2):null;
+      mod.textContent=mv!==null?(mv>=0?'+'+mv:''+mv):'';
+      cell.appendChild(lbl); cell.appendChild(val); cell.appendChild(mod);
+      sg.appendChild(cell);
+    });
+    rightCol.appendChild(sg);
+
+    if (data.lingue) {
+      var lingP=document.createElement('p');
+      lingP.style.cssText='font-size:14px;color:var(--text-muted);margin:0 0 0.5rem;font-family:\'EB Garamond\',serif;font-style:italic;';
+      lingP.innerHTML='<span style="color:var(--gold-dim);font-style:normal;">🗣 </span>'+escapeHtml(data.lingue);
+      rightCol.appendChild(lingP);
+    }
+  }
+
+  if (type === 'arma') {
+    if (data.prezzo !== undefined) {
+      var priceDiv=document.createElement('div');
+      priceDiv.className='coin coin-'+(data.valuta||'mo');
+      priceDiv.style.cssText='margin-bottom:1rem;';
+      priceDiv.innerHTML='<span class="coin-icon">'+(data.valuta||'mo').toUpperCase()+'</span><span>'+(data.prezzo||0)+' '+(data.valuta||'mo')+'</span>';
+      rightCol.appendChild(priceDiv);
+    }
+    if (data.descrizione) {
+      var descDiv=document.createElement('div');
+      descDiv.style.cssText='font-family:\'EB Garamond\',serif;font-size:16px;line-height:1.7;color:var(--text-main);';
+      descDiv.innerHTML=nl2br(escapeHtml(data.descrizione));
+      rightCol.appendChild(descDiv);
+    }
+  }
+
+  grid.appendChild(rightCol);
+  body.appendChild(grid);
+
+  /* Sotto la griglia: tratti e azioni (solo mostro) */
+  if (type === 'mostro') {
+    if (data.tratti) {
+      var ts=document.createElement('div');
+      ts.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
+      var th=document.createElement('div'); th.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.5rem;';
+      th.textContent='✦ Tratti Speciali';
+      var tt=document.createElement('p'); tt.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.65;color:var(--text-main);margin:0;white-space:pre-wrap;';
+      tt.textContent=data.tratti;
+      ts.appendChild(th); ts.appendChild(tt); body.appendChild(ts);
+    }
+    if (data.azioni) {
+      var as=document.createElement('div');
+      as.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
+      var ah=document.createElement('div'); ah.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.5rem;';
+      ah.textContent='⚔ Azioni';
+      var at=document.createElement('p'); at.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.65;color:var(--text-main);margin:0;white-space:pre-wrap;';
+      at.textContent=data.azioni;
+      as.appendChild(ah); as.appendChild(at); body.appendChild(as);
+    }
+  }
+
+  panel.appendChild(body);
+  back.appendChild(panel);
+  document.body.appendChild(back);
+}
+
 function renderBestiarCard(m) {
   var card = document.createElement('article');
   card.className = 'weapon-card';
+  card.onclick = function() { openDetailModal('mostro', m); };
   var imgWrap = document.createElement('div');
   imgWrap.className = 'card-image-wrap';
   if (m.immagine) {
@@ -13817,6 +14017,7 @@ function renderBestiarCard(m) {
     lnk.href = m.url; lnk.target = '_blank';
     lnk.style.cssText = 'font-family:\'EB Garamond\',serif;font-size:13px;color:var(--gold-dim);text-decoration:none;';
     lnk.textContent = '🔗 Riferimento';
+    lnk.onclick = function(e) { e.stopPropagation(); };
     foot.appendChild(lnk);
   } else { foot.appendChild(document.createElement('span')); }
   if (isDM()) {
@@ -13830,8 +14031,9 @@ function renderBestiarCard(m) {
     delBtn.style.cssText = 'padding:0.4rem 0.65rem;';
     delBtn.innerHTML = ICON.trash;
     (function(monster) {
-      editBtn.onclick = function() { state.bestEditingId = monster.id; state.bestShowForm = true; render(); };
-      delBtn.onclick = function() {
+      editBtn.onclick = function(e) { e.stopPropagation(); state.bestEditingId = monster.id; state.bestShowForm = true; render(); };
+      delBtn.onclick = function(e) {
+        e.stopPropagation();
         if (confirm('Eliminare "' + monster.nome + '" dal bestiario?')) {
           state.bestiario = state.bestiario.filter(function(x){ return x.id !== monster.id; });
           fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); renderMain();
