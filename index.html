@@ -12,6 +12,7 @@
 <!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <!-- Leaflet.js per Mappa del Mondo -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
@@ -5073,34 +5074,42 @@
   <div class="login-scene">
     <!-- Sovrapposizione: form posizionato dentro al forziere -->
     <div class="login-form-area">
-      <div class="login-field">
-        <label class="login-field-label" for="login-user">Nome Avventuriero</label>
-        <div class="login-input-wrap">
-          <svg class="login-input-ico" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M12 3 L5 6 v6 c0 4.5 3 8 7 9 4-1 7-4.5 7-9 V6 Z" stroke="#c9a55c" stroke-width="1.6" stroke-linejoin="round" fill="rgba(201,165,92,0.08)"/>
-            <path d="M9 12 L11 14 L15 9" stroke="#c9a55c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <!-- Area Google Sign-In (default) -->
+      <div id="login-google-area" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
+        <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Accedi al Compendium</div>
+        <div class="login-divider">◆ ◇ ◆</div>
+        <button class="login-btn" onclick="googleSignIn()" style="display:flex;align-items:center;gap:0.75rem;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          <input id="login-user" type="text" placeholder="Inserisci il tuo nome…" autocomplete="username" onkeydown="if(event.key==='Enter')tentaLogin();" />
+          <span>Continua con Google</span>
+        </button>
+        <div class="login-error" id="login-error" style="display:none;text-align:center;"></div>
+        <div style="font-family:'EB Garamond',serif;font-size:13px;color:rgba(201,165,92,0.5);text-align:center;margin-top:0.5rem;">
+          Admin e DM accedono con il proprio account Google
         </div>
       </div>
 
-      <div class="login-field">
-        <label class="login-field-label" for="login-pass">Parola d'Ordine</label>
-        <div class="login-input-wrap">
-          <svg class="login-input-ico" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="8.5" cy="9" r="3.2" stroke="#c9a55c" stroke-width="1.6" fill="rgba(201,165,92,0.08)"/>
-            <path d="M11.5 9 H21 M18 9 V12 M15 9 V11.5" stroke="#c9a55c" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')tentaLogin();" />
+      <!-- Area PG da link invito (nascosta di default, mostrata se URL ha ?group=&pg=) -->
+      <div id="login-pg-area" style="display:none;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
+        <div style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Sei stato invitato come Giocatore</div>
+        <div class="login-divider">◆ ◇ ◆</div>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label" for="pg-name-input">Nome del tuo Personaggio</label>
+          <div class="login-input-wrap">
+            <input id="pg-name-input" type="text" placeholder="es. Thorin il Nano…" autocomplete="off" onkeydown="if(event.key==='Enter')pgEntra();" style="width:100%;" />
+          </div>
+        </div>
+        <button class="login-btn" onclick="pgEntra()">
+          <span class="login-btn-ico">🛡</span><span>Entra come Giocatore</span>
+        </button>
+        <div style="font-family:'EB Garamond',serif;font-size:13px;color:rgba(201,165,92,0.5);text-align:center;cursor:pointer;" onclick="document.getElementById('login-pg-area').style.display='none';document.getElementById('login-google-area').style.display='flex';">
+          Sei un DM? Accedi con Google →
         </div>
       </div>
-
-      <div class="login-divider">◆ ◇ ◆</div>
-
-      <button class="login-btn" onclick="tentaLogin()">
-        <span class="login-btn-ico">⚔</span><span class="login-btn-full">Entra nel Compendium</span><span class="login-btn-short">Entra</span>
-      </button>
-      <div class="login-error" id="login-error">Credenziali errate. Riprova, avventuriero.</div>
     </div>
 
     <!-- Container effetti animazione di apertura -->
@@ -5142,6 +5151,135 @@ var _db = null;
 var _fbConnected = false;
 var _fbListeners = []; // per cleanup
 
+/* ============================================================
+   AUTH — Google Sign-In
+   ============================================================ */
+var ADMIN_EMAIL = 'chitarra1000@gmail.com'; // unico admin
+var _authUser = null;   // Firebase auth user object
+var _authRole = null;   // 'admin' | 'dm' | 'pg' | null
+var _pgGroupId = null;  // group ID per accesso PG da link
+
+function isAdmin() { return _authRole === 'admin'; }
+function isPG()    { return _authRole === 'pg'; }
+// isDM() è definita più avanti ma la override qui sotto col nuovo sistema
+
+function _detectPGFromURL() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var group = params.get('group');
+    var token = params.get('pg');
+    if (group && token) return { groupId: group, token: token };
+  } catch(e) {}
+  return null;
+}
+
+function _buildCurrentUserFromAuth(fbUser) {
+  var role = (fbUser.email === ADMIN_EMAIL) ? 'admin' : 'dm';
+  _authRole = role;
+  _authUser = fbUser;
+  state.currentUser = {
+    username: fbUser.displayName || fbUser.email.split('@')[0],
+    email: fbUser.email,
+    uid: fbUser.uid,
+    role: 'DM',
+    dmPriv: role === 'admin'
+  };
+}
+
+/* Percorso Firebase per dati privati del DM corrente.
+   L'admin usa i path originali (state/...) per compatibilità. */
+function dmRef(path) {
+  if (!_db || !_authUser) return null;
+  if (isAdmin()) return _db.ref('state/' + path);
+  return _db.ref('users/' + _authUser.uid + '/' + path);
+}
+
+function googleSignIn() {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(function(err) {
+    console.warn('[Auth] Errore login:', err.message);
+    var errEl = document.getElementById('login-error');
+    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Errore: ' + err.message; }
+  });
+}
+
+function googleSignOut() {
+  firebase.auth().signOut().then(function() {
+    _authUser = null; _authRole = null;
+    state.currentUser = null;
+    try { localStorage.removeItem('mercante_session'); } catch(e) {}
+    location.reload();
+  });
+}
+
+function initAuth() {
+  firebase.auth().onAuthStateChanged(function(fbUser) {
+    if (fbUser) {
+      _buildCurrentUserFromAuth(fbUser);
+      var ov = document.getElementById('login-overlay');
+      if (ov) ov.style.display = 'none';
+      if (!_db) {
+        try {
+          if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+          _db = firebase.database();
+        } catch(e) {}
+      }
+      setupPresence();
+      setupRealtimeListeners();
+      fbLoadApiKeys();
+      setTimeout(function() { render(); renderUserBadge(); }, 300);
+    } else {
+      // Controlla se è un accesso PG da link
+      var pgInfo = _detectPGFromURL();
+      if (pgInfo) {
+        _authRole = 'pg';
+        _pgGroupId = pgInfo.groupId;
+        // PG entra col proprio nome (senza Google login)
+        var ov = document.getElementById('login-overlay');
+        if (ov) {
+          document.getElementById('login-google-area').style.display = 'none';
+          document.getElementById('login-pg-area').style.display = 'flex';
+        }
+        return;
+      }
+      // Nessuna sessione: mostra login
+      var ov2 = document.getElementById('login-overlay');
+      if (ov2) ov2.style.display = 'flex';
+    }
+  });
+}
+
+function pgEntra() {
+  var nameEl = document.getElementById('pg-name-input');
+  var name = nameEl ? nameEl.value.trim() : '';
+  if (!name) { alert('Inserisci il nome del tuo personaggio!'); return; }
+  _authRole = 'pg';
+  state.currentUser = { username: name, role: 'Giocatore', dmPriv: false };
+  var ov = document.getElementById('login-overlay');
+  if (ov) { ov.classList.add('opening'); setTimeout(function(){ ov.style.display='none'; ov.classList.remove('opening'); }, 1850); }
+  if (!_db) {
+    try {
+      if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+      _db = firebase.database();
+    } catch(e) {}
+  }
+  setupRealtimeListeners();
+  setTimeout(function() { render(); renderUserBadge(); }, 300);
+}
+
+function copyInviteLink() {
+  if (!_authUser || !_db) return;
+  var groupId = _authUser.uid.substring(0, 8);
+  var token = Math.random().toString(36).substring(2, 10);
+  _db.ref('groups/' + groupId).set({ createdBy: _authUser.uid, token: token, createdAt: Date.now() });
+  var link = window.location.origin + window.location.pathname + '?group=' + groupId + '&pg=' + token;
+  navigator.clipboard.writeText(link).then(function() {
+    notify('Link PG copiato! Mandalo ai tuoi giocatori.');
+  }).catch(function() {
+    prompt('Link PG (copia manualmente):', link);
+  });
+}
+
 function initFirebase() {
   try {
     if (!_firebaseApp) {
@@ -5149,8 +5287,7 @@ function initFirebase() {
       _db = firebase.database();
     }
     console.log('[Firebase] Inizializzato.');
-    setupPresence();
-    setupRealtimeListeners();
+    initAuth(); // avvia listener Google Auth
   } catch (e) {
     console.warn('[Firebase] Errore init:', e.message, '— modalità offline.');
   }
@@ -5820,8 +5957,9 @@ var DEFAULT_USERS = [
 var _remoteUsers = {}; // {username: {password, role, dmPriv}} — da Firebase
 var _presenceMap = {}; // {username: {online, lastSeen}}
 
-/* Controlla se DM o ha privilegi DM attivi */
+/* Controlla se DM o ha privilegi DM attivi (Admin incluso) */
 function isDM() {
+  if (_authRole === 'admin' || _authRole === 'dm') return true;
   if (!state.currentUser) return false;
   return state.currentUser.role === 'DM' || state.currentUser.dmPriv === true;
 }
@@ -5968,11 +6106,23 @@ function renderUserBadge() {
   var badge = document.createElement('div');
   badge.className = 'user-badge';
   badge.id = 'user-badge-el';
+  badge.style.cssText = 'cursor:pointer;';
+  badge.title = _authUser ? (_authUser.email + '\n' + (isAdmin() ? 'Admin' : isDM() ? 'DM' : 'PG') + '\nClicca per disconnetterti') : '';
   var dot = document.createElement('span'); dot.className = 'online-dot';
   badge.appendChild(dot);
+  if (_authUser && _authUser.photoURL) {
+    var avatar = document.createElement('img');
+    avatar.src = _authUser.photoURL;
+    avatar.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:0.3rem;';
+    badge.appendChild(avatar);
+  }
   var nameSpan = document.createElement('span');
-  nameSpan.textContent = state.currentUser.username + (isDM() ? ' ⚔' : '');
+  var roleLabel = isAdmin() ? ' 👑' : isDM() ? ' ⚔' : ' 🛡';
+  nameSpan.textContent = (state.currentUser.username || '') + roleLabel;
   badge.appendChild(nameSpan);
+  if (_authUser) {
+    badge.onclick = function() { if (confirm('Disconnettersi da ' + _authUser.email + '?')) googleSignOut(); };
+  }
   document.body.appendChild(badge);
 }
 
@@ -8350,11 +8500,11 @@ function renderSidebar() {
   var sections = [
     {id:'emporio',label:'Emporio',icon:ICON.sword},
     {id:'bestiario',label:isDM()?'Bestiario':'Pet del Party',icon:isDM()?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 4 6 4 10c0 3 2 5 3 7l1 3h8l1-3c1-2 3-4 3-7 0-4-4-8-8-8z"/><path d="M9 17v3M15 17v3M9 21h6"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'},
-    {id:'incantesimi',label:'Incantesimi Aggiuntivi',dmOnly:true,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>'},
+    {id:'incantesimi',label:'Incantesimi Aggiuntivi',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>'},
     {id:'mappa',label:'Mappa del Mondo',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>'},
     {id:'worldbuilding', label:'Worldbuilding', dmOnly: true, icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'},
     {id:'storia', label:'Storia', dmOnly: true, icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>'},
-    {id:'generatore',label:'Generatore NPC',icon:ICON.npc, dmOnly: true},
+    {id:'generatore',label:'Generatore NPC',icon:ICON.npc},
     {id:'iniziativa',label:'Iniziativa',icon:ICON.swords},
     {id:'caos',label:'Statistiche & Caos',icon:ICON.skullDice},
     {id:'bacheca',label:'Bacheca Ricercati',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="7" cy="13" r="1" fill="currentColor"/><circle cx="7" cy="17" r="1" fill="currentColor"/></svg>'},
@@ -8458,11 +8608,34 @@ function renderSidebar() {
 
   var footer = document.createElement('div');
   footer.className = 'sidebar-footer';
+
+  /* Pulsante Link Invito PG \u2014 solo DM (non admin, ma entrambi possono invitare) */
+  if (isDM()) {
+    var inviteBtn = document.createElement('button');
+    inviteBtn.className = 'btn-dark';
+    inviteBtn.style.cssText = 'width:100%;font-size:11px;padding:0.45rem 0.75rem;margin-bottom:0.5rem;';
+    inviteBtn.innerHTML = '\uD83D\uDD17 Copia Link Invito PG';
+    inviteBtn.onclick = copyInviteLink;
+    footer.appendChild(inviteBtn);
+  }
+
   var tb = document.createElement('button');
   tb.className = 'theme-toggle';
   tb.innerHTML = state.theme === 'dark' ? ICON.sun : ICON.moon;
   tb.onclick = function() { state.theme = (state.theme === 'dark' ? 'light' : 'dark'); saveToStorage(); render(); };
   footer.appendChild(tb);
+
+  /* Pulsante Logout \u2014 se loggato con Google */
+  if (_authUser) {
+    var logoutBtn = document.createElement('button');
+    logoutBtn.style.cssText = 'width:100%;margin-top:0.5rem;background:transparent;border:1px solid rgba(201,165,92,0.25);color:var(--gold-dim);font-family:\'Cinzel\',serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.4rem 0.75rem;cursor:pointer;border-radius:3px;';
+    logoutBtn.textContent = '\u293B Disconnetti';
+    logoutBtn.onmouseenter = function(){ this.style.borderColor='var(--border-gold)'; this.style.color='var(--gold)'; };
+    logoutBtn.onmouseleave = function(){ this.style.borderColor='rgba(201,165,92,0.25)'; this.style.color='var(--gold-dim)'; };
+    logoutBtn.onclick = googleSignOut;
+    footer.appendChild(logoutBtn);
+  }
+
   var lab = document.createElement('div');
   lab.className = 'font-display text-center';
   lab.style.cssText = 'font-size:9px;color:var(--gold-dim);letter-spacing:0.18em;margin-top:0.5rem;';
@@ -8594,7 +8767,7 @@ function renderEmporio() {
   addBtn.innerHTML = ICON.plus + ' Nuova Arma';
   addBtn.onclick = function() { state.editingId = null; state.showForm = true; render(); };
   addBtnW.appendChild(addBtn);
-  if (isDM()) row.appendChild(addBtnW);
+  if (isAdmin()) row.appendChild(addBtnW);
 
   pg.appendChild(row);
 
@@ -8666,7 +8839,7 @@ function renderEmporioDroghe() {
     '<div style="font-family:\'Cinzel\',serif;font-size:2rem;font-weight:900;letter-spacing:0.3em;color:'+ACCENT+';">▶ DROGHE</div>';
   var hdrRight = document.createElement('div');
   hdrRight.style.cssText = 'display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;';
-  if (isDM()) {
+  if (isAdmin()) {
     var addBtn = document.createElement('button');
     addBtn.style.cssText = 'background:rgba(127,255,127,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.55rem 1.2rem;cursor:pointer;text-transform:uppercase;';
     addBtn.textContent = '+ NUOVA DROGA';
@@ -8784,7 +8957,7 @@ function renderDrogaCard(d, ACCENT) {
   price.style.cssText='font-size:17px;font-weight:700;color:#7fff7f;';
   price.textContent=d.costo ? d.costo+' '+(d.valuta||'mo') : '— PREZZO N/D';
   foot.appendChild(price);
-  if (isDM()) {
+  if (isAdmin()) {
     var actions=document.createElement('div');
     actions.style.cssText='display:flex;gap:0.4rem;';
     var editBtn=document.createElement('button');
@@ -9018,14 +9191,14 @@ function renderEmporioVeicoli() {
     '<div style="font-family:\'Cinzel\',serif;font-size:2rem;font-weight:900;letter-spacing:0.3em;color:'+ACCENT+';">▶ VEICOLI</div>';
   var hdrRight = document.createElement('div');
   hdrRight.style.cssText = 'display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;';
-  if (isDM() && state.veicoliTab === 'catalogo') {
+  if (isAdmin() && state.veicoliTab === 'catalogo') {
     var addBtn = document.createElement('button');
     addBtn.style.cssText = 'background:rgba(245,166,35,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.55rem 1.2rem;cursor:pointer;text-transform:uppercase;';
     addBtn.textContent = '+ NUOVO VEICOLO';
     addBtn.onclick = function(){ state.veicoliShowForm=true; state.veicoliEditingId=null; renderMain(); };
     hdrRight.appendChild(addBtn);
   }
-  if (isDM() && state.veicoliTab === 'party') {
+  if (isAdmin() && state.veicoliTab === 'party') {
     var addPartyBtn = document.createElement('button');
     addPartyBtn.style.cssText = 'background:rgba(245,166,35,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:14px;font-weight:700;letter-spacing:0.1em;padding:0.55rem 1.2rem;cursor:pointer;text-transform:uppercase;';
     addPartyBtn.textContent = '+ AGGIUNGI VEICOLO PARTY';
@@ -9213,7 +9386,7 @@ function renderVeicoloCard(v, isParty) {
   foot.appendChild(price);
   if (isParty) {
     var actions=document.createElement('div'); actions.style.cssText='display:flex;gap:0.4rem;';
-    if (isDM()) {
+    if (isAdmin()) {
       var editBtn=document.createElement('button');
       editBtn.style.cssText='background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.4);color:#f5a623;font-size:13px;padding:0.3rem 0.6rem;cursor:pointer;';
       editBtn.textContent='✎';
@@ -9227,7 +9400,7 @@ function renderVeicoloCard(v, isParty) {
     foot.appendChild(actions);
   } else {
     var actions2=document.createElement('div'); actions2.style.cssText='display:flex;gap:0.4rem;flex-wrap:wrap;';
-    if (isDM()) {
+    if (isAdmin()) {
       var addParty=document.createElement('button');
       addParty.style.cssText='background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.35);color:#f5a623;font-size:11px;font-weight:700;letter-spacing:0.06em;padding:0.3rem 0.6rem;cursor:pointer;text-transform:uppercase;';
       addParty.textContent='+ Party';
@@ -9586,7 +9759,7 @@ function renderEmporioArmiFuoco() {
     +'<div style="font-family:\'Cinzel\',serif;font-size:1.8rem;font-weight:900;letter-spacing:0.25em;color:'+ACCENT+';">ARMI DA FUOCO</div>';
   var hdrRight = document.createElement('div');
   hdrRight.style.cssText = 'display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;';
-  if (isDM()) {
+  if (isAdmin()) {
     var _subT = state.armiSubTab||'armi';
     var addBtn = document.createElement('button');
     addBtn.style.cssText = 'background:rgba(229,48,48,0.12);border:2px solid '+ACCENT+';color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:13px;font-weight:700;letter-spacing:0.1em;padding:0.5rem 1.1rem;cursor:pointer;text-transform:uppercase;';
@@ -9704,7 +9877,7 @@ function renderEmporioArmiFuoco() {
       var dv = document.createElement('div'); dv.style.cssText = 'font-size:15px;color:#ffcccc;line-height:1.65;margin-bottom:0.85rem;white-space:pre-wrap;'; dv.textContent = arma.descrizione; sec2.appendChild(dv);
     }
     if (arma.costo) row('// PREZZO', arma.costo+' '+(arma.valuta||'mo'));
-    if (isDM()) {
+    if (isAdmin()) {
       var br = document.createElement('div'); br.style.cssText = 'display:flex;gap:0.5rem;margin-top:1rem;border-top:1px solid rgba(229,48,48,0.15);padding-top:1rem;';
       var eb = document.createElement('button'); eb.style.cssText = 'flex:1;background:rgba(229,48,48,0.1);border:1px solid rgba(229,48,48,0.4);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:12px;font-weight:700;padding:0.4rem;cursor:pointer;'; eb.textContent='✎ MODIFICA';
       eb.onclick=function(){ state.armiDaFuocoEditingId=arma.id; state.armiDaFuocoShowForm=true; renderMain(); };
@@ -9952,7 +10125,7 @@ function _renderArmiPotenziamenti() {
     if(p.costo){var pr=document.createElement('div');pr.style.cssText='font-size:13px;color:'+ACCENT+';font-weight:700;';pr.textContent=p.costo+' '+(p.valuta||'mo');body.appendChild(pr);}
     if(p.prerequisiti){var rq=document.createElement('div');rq.style.cssText='font-size:12px;color:rgba(229,48,48,0.5);font-style:italic;';rq.textContent='Req: '+p.prerequisiti;body.appendChild(rq);}
     if(p.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:13px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=p.effetto;body.appendChild(ef);}
-    if(isDM()){
+    if(isAdmin()){
       var br2=document.createElement('div');br2.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
       var eb2=document.createElement('button');eb2.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb2.textContent='✎ MODIFICA';
       eb2.onclick=function(){state.potenziamentiEditingId=p.id;state.potenziamentiShowForm=true;renderMain();};
@@ -10039,7 +10212,7 @@ function _renderArmiMunizioni() {
     var nome=document.createElement('div');nome.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;color:#ffcccc;letter-spacing:0.05em;';nome.textContent=m.nome||'?';card.appendChild(nome);
     if(m.costo){var pr=document.createElement('div');pr.style.cssText='font-size:13px;color:'+ACCENT+';font-weight:700;';pr.textContent=m.costo+' '+(m.valuta||'mo');card.appendChild(pr);}
     if(m.effetto){var ef=document.createElement('div');ef.style.cssText='font-size:13px;color:#ffb3b3;line-height:1.5;margin-top:0.2rem;flex:1;white-space:pre-wrap;';ef.textContent=m.effetto;card.appendChild(ef);}
-    if(isDM()){
+    if(isAdmin()){
       var br3=document.createElement('div');br3.style.cssText='display:flex;gap:0.4rem;margin-top:0.5rem;border-top:1px solid rgba(229,48,48,0.1);padding-top:0.5rem;';
       var eb3=document.createElement('button');eb3.style.cssText='flex:1;background:rgba(229,48,48,0.08);border:1px solid rgba(229,48,48,0.3);color:'+ACCENT+';font-family:\'Courier New\',monospace;font-size:11px;padding:0.3rem;cursor:pointer;';eb3.textContent='✎ MODIFICA';
       eb3.onclick=function(){state.munizioniArmiEditingId=m.id;state.munizioniArmiShowForm=true;renderMain();};
@@ -10127,7 +10300,7 @@ function renderEmporioCyber() {
   addBtn.className = 'cyber-add-btn';
   addBtn.textContent = '+ NUOVO IMPIANTO';
   addBtn.onclick = function() { state.cyberShowForm = true; state.cyberEditingId = null; renderMain(); };
-  if (isDM()) hdrRight.appendChild(addBtn);
+  if (isAdmin()) hdrRight.appendChild(addBtn);
 
   var backBtn = document.createElement('button');
   backBtn.className = 'cyber-back-btn';
@@ -10286,7 +10459,7 @@ function renderCyberCard(im) {
   priceDiv.textContent = (im.costo ? im.costo + ' ' + (im.valuta||'mo') : '— PREZZO N/D');
   foot.appendChild(priceDiv);
 
-  if (isDM()) {
+  if (isAdmin()) {
     var btnWrap = document.createElement('div');
     btnWrap.style.cssText = 'display:flex;gap:0.3rem;';
     var editBtn = document.createElement('button');
@@ -10572,7 +10745,7 @@ function renderWeaponCard(w) {
   var foot = document.createElement('div');
   foot.className = 'flex items-center justify-between pt-3 border-t';
   var priceDiv = '<div class="coin coin-' + w.valuta + '"><span class="coin-icon">' + w.valuta.toUpperCase() + '</span><span>' + w.prezzo + ' ' + w.valuta + '</span></div>';
-  if (isDM()) {
+  if (isAdmin()) {
     foot.innerHTML = priceDiv +
       '<div class="flex gap-1"><button class="btn-dark edit-btn" title="Modifica" style="padding:0.4rem 0.65rem;">' + ICON.edit + '</button>' +
       '<button class="btn-blood del-btn" title="Elimina" style="padding:0.4rem 0.65rem;">' + ICON.trash + '</button></div>';
@@ -13755,7 +13928,7 @@ function updateBestiarioGrid() {
   if (filtered.length === 0) {
     grid.className = '';
     if (state.bestiario.length === 0) {
-      grid.innerHTML = '<div class="empty-state panel-glass"><div class="rune">🐉</div><h2>Il bestiario è vuoto</h2><p>Aggiungi il primo mostro con il pulsante "Nuovo Mostro".</p>' + (isDM() ? '<button class="btn-gold" id="best-add-empty">' + ICON.plus + ' Aggiungi primo mostro</button>' : '') + '</div>';
+      grid.innerHTML = '<div class="empty-state panel-glass"><div class="rune">🐉</div><h2>Il bestiario è vuoto</h2><p>Aggiungi il primo mostro con il pulsante "Nuovo Mostro".</p>' + (isAdmin() ? '<button class="btn-gold" id="best-add-empty">' + ICON.plus + ' Aggiungi primo mostro</button>' : '') + '</div>';
       var ea = document.getElementById('best-add-empty');
       if (ea) ea.onclick = function() { state.bestEditingId = null; state.bestShowForm = true; render(); };
     } else {
@@ -14020,7 +14193,7 @@ function renderBestiarCard(m) {
     lnk.onclick = function(e) { e.stopPropagation(); };
     foot.appendChild(lnk);
   } else { foot.appendChild(document.createElement('span')); }
-  if (isDM()) {
+  if (isAdmin()) {
     var btnRow = document.createElement('div'); btnRow.className = 'flex gap-1';
     var editBtn = document.createElement('button');
     editBtn.className = 'btn-dark'; editBtn.title = 'Modifica';
@@ -15238,7 +15411,7 @@ function renderBestiario() {
     swW.appendChild(swI); sw.appendChild(swW); row.appendChild(sw);
     row.appendChild(makeSelectFilter('Taglia', state.bestFiltroTaglia, [''].concat(TAGLIE_MOSTRO), function(v){ state.bestFiltroTaglia=v; updateBestiarioGrid(); }, '— Tutte le taglie —'));
     row.appendChild(makeSelectFilter('Tipo Creatura', state.bestFiltroTipo, [''].concat(TIPI_MOSTRO), function(v){ state.bestFiltroTipo=v; updateBestiarioGrid(); }, '— Tutti i tipi —'));
-    if (isDM()) {
+    if (isAdmin()) {
       var abW=document.createElement('div');
       var ab=document.createElement('button'); ab.className='btn-gold';
       ab.innerHTML=ICON.plus+' Nuovo Mostro';
@@ -15324,7 +15497,7 @@ function renderIncantesimiAggiuntivi() {
   clSel.onchange=function(){ state.incFilterClasse=this.value; renderMain(); };
   clW.appendChild(clSel); row.appendChild(clW);
 
-  if (isDM()) {
+  if (isAdmin()) {
     var abW = document.createElement('div');
     var ab = document.createElement('button'); ab.className = 'btn-gold';
     ab.innerHTML = ICON.plus + ' Nuovo Incantesimo';
@@ -15352,7 +15525,7 @@ function renderIncantesimiAggiuntivi() {
 
   if (filtered.length === 0) {
     var empty = document.createElement('div'); empty.className = 'empty-state panel-glass'; empty.style.cssText = 'margin:1.5rem;';
-    empty.innerHTML = '<div class="rune">✨</div><h2>Nessun incantesimo</h2><p>' + (isDM() ? 'Aggiungi il primo incantesimo.' : 'Nessun incantesimo aggiuntivo disponibile.') + '</p>';
+    empty.innerHTML = '<div class="rune">✨</div><h2>Nessun incantesimo</h2><p>' + (isAdmin() ? 'Aggiungi il primo incantesimo.' : 'Nessun incantesimo aggiuntivo disponibile.') + '</p>';
     frag.appendChild(empty);
   } else {
     var grid = document.createElement('div'); grid.className = 'container-main pb-20';
@@ -15423,8 +15596,8 @@ function renderIncantatesimoCard(s) {
   }
   card.appendChild(body);
 
-  // Footer DM actions
-  if (isDM()) {
+  // Footer Admin actions
+  if (isAdmin()) {
     var foot = document.createElement('div'); foot.style.cssText = 'padding:0.5rem 1.2rem;border-top:1px solid var(--border-subtle);background:var(--bg-base);display:flex;justify-content:flex-end;gap:0.4rem;';
     var editB = document.createElement('button'); editB.className = 'btn-dark'; editB.style.cssText = 'padding:0.3rem 0.7rem;font-size:12px;'; editB.innerHTML = ICON.edit || '✎'; editB.textContent = '✎ Modifica';
     editB.onclick = function(){ state.incEditingId = s.id; state.incShowForm = true; renderMain(); };
@@ -19754,34 +19927,19 @@ function renderBacheGrid(grid) {
 /* AVVIO */
 try {
   loadFromStorage();
-  // Controlla sessione salvata
-  if (state_pre_init_user) {
-    state.currentUser = state_pre_init_user;
-    document.getElementById('login-overlay').style.display = 'none';
-    // Inizializza Firebase con listeners e presenza
-    try {
+  // Mostra overlay login mentre Firebase Auth controlla la sessione
+  document.getElementById('login-overlay').style.display = 'flex';
+  // Inizializza Firebase + Auth listener (gestirà lui login/logout)
+  try {
+    if (!_firebaseApp) {
       _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
-    } catch(e) { /* già init */ }
-    setupPresence();
-    setupRealtimeListeners();
-    // Piccolo delay per permettere a Firebase di caricare i dati iniziali
-    setTimeout(function() {
-      render(); renderUserBadge();
-    }, 300);
-  } else {
-    // Nessuna sessione: mostra il login
+    }
+    initAuth();
+  } catch(e) {
+    console.warn('[Mercante] Firebase non disponibile:', e.message);
+    // Fallback: mostra login
     document.getElementById('login-overlay').style.display = 'flex';
-    // Pre-inizializza Firebase silenziosamente per velocizzare il login
-    try {
-      _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-      _db = firebase.database();
-      // Precarica gli utenti per rendere il login più veloce
-      _db.ref('users').once('value', function(snap) {
-        if (snap.val()) _remoteUsers = snap.val();
-      });
-    } catch(e) {}
-    console.log('[Mercante] Attesa login.');
   }
 
   // Salva storia prima di chiudere/cambiare tab
