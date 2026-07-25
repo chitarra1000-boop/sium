@@ -4326,7 +4326,6 @@
   .mappa-flag-icon { display:flex; align-items:center; justify-content:center; }
 
   /* ============================================================
-  // BACHECA gestita da setupGroupListeners()
   .bacheca-toolbar-title {
     font-family:Cinzel,serif; font-size:11px; font-weight:700;
     text-transform:uppercase; letter-spacing:0.2em; color:var(--gold-bright); margin-right:0.5rem;
@@ -5135,23 +5134,11 @@ var _fbListeners = []; // per cleanup
 var ADMIN_EMAIL = 'chitarra1000@gmail.com'; // unico admin
 var _authUser = null;   // Firebase auth user object
 var _authRole = null;   // 'admin' | 'dm' | 'pg' | null
-var _pgGroupId = null;  // group ID per accesso PG da link
-var _activeGroupId = null; // group ID attivo per il DM
-var _groupListeners = []; // Firebase listeners da staccare quando si cambia gruppo
 
 function isAdmin() { return _authRole === 'admin'; }
 function isPG()    { return _authRole === 'pg'; }
 function isDM()    { return _authRole === 'admin' || _authRole === 'dm'; }
 
-function _detectPGFromURL() {
-  try {
-    var params = new URLSearchParams(window.location.search);
-    var group = params.get('group');
-    var token = params.get('pg');
-    if (group && token) return { groupId: group, token: token };
-  } catch(e) {}
-  return null;
-}
 
 function _buildCurrentUserFromAuth(fbUser) {
   var role = (fbUser.email === ADMIN_EMAIL) ? 'admin' : 'dm';
@@ -5224,10 +5211,6 @@ function _completeLogin(username, ud) {
       _db = firebase.database();
     } catch(e) {}
   }
-  try {
-    var savedGid = localStorage.getItem('activeGroupId_' + username);
-    if (savedGid) { _activeGroupId = savedGid; setTimeout(function(){ if(typeof setupGroupListeners==='function') setupGroupListeners(_activeGroupId); }, 600); }
-  } catch(e) {}
   if (typeof setupPresence === 'function') setupPresence();
   setupRealtimeListeners();
   if (typeof fbLoadApiKeys === 'function') fbLoadApiKeys();
@@ -5243,17 +5226,6 @@ function initAuth() {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
     } catch(e) {}
-  }
-  // Controlla se è un accesso PG da link invito
-  var pgInfo = _detectPGFromURL();
-  if (pgInfo) {
-    _authRole = 'pg';
-    _pgGroupId = pgInfo.groupId;
-    var ov = document.getElementById('login-overlay');
-    if (ov) {
-      ov.style.display = 'flex';
-    }
-    return;
   }
   // Prova auto-login da localStorage
   try {
@@ -5294,229 +5266,9 @@ function pgEntra() {
     } catch(e) {}
   }
   setupRealtimeListeners();
-  if (_pgGroupId) setTimeout(function(){ setupGroupListeners(_pgGroupId); }, 600);
   setTimeout(function() { render(); renderUserBadge(); }, 300);
 }
 
-function copyInviteLink() {
-  if (!_authUser || !_db) return;
-  if (!_activeGroupId) { openGroupModal(); return; }
-  var groupId = _activeGroupId;
-  _db.ref('groups/' + groupId + '/meta').once('value', function(snap) {
-    var meta = snap.val() || {};
-    var token = meta.token || Math.random().toString(36).substring(2, 10);
-    var link = window.location.origin + window.location.pathname + '?group=' + groupId + '&pg=' + token;
-    navigator.clipboard.writeText(link).then(function() {
-      notify('Link PG copiato! Mandalo ai tuoi giocatori.');
-    }).catch(function() {
-      prompt('Link PG (copia manualmente):', link);
-    });
-  });
-}
-
-// ── Ritorna il groupId attivo (DM o PG) ──────────────────────────────────────
-function _getGroupId() { return isPG() ? _pgGroupId : _activeGroupId; }
-
-function groupRef(sub) {
-  var gid = _getGroupId();
-  if (!_db || !gid) return null;
-  return _db.ref('groups/' + gid + '/' + sub);
-}
-
-// ── Scollega i listener di gruppo precedenti e imposta i nuovi ────────────────
-function setupGroupListeners(groupId) {
-  _groupListeners.forEach(function(fn){ fn(); });
-  _groupListeners = [];
-  if (!_db || !groupId) return;
-
-  // INIZIATIVA
-  var inizRef = _db.ref('groups/' + groupId + '/iniziativa');
-  function onIniz(snap) {
-    if (_localWrite.iniziativa) return;
-    var v = snap.val();
-    if (v && v.combatants && Array.isArray(v.combatants) && v.combatants.length > 0) {
-      state.combatants = v.combatants.map(function(c){ if(!Array.isArray(c.condizioni)) c.condizioni=[]; return c; });
-      if (typeof v.round === 'number') state.round = v.round;
-      if (typeof v.activeIndex === 'number') state.activeIndex = v.activeIndex;
-    } else {
-      if (state.combatants.length === 0) state.combatants = [makeEmptyCombatant()];
-    }
-    if (state.section === 'iniziativa') { ensureTrailingEmpty(); renderIniziativaBody(); } else ensureTrailingEmpty();
-  }
-  inizRef.on('value', onIniz);
-  _groupListeners.push(function(){ inizRef.off('value', onIniz); });
-
-  // CAOS PLAYERS
-  var caosRef = _db.ref('groups/' + groupId + '/caos/players');
-  function onCaos(snap) {
-    if (_localWrite.caos) return;
-    var v = snap.val();
-    if (v && Array.isArray(v)) { state.caosPlayers = v; if (state.section === 'caos') renderCaosBody(); }
-  }
-  caosRef.on('value', onCaos);
-  _groupListeners.push(function(){ caosRef.off('value', onCaos); });
-
-  // DOOM
-  var doomRef = _db.ref('groups/' + groupId + '/caos/doom');
-  function onDoom(snap) {
-    if (_localWrite.caos) return;
-    var v = snap.val();
-    if (v) { if(typeof v.doomStage==='number') state.doomStage=v.doomStage; if(typeof v.doomFilled==='number') state.doomFilled=v.doomFilled; if(state.section==='caos') renderDoomWheel(); }
-  }
-  doomRef.on('value', onDoom);
-  _groupListeners.push(function(){ doomRef.off('value', onDoom); });
-
-  // BACHECA
-  var bacheRef = _db.ref('groups/' + groupId + '/bacheca/items');
-  function onBache(snap) {
-    var v = snap.val();
-    if (v && typeof v === 'object') state.bacheItems = Object.keys(v).map(function(k){ return Object.assign({id:k}, v[k]); });
-    else state.bacheItems = [];
-    if (state.section === 'bacheca') { var grid = document.querySelector('.bacheca-grid'); if (grid) renderBacheGrid(grid); }
-  }
-  bacheRef.on('value', onBache);
-  _groupListeners.push(function(){ bacheRef.off('value', onBache); });
-
-  // PERSONAGGI (NPC/PG del gruppo)
-  var persRef = _db.ref('groups/' + groupId + '/personaggi');
-  function onPers(snap) {
-    var v = snap.val();
-    if (v && Array.isArray(v)) { state.personaggi = v; if(state.section==='generatore') renderMain(); }
-  }
-  persRef.on('value', onPers);
-  _groupListeners.push(function(){ persRef.off('value', onPers); });
-
-  // SCHEDE PG
-  var schedRef = _db.ref('groups/' + groupId + '/schedePG');
-  function onSched(snap) {
-    state.schedePGAll = snap.val() || {};
-    if (state.section === 'schedepg') renderMain();
-  }
-  schedRef.on('value', onSched);
-  _groupListeners.push(function(){ schedRef.off('value', onSched); });
-}
-
-// ── Crea un nuovo gruppo e lo attiva ──────────────────────────────────────────
-function createGroup(nome) {
-  if (!_db || !_authUser) return;
-  nome = (nome||'').trim() || 'Il Mio Gruppo';
-  var groupId = 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-  var token = Math.random().toString(36).substring(2, 10);
-  _db.ref('groups/' + groupId + '/meta').set({ nome: nome, createdBy: _authUser.uid, token: token, createdAt: Date.now() });
-  _activeGroupId = groupId;
-  try { localStorage.setItem('activeGroupId_' + _authUser.uid, groupId); } catch(e) {}
-  if (_db && _authUser) _db.ref('users/' + _authUser.uid + '/activeGroupId').set(groupId);
-  setupGroupListeners(groupId);
-  // Reset group state
-  state.combatants = [makeEmptyCombatant()]; state.caosPlayers = []; state.bacheItems = [];
-  state.personaggi = []; state.schedePGAll = {};
-  if (state.section === 'bacheca' || state.section === 'iniziativa' || state.section === 'caos' || state.section === 'schedepg') renderMain();
-  notify('Gruppo "' + nome + '" creato!');
-}
-
-// ── Cambia gruppo attivo ──────────────────────────────────────────────────────
-function switchGroup(groupId) {
-  if (!_db || !groupId || groupId === _activeGroupId) return;
-  _activeGroupId = groupId;
-  try { localStorage.setItem('activeGroupId_' + _authUser.uid, groupId); } catch(e) {}
-  setupGroupListeners(groupId);
-  state.combatants = [makeEmptyCombatant()]; state.caosPlayers = []; state.bacheItems = [];
-  state.personaggi = []; state.schedePGAll = {};
-  renderMain();
-}
-
-// ── Apri modal gestione gruppi ───────────────────────────────────────────────
-function openGroupModal() {
-  var ex = document.getElementById('group-modal-ov');
-  if (ex) ex.remove();
-  var ov = document.createElement('div');
-  ov.id = 'group-modal-ov';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:9100;display:flex;align-items:center;justify-content:center;padding:1rem;';
-  ov.onclick = function(e){ if(e.target===ov) ov.remove(); };
-  var box = document.createElement('div');
-  box.style.cssText = 'background:var(--bg-panel);border:1px solid var(--border-soft);border-radius:8px;padding:1.5rem;max-width:420px;width:100%;max-height:80vh;overflow-y:auto;';
-  box.innerHTML = '<div style="font-family:Cinzel,serif;font-size:16px;font-weight:700;color:var(--gold);margin-bottom:1rem;">⚔ Gestione Gruppi</div>';
-
-  // Create new group
-  var createWrap = document.createElement('div');
-  createWrap.style.cssText = 'margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border-subtle);';
-  createWrap.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">Crea Nuovo Gruppo</div>';
-  var inp = document.createElement('input');
-  inp.type='text'; inp.placeholder='Nome del gruppo (es. "Gli Eroi di Waterdeep")';
-  inp.style.cssText='width:100%;background:var(--bg-card);border:1px solid var(--border-soft);color:var(--text-main);padding:0.5rem 0.75rem;border-radius:4px;font-family:EB Garamond,serif;font-size:15px;margin-bottom:0.5rem;';
-  var createBtn = document.createElement('button');
-  createBtn.textContent = '✦ Crea Gruppo';
-  createBtn.style.cssText='width:100%;background:var(--gold);color:#1a1200;border:none;padding:0.55rem;border-radius:4px;font-family:Cinzel,serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.08em;';
-  createBtn.onclick = function() {
-    var nome = inp.value.trim();
-    if (!nome) { inp.focus(); return; }
-    ov.remove();
-    createGroup(nome);
-  };
-  inp.onkeydown = function(e){ if(e.key==='Enter') createBtn.click(); };
-  createWrap.appendChild(inp); createWrap.appendChild(createBtn);
-  box.appendChild(createWrap);
-
-  // List existing groups
-  var listWrap = document.createElement('div');
-  listWrap.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;">I Tuoi Gruppi</div>';
-  if (_db && _authUser) {
-    _db.ref('groups').orderByChild('meta/createdBy').equalTo(_authUser.uid).once('value', function(snap) {
-      var groups = snap.val() || {};
-      var keys = Object.keys(groups);
-      if (keys.length === 0) {
-        listWrap.innerHTML += '<div style="color:var(--text-faint);font-size:13px;">Nessun gruppo creato.</div>';
-      } else {
-        keys.forEach(function(gid) {
-          var meta = (groups[gid].meta || {});
-          var nome = meta.nome || gid;
-          var row = document.createElement('div');
-          row.style.cssText='display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid var(--border-subtle);';
-          var isActive = gid === _activeGroupId;
-          row.innerHTML = '<div style="flex:1;font-family:EB Garamond,serif;font-size:15px;color:var(--text-main);">' +
-            escapeHtml(nome) + (isActive ? ' <span style="font-size:11px;color:var(--gold);">(attivo)</span>' : '') + '</div>';
-          if (!isActive) {
-            var sw = document.createElement('button');
-            sw.textContent='Seleziona'; sw.style.cssText='font-size:11px;font-family:Cinzel,serif;background:transparent;border:1px solid var(--border-soft);color:var(--gold-dim);cursor:pointer;padding:0.25rem 0.6rem;border-radius:3px;';
-            sw.onclick = function(){ ov.remove(); switchGroup(gid); notify('Gruppo "'+escapeHtml(nome)+'" selezionato.'); };
-            row.appendChild(sw);
-          }
-          // Copy invite link
-          var lnk = document.createElement('button');
-          lnk.textContent='🔗'; lnk.title='Copia link invito'; lnk.style.cssText='font-size:14px;background:transparent;border:none;cursor:pointer;color:var(--gold-dim);padding:0.2rem;';
-          lnk.onclick = function(){
-            var tk = meta.token || '';
-            var link = window.location.origin+window.location.pathname+'?group='+gid+'&pg='+tk;
-            navigator.clipboard.writeText(link).then(function(){ notify('Link copiato!'); }).catch(function(){ prompt('Link:',link); });
-          };
-          row.appendChild(lnk);
-          listWrap.appendChild(row);
-        });
-      }
-      box.appendChild(listWrap);
-    });
-  }
-
-  var closeBtn = document.createElement('button');
-  closeBtn.textContent = 'Chiudi'; closeBtn.style.cssText='margin-top:1rem;width:100%;background:transparent;border:1px solid var(--border-soft);color:var(--text-muted);padding:0.4rem;border-radius:4px;font-family:Cinzel,serif;font-size:11px;cursor:pointer;';
-  closeBtn.onclick = function(){ ov.remove(); };
-  box.appendChild(closeBtn);
-  ov.appendChild(box);
-  document.body.appendChild(ov);
-}
-
-// ── Mostra prompt "seleziona un gruppo" per sezioni private ──────────────────
-function renderNoGroup() {
-  var wrap = document.createElement('div');
-  wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:1.5rem;padding:2rem;text-align:center;';
-  wrap.innerHTML = '<div style="font-size:48px;">⚔</div><div style="font-family:Cinzel,serif;font-size:20px;color:var(--gold);font-weight:700;">Nessun gruppo attivo</div><div style="color:var(--text-muted);max-width:360px;">Questa sezione è privata per gruppo. Crea o seleziona un gruppo per iniziare a collaborare con i tuoi giocatori.</div>';
-  var btn = document.createElement('button');
-  btn.textContent = '⚔ Crea o Seleziona Gruppo';
-  btn.style.cssText='background:var(--gold);color:#1a1200;border:none;padding:0.7rem 1.5rem;border-radius:4px;font-family:Cinzel,serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.08em;';
-  btn.onclick = openGroupModal;
-  wrap.appendChild(btn);
-  return wrap;
-}
 
 function initFirebase() {
   try {
@@ -5555,7 +5307,54 @@ var _localWrite = { iniziativa: false, caos: false, armi: false, bestiario: fals
 function setupRealtimeListeners() {
   if (!_db) return;
 
-  // INIZIATIVA, CAOS, BACHECA, PERSONAGGI ora gestiti da setupGroupListeners()
+  // ---- INIZIATIVA ----
+  _db.ref('state/iniziativa').on('value', function(snap) {
+    if (_localWrite.iniziativa) return;
+    var v = snap.val();
+    if (v && v.combatants && Array.isArray(v.combatants) && v.combatants.length > 0) {
+      state.combatants = v.combatants.map(function(c){ if(!Array.isArray(c.condizioni)) c.condizioni=[]; return c; });
+      if (typeof v.round === 'number') state.round = v.round;
+      if (typeof v.activeIndex === 'number') state.activeIndex = v.activeIndex;
+    } else {
+      if (state.combatants.length === 0) state.combatants = [makeEmptyCombatant()];
+    }
+    if (state.section === 'iniziativa') { ensureTrailingEmpty(); renderIniziativaBody(); } else ensureTrailingEmpty();
+  });
+
+  // ---- CAOS ----
+  _db.ref('state/caos/players').on('value', function(snap) {
+    if (_localWrite.caos) return;
+    var v = snap.val();
+    if (v && Array.isArray(v)) { state.caosPlayers = v; if (state.section === 'caos') renderCaosBody(); }
+  });
+  _db.ref('state/caos/doom').on('value', function(snap) {
+    if (_localWrite.caos) return;
+    var v = snap.val();
+    if (v) { if(typeof v.doomStage==='number') state.doomStage=v.doomStage; if(typeof v.doomFilled==='number') state.doomFilled=v.doomFilled; if(state.section==='caos') renderDoomWheel(); }
+  });
+
+  // ---- BACHECA ----
+  _db.ref('state/bacheca/items').on('value', function(snap) {
+    var v = snap.val();
+    if (v && typeof v === 'object') state.bacheItems = Object.keys(v).map(function(k){ return Object.assign({id:k}, v[k]); });
+    else state.bacheItems = [];
+    if (state.section === 'bacheca') { var grid = document.querySelector('.bacheca-grid'); if (grid) renderBacheGrid(grid); }
+  });
+
+  // ---- PERSONAGGI NPC ----
+  _db.ref('state/personaggi').on('value', function(snap) {
+    var v = snap.val();
+    if (v && Array.isArray(v)) {
+      state.personaggi = v;
+      if (state.section === 'generatore' || state.section === 'storia') renderMain();
+    }
+  });
+
+  // ---- SCHEDE PG ----
+  _db.ref('schedePG').on('value', function(snap) {
+    state.schedePGAll = snap.val() || {};
+    if (state.section === 'schedepg') renderMain();
+  });
 
   // ---- DELETED LISTS (admin) ----
   _db.ref('state/bestiarioDeleted').once('value', function(snap) {
@@ -5668,15 +5467,6 @@ function setupRealtimeListeners() {
     if (settEl) { settEl.remove(); renderSettingsPanel(); }
   });
 
-  // ---- PERSONAGGI NPC ----
-  // personaggi ora gestiti da setupGroupListeners()
-  _db.ref('state/personaggi_legacy').on('value', function(snap) {
-    var v = snap.val();
-    if (v && Array.isArray(v)) {
-      state.personaggi = v;
-      if (state.section === 'generatore' || state.section === 'storia') renderMain();
-    }
-  });
 
   // ---- BESTIARIO CUSTOM ----
   _db.ref('state/bestiario').on('value', function(snap) {
@@ -5825,7 +5615,6 @@ function setupRealtimeListeners() {
     });
   }
 
-  // BACHECA gestita da setupGroupListeners()
 }
 
 function fbSave(path, value) {
@@ -5848,9 +5637,7 @@ var _fbSaveCaosNomeTimer = null;
 
 function fbSavePersonaggi() {
   if (!_db) return;
-  var gid = _getGroupId();
-  var path = gid ? ('groups/' + gid + '/personaggi') : 'state/personaggi';
-  _db.ref(path).set(state.personaggi.length > 0 ? state.personaggi : null);
+  _db.ref('state/personaggi').set(state.personaggi.length > 0 ? state.personaggi : null);
 }
 
 /* Salva chiavi API su Firebase — persistenti su qualsiasi dominio/dispositivo */
@@ -6110,11 +5897,9 @@ function fbSaveIniziativa(immediate) {
 
 function _doFbSaveIniziativa() {
   if (!_db) return;
-  var gid = _getGroupId();
-  if (!gid) return;
   _localWrite.iniziativa = true;
   var toSave = state.combatants.length > 0 ? state.combatants : null;
-  _db.ref('groups/' + gid + '/iniziativa').set({
+  _db.ref('state/iniziativa').set({
     combatants: toSave,
     round: state.round,
     activeIndex: state.activeIndex
@@ -6124,13 +5909,11 @@ function _doFbSaveIniziativa() {
 }
 function fbSaveCaos() {
   if (!_db) return;
-  var gid = _getGroupId();
-  if (!gid) return;
   _localWrite.caos = true;
-  _db.ref('groups/' + gid + '/caos/players').set(state.caosPlayers, function() {
+  _db.ref('state/caos/players').set(state.caosPlayers, function() {
     setTimeout(function() { _localWrite.caos = false; }, 200);
   });
-  _db.ref('groups/' + gid + '/caos/doom').set({ doomStage: state.doomStage, doomFilled: state.doomFilled });
+  _db.ref('state/caos/doom').set({ doomStage: state.doomStage, doomFilled: state.doomFilled });
 }
 function fbSaveArmi() {
   if (!_db) return;
@@ -6397,28 +6180,6 @@ function renderSettingsPanel() {
     leftCol.appendChild(infoRole);
     infoRow.appendChild(leftCol);
     body.appendChild(infoRow);
-  }
-
-  /* Gestione Gruppo + Link invito PG */
-  if (isDM() && _authUser) {
-    var grpLbl = document.createElement('div'); grpLbl.className = 'settings-section-lbl'; grpLbl.textContent = 'Gruppo';
-    body.appendChild(grpLbl);
-    var grpBtnS = document.createElement('button');
-    grpBtnS.className = 'btn-dark';
-    grpBtnS.style.cssText += 'width:100%;justify-content:center;';
-    grpBtnS.textContent = _activeGroupId ? '⚔️ Gestisci Gruppo' : '⚔️ Crea / Seleziona Gruppo';
-    grpBtnS.onclick = function() { ov.remove(); openGroupModal(); };
-    body.appendChild(grpBtnS);
-    if (_activeGroupId) {
-      var invLbl2 = document.createElement('div'); invLbl2.className = 'settings-section-lbl'; invLbl2.textContent = 'Invita giocatori'; invLbl2.style.marginTop='0.5rem';
-      body.appendChild(invLbl2);
-      var invBtnS = document.createElement('button');
-      invBtnS.className = 'btn-dark';
-      invBtnS.style.cssText += 'width:100%;justify-content:center;';
-      invBtnS.textContent = '🔗 Copia Link Invito PG';
-      invBtnS.onclick = function() { ov.remove(); copyInviteLink(); };
-      body.appendChild(invBtnS);
-    }
   }
 
   /* Tema */
@@ -7930,9 +7691,9 @@ function render() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'incantesimi') { if (isDM()) main.appendChild(renderIncantesimiAggiuntivi()); else main.appendChild(renderDadi()); }
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
-  else if (state.section === 'bacheca') main.appendChild(_getGroupId() ? renderBacheca() : renderNoGroup());
+  else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
-  else if (state.section === 'schedepg') { if (!_getGroupId()) { main.appendChild(renderNoGroup()); } else if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
   else if (state.section === 'libri') main.appendChild(renderLibri());
   else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.height='calc(100vh - 120px)';main.appendChild(_twrap); }
   contentWrap.appendChild(main);
@@ -7975,9 +7736,9 @@ function renderMain() {
   else if (state.section === 'bestiario') main.appendChild(renderBestiario());
   else if (state.section === 'incantesimi') { if (isDM()) main.appendChild(renderIncantesimiAggiuntivi()); else main.appendChild(renderDadi()); }
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
-  else if (state.section === 'bacheca') main.appendChild(_getGroupId() ? renderBacheca() : renderNoGroup());
+  else if (state.section === 'bacheca') main.appendChild(renderBacheca());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se2=document.createElement('div');_se2.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se2.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se2); } } else main.appendChild(renderDadi()); }
-  else if (state.section === 'schedepg') { if (!_getGroupId()) { main.appendChild(renderNoGroup()); } else if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
+  else if (state.section === 'schedepg') { if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
   else if (state.section === 'libri') main.appendChild(renderLibri());
   else if (state.section === 'tavolo') { var _twrap=renderTavolo();_twrap.style.height='calc(100vh - 120px)';main.appendChild(_twrap); }
 
@@ -9065,15 +8826,6 @@ function renderSidebar() {
     schedePGItem.onclick = function() {
       state.section = 'schedepg';
       state.sidebarOpen = false;
-      if (state.schedePGAll === null) {
-        state.schedePGAll = {};
-        if (_db) {
-          _db.ref('groups/' + (_getGroupId()||'none') + '/schedePG').once('value', function(snap) {
-            state.schedePGAll = snap.val() || {};
-            renderMain();
-          });
-        }
-      }
       renderMain();
     };
     sb.appendChild(schedePGItem);
@@ -9108,25 +8860,6 @@ function renderSidebar() {
 
   var footer = document.createElement('div');
   footer.className = 'sidebar-footer';
-
-  /* Gestione Gruppo + Link Invito — solo DM */
-  if (isDM()) {
-    var groupSbBtn = document.createElement('button');
-    groupSbBtn.className = 'btn-dark';
-    groupSbBtn.style.cssText = 'width:100%;font-size:11px;padding:0.45rem 0.75rem;margin-bottom:0.35rem;';
-    groupSbBtn.textContent = _activeGroupId ? '⚔️ Gestisci Gruppo' : '⚔️ Crea / Seleziona Gruppo';
-    if (!_activeGroupId) { groupSbBtn.style.color='var(--gold)'; groupSbBtn.style.borderColor='rgba(201,165,92,0.5)'; }
-    groupSbBtn.onclick = openGroupModal;
-    footer.appendChild(groupSbBtn);
-    if (_activeGroupId) {
-      var inviteBtn = document.createElement('button');
-      inviteBtn.className = 'btn-dark';
-      inviteBtn.style.cssText = 'width:100%;font-size:11px;padding:0.45rem 0.75rem;margin-bottom:0.5rem;';
-      inviteBtn.innerHTML = '🔗 Copia Link Invito PG';
-      inviteBtn.onclick = copyInviteLink;
-      footer.appendChild(inviteBtn);
-    }
-  }
 
   var tb = document.createElement('button');
   tb.className = 'theme-toggle';
@@ -18849,7 +18582,7 @@ function renderSchedePG() {
     state.schedePGAll = null;
     state.schedePGOpenChar = null;
     if (_db) {
-      _db.ref('groups/' + (_getGroupId()||'none') + '/schedePG').once('value', function(snap) {
+      _db.ref('schedePG').once('value', function(snap) {
         state.schedePGAll = snap.val() || {};
         renderMain();
       });
@@ -20318,7 +20051,7 @@ function renderBacheca() {
             w: 160,
             zIndex: Date.now(), pinned: false, ts: Date.now()
           };
-          var _gbf = groupRef('bacheca/items'); if (_gbf) _gbf.push(itemData);
+          var _gbf = _db.ref('state/bacheca/items'); if (_gbf) _gbf.push(itemData);
         });
       };
       inp.click();
@@ -20338,7 +20071,7 @@ function renderBacheca() {
         w: 160,
         zIndex: Date.now(), pinned: false, ts: Date.now()
       };
-      var _gbu = groupRef('bacheca/items'); if (_gbu) _gbu.push(itemData);
+      var _gbu = _db.ref('state/bacheca/items'); if (_gbu) _gbu.push(itemData);
     };
     toolbar.appendChild(addUrlBtn);
 
@@ -20396,7 +20129,7 @@ function renderBacheca() {
     nx = Math.max(0, Math.min(rect.width - (_bacheDrag.elW || 160), nx));
     ny = Math.max(0, Math.min(rect.height - 100, ny));
     _bacheDrag.el.classList.remove('dragging');
-    var _grd = groupRef('bacheca/items/' + _bacheDrag.id); if (_grd) _grd.update({ x: nx, y: ny });
+    var _grd = _db ? _db.ref('state/bacheca/items/' + _bacheDrag.id) : null; if (_grd) _grd.update({ x: nx, y: ny });
     _bacheDrag = null;
   });
   board.addEventListener('mouseleave', function() {
@@ -20464,7 +20197,7 @@ function createBacheEl(item) {
       el.classList.toggle('pinned', item.pinned);
       pinBtn.textContent = item.pinned ? '\uD83D\uDCCC Fissato' : '\uD83D\uDCCC Fissa';
       pinBtn.classList.toggle('active', item.pinned);
-      var _grp = groupRef('bacheca/items/' + item.id); if (_grp) _grp.update({ pinned: item.pinned });
+      var _grp = _db ? _db.ref('state/bacheca/items/' + item.id) : null; if (_grp) _grp.update({ pinned: item.pinned });
     };
     ctrls.appendChild(pinBtn);
 
@@ -20474,7 +20207,7 @@ function createBacheEl(item) {
     delBtn.onclick = function(e) {
       e.stopPropagation();
       if (confirm('Rimuovere questo manifesto dalla lavagna?')) {
-        var _grr = groupRef('bacheca/items/' + item.id); if (_grr) _grr.remove();
+        var _grr = _db ? _db.ref('state/bacheca/items/' + item.id) : null; if (_grr) _grr.remove();
         el.remove();
       }
     };
@@ -20511,7 +20244,7 @@ function createBacheEl(item) {
         function onUp() {
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
-          var _grw = groupRef('bacheca/items/' + item.id); if (_grw) _grw.update({ w: _elW, x: item.x });
+          var _grw = _db ? _db.ref('state/bacheca/items/' + item.id) : null; if (_grw) _grw.update({ w: _elW, x: item.x });
         }
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
@@ -20538,7 +20271,7 @@ function createBacheEl(item) {
       item.commento = ta.value;
       if (_saveTimer) clearTimeout(_saveTimer);
       _saveTimer = setTimeout(function() {
-        var _grc = groupRef('bacheca/items/' + item.id); if (_grc) _grc.update({ commento: ta.value });
+        var _grc = _db ? _db.ref('state/bacheca/items/' + item.id) : null; if (_grc) _grc.update({ commento: ta.value });
       }, 800);
     });
     ta.addEventListener('click', function(e) { e.stopPropagation(); });
@@ -20590,7 +20323,7 @@ function createBacheEl(item) {
       var maxZ = Date.now();
       item.zIndex = maxZ;
       el.style.zIndex = maxZ;
-      var _grz = groupRef('bacheca/items/' + item.id); if (_grz) _grz.update({ zIndex: maxZ });
+      var _grz = _db ? _db.ref('state/bacheca/items/' + item.id) : null; if (_grz) _grz.update({ zIndex: maxZ });
       var rect = el.getBoundingClientRect();
       _bacheDrag = { el: el, id: item.id, offX: e.clientX - rect.left, offY: e.clientY - rect.top, elW: _elW };
       el.classList.add('dragging');
