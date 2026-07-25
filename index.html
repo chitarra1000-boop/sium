@@ -5524,9 +5524,6 @@ function setupPresence() {
 // _localWrite: true mentre stiamo noi scrivendo su Firebase.
 // Il listener lo legge e salta il re-render per non disturbare chi scrive.
 var _localWrite = { iniziativa: false, caos: false, armi: false, bestiario: false, incantesimiAggiuntivi: false };
-// IDs dei mostri/armi SRD che l'admin ha esplicitamente eliminato
-if (!state.bestiarioDeleted) state.bestiarioDeleted = [];
-if (!state.armiDeleted) state.armiDeleted = [];
 
 function setupRealtimeListeners() {
   if (!_db) return;
@@ -7602,7 +7599,11 @@ var state = {
 
   /* ===== LIBRERIA ===== */
   libriCustom: null,    // null = non caricato, {} = caricato
-  libriShowForm: false  // true = form aggiungi libro visibile
+  libriShowForm: false, // true = form aggiungi libro visibile
+
+  /* ===== ELIMINAZIONI ADMIN ===== */
+  bestiarioDeleted: [],  // IDs mostri SRD eliminati dall'admin
+  armiDeleted: []        // IDs armi SRD eliminate dall'admin
 };
 
 /* Numero di settori per ciascuno stadio */
