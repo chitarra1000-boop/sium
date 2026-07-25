@@ -5213,8 +5213,7 @@ function doSignIn() {
 }
 
 function _completeLogin(username, ud) {
-  var isDMRole = ud.role === 'DM' || ud.dmPriv;
-  _authRole = isDMRole ? (ud.role === 'DM' ? 'admin' : 'dm') : null;
+  _authRole = (ud.role === 'DM') ? 'admin' : (ud.dmPriv ? 'dm' : 'pg');
   _authUser = { uid: username, displayName: username, email: username + '@mercante.local' };
   state.currentUser = { username: username, uid: username, role: ud.role || 'Giocatore', dmPriv: !!ud.dmPriv };
   var ov = document.getElementById('login-overlay');
@@ -6186,12 +6185,7 @@ var DEFAULT_USERS = [
 var _remoteUsers = {}; // {username: {password, role, dmPriv}} — da Firebase
 var _presenceMap = {}; // {username: {online, lastSeen}}
 
-/* Controlla se DM o ha privilegi DM attivi (Admin incluso) */
-function isDM() {
-  if (_authRole === 'admin' || _authRole === 'dm') return true;
-  if (!state.currentUser) return false;
-  return state.currentUser.role === 'DM' || state.currentUser.dmPriv === true;
-}
+/* isDM definita sopra insieme a isAdmin/isPG */
 
 /* Controlla se una password corrisponde a un utente (accetta default + nuova) */
 function passwordMatch(ru, username, password) {
