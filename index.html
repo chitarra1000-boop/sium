@@ -6289,6 +6289,56 @@ function renderSettingsPanel() {
     body.appendChild(privWrap);
   }
 
+  /* Cambio Password */
+  if (cu && _db) {
+    var pwLbl = document.createElement('div'); pwLbl.className = 'settings-section-lbl'; pwLbl.textContent = 'Cambio Password';
+    body.appendChild(pwLbl);
+    var pwWrap = document.createElement('div');
+    pwWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.4rem;';
+    function mkPwInp(ph, id) {
+      var inp = document.createElement('input');
+      inp.type = 'password'; inp.placeholder = ph; inp.id = id;
+      inp.style.cssText = 'width:100%;background:var(--bg-card);border:1px solid var(--border-soft);color:var(--text-main);padding:0.4rem 0.6rem;border-radius:4px;font-family:\'EB Garamond\',serif;font-size:14px;';
+      return inp;
+    }
+    pwWrap.appendChild(mkPwInp('Password attuale', 'pw-old'));
+    pwWrap.appendChild(mkPwInp('Nuova password', 'pw-new'));
+    pwWrap.appendChild(mkPwInp('Conferma nuova', 'pw-new2'));
+    var pwErr = document.createElement('div');
+    pwErr.style.cssText = 'font-size:12px;color:#e57373;display:none;';
+    var pwOk = document.createElement('div');
+    pwOk.style.cssText = 'font-size:12px;color:#81c784;display:none;';
+    var pwBtn = document.createElement('button');
+    pwBtn.className = 'btn-dark'; pwBtn.style.cssText += 'width:100%;justify-content:center;font-size:12px;';
+    pwBtn.textContent = '🔑 Cambia Password';
+    pwBtn.onclick = function() {
+      var oldP = document.getElementById('pw-old').value;
+      var newP = document.getElementById('pw-new').value;
+      var newP2 = document.getElementById('pw-new2').value;
+      pwErr.style.display = 'none'; pwOk.style.display = 'none';
+      if (!oldP || !newP || !newP2) { pwErr.textContent = 'Compila tutti i campi.'; pwErr.style.display = 'block'; return; }
+      if (newP.length < 4) { pwErr.textContent = 'Nuova password troppo corta.'; pwErr.style.display = 'block'; return; }
+      if (newP !== newP2) { pwErr.textContent = 'Le nuove password non coincidono.'; pwErr.style.display = 'block'; return; }
+      _db.ref('users/' + cu.username).once('value', function(snap) {
+        var ud = snap.val();
+        var currentPw = (ud && ud.password) ? ud.password : null;
+        // Accetta anche la password di default se non cambiata
+        var defOk = false;
+        DEFAULT_USERS.forEach(function(u) { if (u.username === cu.username && u.password === oldP) defOk = true; });
+        if (currentPw !== oldP && !defOk) { pwErr.textContent = 'Password attuale errata.'; pwErr.style.display = 'block'; return; }
+        _db.ref('users/' + cu.username + '/password').set(newP, function(err) {
+          if (err) { pwErr.textContent = 'Errore: ' + err.message; pwErr.style.display = 'block'; return; }
+          pwOk.textContent = 'Password cambiata!'; pwOk.style.display = 'block';
+          document.getElementById('pw-old').value = '';
+          document.getElementById('pw-new').value = '';
+          document.getElementById('pw-new2').value = '';
+        });
+      });
+    };
+    pwWrap.appendChild(pwBtn); pwWrap.appendChild(pwErr); pwWrap.appendChild(pwOk);
+    body.appendChild(pwWrap);
+  }
+
   /* Tema */
   var themeLbl = document.createElement('div'); themeLbl.className = 'settings-section-lbl'; themeLbl.textContent = 'Tema';
   body.appendChild(themeLbl);
