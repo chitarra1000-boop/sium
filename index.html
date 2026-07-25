@@ -5086,6 +5086,29 @@
           <span class="login-btn-ico">⚔</span><span>Entra nel Compendium</span>
         </button>
         <div class="login-error" id="login-error" style="display:none;text-align:center;"></div>
+        <button onclick="toggleCreateAccount()" style="background:transparent;border:none;color:#9c8a6b;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.1em;cursor:pointer;text-decoration:underline;padding:0;">✦ Crea nuovo account</button>
+      </div>
+      <!-- Form creazione account (nascosto di default) -->
+      <div id="create-account-area" style="display:none;flex-direction:column;align-items:center;gap:1rem;width:100%;">
+        <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Crea Account</div>
+        <div class="login-divider">◆ ◇ ◆</div>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label">Username</label>
+          <div class="login-input-wrap"><input id="new-username" type="text" placeholder="Scegli username..." style="width:100%;" /></div>
+        </div>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label">Password</label>
+          <div class="login-input-wrap"><input id="new-password" type="password" placeholder="Scegli password..." style="width:100%;" /></div>
+        </div>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label">Conferma Password</label>
+          <div class="login-input-wrap"><input id="new-password2" type="password" placeholder="Ripeti password..." onkeydown="if(event.key==='Enter')doCreateAccount();" style="width:100%;" /></div>
+        </div>
+        <button class="login-btn" onclick="doCreateAccount()">
+          <span class="login-btn-ico">✦</span><span>Crea Account</span>
+        </button>
+        <div id="create-error" class="login-error" style="display:none;text-align:center;"></div>
+        <button onclick="toggleCreateAccount()" style="background:transparent;border:none;color:#9c8a6b;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.1em;cursor:pointer;text-decoration:underline;padding:0;">← Torna al login</button>
       </div>
     </div>
 
@@ -5195,7 +5218,6 @@ function doSignIn() {
     }
     if (errEl) errEl.style.display='none';
     _completeLogin(u, ud);
-    try { localStorage.setItem('mercante_session', JSON.stringify({username:u,password:p})); } catch(e) {}
   });
 }
 
@@ -5219,6 +5241,39 @@ function _completeLogin(username, ud) {
 
 function dmLocalSignIn() { doSignIn(); }
 
+function toggleCreateAccount() {
+  var loginArea = document.getElementById('login-cred-area');
+  var createArea = document.getElementById('create-account-area');
+  if (!loginArea || !createArea) return;
+  var showing = createArea.style.display === 'flex';
+  loginArea.style.display = showing ? 'flex' : 'none';
+  createArea.style.display = showing ? 'none' : 'flex';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('create-error').style.display = 'none';
+}
+
+function doCreateAccount() {
+  var u = (document.getElementById('new-username').value || '').trim();
+  var p = document.getElementById('new-password').value || '';
+  var p2 = document.getElementById('new-password2').value || '';
+  var errEl = document.getElementById('create-error');
+  errEl.style.display = 'none';
+  if (!u) { errEl.style.display='block'; errEl.textContent='Inserisci un username.'; return; }
+  if (u.length < 3) { errEl.style.display='block'; errEl.textContent='Username troppo corto (min 3 caratteri).'; return; }
+  if (!p) { errEl.style.display='block'; errEl.textContent='Inserisci una password.'; return; }
+  if (p.length < 4) { errEl.style.display='block'; errEl.textContent='Password troppo corta (min 4 caratteri).'; return; }
+  if (p !== p2) { errEl.style.display='block'; errEl.textContent='Le password non coincidono.'; return; }
+  if (!_db) { errEl.style.display='block'; errEl.textContent='Errore connessione Firebase.'; return; }
+  _db.ref('users/' + u).once('value', function(snap) {
+    if (snap.val()) { errEl.style.display='block'; errEl.textContent='Username già in uso.'; return; }
+    _db.ref('users/' + u).set({ password: p, role: 'Giocatore', dmPriv: false }, function(err) {
+      if (err) { errEl.style.display='block'; errEl.textContent='Errore salvataggio: ' + err.message; return; }
+      // Auto-login con il nuovo account
+      _completeLogin(u, { password: p, role: 'Giocatore', dmPriv: false });
+    });
+  });
+}
+
 function initAuth() {
   // Inizializza DB prima di tutto
   if (!_db) {
@@ -5227,28 +5282,9 @@ function initAuth() {
       _db = firebase.database();
     } catch(e) {}
   }
-  // Prova auto-login da localStorage
-  try {
-    var sess = JSON.parse(localStorage.getItem('mercante_session'));
-    if (sess && sess.username && sess.password) {
-      _db.ref('users/' + sess.username).once('value', function(snap) {
-        var ud = snap.val();
-        if (ud && ud.password === sess.password) {
-          _completeLogin(sess.username, ud);
-          var ov2 = document.getElementById('login-overlay');
-          if (ov2) ov2.style.display = 'none';
-        } else {
-          try { localStorage.removeItem('mercante_session'); } catch(e) {}
-          var ov3 = document.getElementById('login-overlay');
-          if (ov3) ov3.style.display = 'flex';
-        }
-      });
-      return;
-    }
-  } catch(e) {}
-  // Mostra login
-  var ov4 = document.getElementById('login-overlay');
-  if (ov4) ov4.style.display = 'flex';
+  // Sessione NON ripristinata automaticamente: il login viene mostrato ad ogni apertura
+  var ov = document.getElementById('login-overlay');
+  if (ov) ov.style.display = 'flex';
 }
 
 function pgEntra() {
@@ -6180,6 +6216,77 @@ function renderSettingsPanel() {
     leftCol.appendChild(infoRole);
     infoRow.appendChild(leftCol);
     body.appendChild(infoRow);
+  }
+
+  /* Lista Online/Offline */
+  var onlineLbl = document.createElement('div'); onlineLbl.className = 'settings-section-lbl'; onlineLbl.textContent = 'Giocatori';
+  body.appendChild(onlineLbl);
+  var onlineWrap = document.createElement('div');
+  onlineWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;';
+  var allUsernames = Object.keys(_remoteUsers);
+  if (allUsernames.length === 0) {
+    var noUsers = document.createElement('div');
+    noUsers.style.cssText = 'font-size:12px;color:var(--text-faint);font-family:\'EB Garamond\',serif;';
+    noUsers.textContent = 'Nessun utente registrato.';
+    onlineWrap.appendChild(noUsers);
+  } else {
+    allUsernames.forEach(function(uname) {
+      var pres = _presenceMap[uname] || {};
+      var isOnline = !!pres.online;
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--border-subtle);';
+      var dot = document.createElement('span');
+      dot.style.cssText = 'width:8px;height:8px;border-radius:50%;flex-shrink:0;background:' + (isOnline ? '#4caf50' : '#555') + ';';
+      var nameEl = document.createElement('span');
+      nameEl.style.cssText = 'flex:1;font-family:\'EB Garamond\',serif;font-size:14px;color:' + (isOnline ? 'var(--text-main)' : 'var(--text-faint)') + ';';
+      var ru = _remoteUsers[uname] || {};
+      var roleTag = ru.role === 'DM' ? ' 👑' : (ru.dmPriv ? ' ⚔' : '');
+      nameEl.textContent = uname + roleTag;
+      var statusEl = document.createElement('span');
+      statusEl.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;color:' + (isOnline ? '#4caf50' : 'var(--text-faint)') + ';';
+      statusEl.textContent = isOnline ? 'Online' : 'Offline';
+      row.appendChild(dot); row.appendChild(nameEl); row.appendChild(statusEl);
+      onlineWrap.appendChild(row);
+    });
+  }
+  body.appendChild(onlineWrap);
+
+  /* Gestione Privilegi DM — solo admin */
+  if (isAdmin() && Object.keys(_remoteUsers).length > 0) {
+    var privLbl = document.createElement('div'); privLbl.className = 'settings-section-lbl'; privLbl.textContent = 'Privilegi DM';
+    body.appendChild(privLbl);
+    var privWrap = document.createElement('div');
+    privWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;';
+    Object.keys(_remoteUsers).forEach(function(uname) {
+      var ru = _remoteUsers[uname] || {};
+      if (ru.role === 'DM') return; // non toccare l'admin
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--border-subtle);';
+      var nameEl = document.createElement('span');
+      nameEl.style.cssText = 'flex:1;font-family:\'EB Garamond\',serif;font-size:14px;color:var(--text-main);';
+      nameEl.textContent = uname;
+      var togBtn = document.createElement('button');
+      var hasDM = !!ru.dmPriv;
+      togBtn.style.cssText = 'font-size:10px;font-family:\'Cinzel\',serif;padding:0.2rem 0.6rem;border-radius:3px;cursor:pointer;border:1px solid ' + (hasDM ? 'var(--gold)' : 'var(--border-soft)') + ';background:transparent;color:' + (hasDM ? 'var(--gold)' : 'var(--text-muted)') + ';';
+      togBtn.textContent = hasDM ? '⚔ DM' : '🛡 PG';
+      togBtn.onclick = (function(un, btn, cur) {
+        return function() {
+          var newVal = !cur;
+          if (!_db) return;
+          _db.ref('users/' + un + '/dmPriv').set(newVal, function() {
+            _remoteUsers[un] = Object.assign({}, _remoteUsers[un], { dmPriv: newVal });
+            cur = newVal;
+            btn.style.borderColor = newVal ? 'var(--gold)' : 'var(--border-soft)';
+            btn.style.color = newVal ? 'var(--gold)' : 'var(--text-muted)';
+            btn.textContent = newVal ? '⚔ DM' : '🛡 PG';
+            notify(un + (newVal ? ' ora ha i privilegi DM.' : ' è tornato Giocatore.'));
+          });
+        };
+      })(uname, togBtn, hasDM);
+      row.appendChild(nameEl); row.appendChild(togBtn);
+      privWrap.appendChild(row);
+    });
+    body.appendChild(privWrap);
   }
 
   /* Tema */
