@@ -5067,65 +5067,26 @@
   <div class="login-scene">
     <!-- Sovrapposizione: form posizionato dentro al forziere -->
     <div class="login-form-area">
-      <!-- Area Google Sign-In (default) -->
-      <div id="login-google-area" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
+      <!-- Login con username/password -->
+      <div id="login-cred-area" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
         <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Accedi al Compendium</div>
         <div class="login-divider">◆ ◇ ◆</div>
-        <button class="login-btn" onclick="googleSignIn()" style="display:flex;align-items:center;gap:0.75rem;justify-content:center;">
-          <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0;">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          <span>Continua con Google</span>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label" for="login-username-input">Username</label>
+          <div class="login-input-wrap">
+            <input id="login-username-input" type="text" placeholder="Username..." autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-password-input').focus();" style="width:100%;" />
+          </div>
+        </div>
+        <div class="login-field" style="width:100%;">
+          <label class="login-field-label" for="login-password-input">Password</label>
+          <div class="login-input-wrap">
+            <input id="login-password-input" type="password" placeholder="Password..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doSignIn();" style="width:100%;" />
+          </div>
+        </div>
+        <button class="login-btn" onclick="doSignIn()">
+          <span class="login-btn-ico">⚔</span><span>Entra nel Compendium</span>
         </button>
         <div class="login-error" id="login-error" style="display:none;text-align:center;"></div>
-        <div style="font-family:EB Garamond,serif;font-size:13px;color:rgba(201,165,92,0.5);text-align:center;margin-top:0.5rem;">
-          Admin e DM accedono con il proprio account Google
-        </div>
-        <div style="font-family:EB Garamond,serif;font-size:12px;color:rgba(201,165,92,0.4);text-align:center;cursor:pointer;text-decoration:underline;margin-top:-0.5rem;" onclick="document.getElementById('login-google-area').style.display='none';document.getElementById('login-dm-area').style.display='flex';">🔑 Accedi con username e password</div>
-      </div>
-
-      <!-- Area login DM con username/password (nascosta di default) -->
-      <div id="login-dm-area" style="display:none;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
-        <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Accesso DM / Admin</div>
-        <div class="login-divider">◆ ◇ ◆</div>
-        <div class="login-field" style="width:100%;">
-          <label class="login-field-label" for="dm-username-input">Username</label>
-          <div class="login-input-wrap">
-            <input id="dm-username-input" type="text" placeholder="Username..." autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('dm-password-input').focus();" style="width:100%;" />
-          </div>
-        </div>
-        <div class="login-field" style="width:100%;">
-          <label class="login-field-label" for="dm-password-input">Password</label>
-          <div class="login-input-wrap">
-            <input id="dm-password-input" type="password" placeholder="Password..." autocomplete="off" onkeydown="if(event.key==='Enter')dmLocalSignIn();" style="width:100%;" />
-          </div>
-        </div>
-        <button class="login-btn" onclick="dmLocalSignIn()">
-          <span class="login-btn-ico">⚔</span><span>Entra come DM</span>
-        </button>
-        <div class="login-error" id="login-dm-error" style="display:none;text-align:center;"></div>
-        <div style="font-family:EB Garamond,serif;font-size:13px;color:rgba(201,165,92,0.5);text-align:center;cursor:pointer;" onclick="document.getElementById('login-dm-area').style.display='none';document.getElementById('login-google-area').style.display='flex';">← Torna al login Google</div>
-      </div>
-
-      <!-- Area PG da link invito (nascosta di default, mostrata se URL ha ?group=&pg=) -->
-      <div id="login-pg-area" style="display:none;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
-        <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Sei stato invitato come Giocatore</div>
-        <div class="login-divider">◆ ◇ ◆</div>
-        <div class="login-field" style="width:100%;">
-          <label class="login-field-label" for="pg-name-input">Nome del tuo Personaggio</label>
-          <div class="login-input-wrap">
-            <input id="pg-name-input" type="text" placeholder="es. Thorin il Nano…" autocomplete="off" onkeydown="if(event.key==='Enter')pgEntra();" style="width:100%;" />
-          </div>
-        </div>
-        <button class="login-btn" onclick="pgEntra()">
-          <span class="login-btn-ico">🛡</span><span>Entra come Giocatore</span>
-        </button>
-        <div style="font-family:EB Garamond,serif;font-size:13px;color:rgba(201,165,92,0.5);text-align:center;cursor:pointer;" onclick="document.getElementById('login-pg-area').style.display='none';document.getElementById('login-google-area').style.display='flex';">
-          Sei un DM? Accedi con Google →
-        </div>
       </div>
     </div>
 
@@ -5180,7 +5141,7 @@ var _groupListeners = []; // Firebase listeners da staccare quando si cambia gru
 
 function isAdmin() { return _authRole === 'admin'; }
 function isPG()    { return _authRole === 'pg'; }
-// isDM() è definita più avanti ma la override qui sotto col nuovo sistema
+function isDM()    { return _authRole === 'admin' || _authRole === 'dm'; }
 
 function _detectPGFromURL() {
   try {
@@ -5213,105 +5174,110 @@ function dmRef(path) {
   return _db.ref('users/' + _authUser.uid + '/' + path);
 }
 
-function googleSignIn() {
-  var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(function(err) {
-    console.warn('[Auth] Errore login:', err.message);
-    var errEl = document.getElementById('login-error');
-    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Errore: ' + err.message; }
-  });
-}
+function googleSignIn() { doSignIn(); }
 
-function googleSignOut() {
-  firebase.auth().signOut().then(function() {
-    _authUser = null; _authRole = null;
-    state.currentUser = null;
-    try { localStorage.removeItem('mercante_session'); } catch(e) {}
-    location.reload();
-  });
+function doSignOut() {
+  _authUser = null; _authRole = null;
+  state.currentUser = null;
+  try { localStorage.removeItem('mercante_session'); } catch(e) {}
+  location.reload();
 }
+function googleSignOut() { doSignOut(); }
 
-function dmLocalSignIn() {
-  var uEl = document.getElementById('dm-username-input');
-  var pEl = document.getElementById('dm-password-input');
-  var errEl = document.getElementById('login-dm-error');
+function doSignIn() {
+  var uEl = document.getElementById('login-username-input');
+  var pEl = document.getElementById('login-password-input');
+  var errEl = document.getElementById('login-error');
   var u = uEl ? uEl.value.trim() : '';
   var p = pEl ? pEl.value : '';
-  var CREDS = [
-    { username: 'Matteo', password: 'Dungeonmaster!', email: ADMIN_EMAIL, uid: 'matteo-admin', displayName: 'Matteo' }
-  ];
-  var match = null;
-  for (var i = 0; i < CREDS.length; i++) {
-    if (CREDS[i].username === u && CREDS[i].password === p) { match = CREDS[i]; break; }
-  }
-  if (!match) {
-    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Username o password errati.'; }
+  if (!u || !p) {
+    if (errEl) { errEl.style.display='block'; errEl.textContent='Inserisci username e password.'; }
     return;
   }
-  if (errEl) errEl.style.display = 'none';
-  var fakeUser = { email: match.email, uid: match.uid, displayName: match.displayName };
-  _buildCurrentUserFromAuth(fakeUser);
   if (!_db) {
     try {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
     } catch(e) {}
   }
-  var ov = document.getElementById('login-overlay');
-  if (ov) { ov.classList.add('opening'); setTimeout(function(){ ov.style.display='none'; ov.classList.remove('opening'); }, 1850); }
-  try {
-    var savedGid = localStorage.getItem('activeGroupId_' + match.uid);
-    if (savedGid) { _activeGroupId = savedGid; setTimeout(function(){ setupGroupListeners(_activeGroupId); }, 600); }
-  } catch(e) {}
-  setupPresence();
-  setupRealtimeListeners();
-  fbLoadApiKeys();
-  setTimeout(function() { render(); renderUserBadge(); }, 300);
+  _db.ref('users/' + u).once('value', function(snap) {
+    var ud = snap.val();
+    if (!ud || ud.password !== p) {
+      if (errEl) { errEl.style.display='block'; errEl.textContent='Username o password errati.'; }
+      return;
+    }
+    if (errEl) errEl.style.display='none';
+    _completeLogin(u, ud);
+    try { localStorage.setItem('mercante_session', JSON.stringify({username:u,password:p})); } catch(e) {}
+  });
 }
 
+function _completeLogin(username, ud) {
+  var isDMRole = ud.role === 'DM' || ud.dmPriv;
+  _authRole = isDMRole ? (ud.role === 'DM' ? 'admin' : 'dm') : null;
+  _authUser = { uid: username, displayName: username, email: username + '@mercante.local' };
+  state.currentUser = { username: username, uid: username, role: ud.role || 'Giocatore', dmPriv: !!ud.dmPriv };
+  var ov = document.getElementById('login-overlay');
+  if (ov) { ov.classList.add('opening'); setTimeout(function(){ ov.style.display='none'; ov.classList.remove('opening'); }, 1850); }
+  if (!_db) {
+    try {
+      if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+      _db = firebase.database();
+    } catch(e) {}
+  }
+  try {
+    var savedGid = localStorage.getItem('activeGroupId_' + username);
+    if (savedGid) { _activeGroupId = savedGid; setTimeout(function(){ if(typeof setupGroupListeners==='function') setupGroupListeners(_activeGroupId); }, 600); }
+  } catch(e) {}
+  if (typeof setupPresence === 'function') setupPresence();
+  setupRealtimeListeners();
+  if (typeof fbLoadApiKeys === 'function') fbLoadApiKeys();
+  setTimeout(function() { render(); if(typeof renderUserBadge==='function') renderUserBadge(); }, 300);
+}
+
+function dmLocalSignIn() { doSignIn(); }
+
 function initAuth() {
-  firebase.auth().onAuthStateChanged(function(fbUser) {
-    if (fbUser) {
-      _buildCurrentUserFromAuth(fbUser);
-      var ov = document.getElementById('login-overlay');
-      if (ov) ov.style.display = 'none';
-      if (!_db) {
-        try {
-          if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-          _db = firebase.database();
-        } catch(e) {}
-      }
-      setupPresence();
-      setupRealtimeListeners();
-      fbLoadApiKeys();
-      // Carica il gruppo attivo salvato in localStorage
-      try {
-        var savedGid = localStorage.getItem('activeGroupId_' + fbUser.uid);
-        if (savedGid) {
-          _activeGroupId = savedGid;
-          setTimeout(function(){ setupGroupListeners(_activeGroupId); }, 600);
-        }
-      } catch(e) {}
-      setTimeout(function() { render(); renderUserBadge(); }, 300);
-    } else {
-      // Controlla se è un accesso PG da link
-      var pgInfo = _detectPGFromURL();
-      if (pgInfo) {
-        _authRole = 'pg';
-        _pgGroupId = pgInfo.groupId;
-        // PG entra col proprio nome (senza Google login)
-        var ov = document.getElementById('login-overlay');
-        if (ov) {
-          document.getElementById('login-google-area').style.display = 'none';
-          document.getElementById('login-pg-area').style.display = 'flex';
-        }
-        return;
-      }
-      // Nessuna sessione: mostra login
-      var ov2 = document.getElementById('login-overlay');
-      if (ov2) ov2.style.display = 'flex';
+  // Inizializza DB prima di tutto
+  if (!_db) {
+    try {
+      if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+      _db = firebase.database();
+    } catch(e) {}
+  }
+  // Controlla se è un accesso PG da link invito
+  var pgInfo = _detectPGFromURL();
+  if (pgInfo) {
+    _authRole = 'pg';
+    _pgGroupId = pgInfo.groupId;
+    var ov = document.getElementById('login-overlay');
+    if (ov) {
+      ov.style.display = 'flex';
     }
-  });
+    return;
+  }
+  // Prova auto-login da localStorage
+  try {
+    var sess = JSON.parse(localStorage.getItem('mercante_session'));
+    if (sess && sess.username && sess.password) {
+      _db.ref('users/' + sess.username).once('value', function(snap) {
+        var ud = snap.val();
+        if (ud && ud.password === sess.password) {
+          _completeLogin(sess.username, ud);
+          var ov2 = document.getElementById('login-overlay');
+          if (ov2) ov2.style.display = 'none';
+        } else {
+          try { localStorage.removeItem('mercante_session'); } catch(e) {}
+          var ov3 = document.getElementById('login-overlay');
+          if (ov3) ov3.style.display = 'flex';
+        }
+      });
+      return;
+    }
+  } catch(e) {}
+  // Mostra login
+  var ov4 = document.getElementById('login-overlay');
+  if (ov4) ov4.style.display = 'flex';
 }
 
 function pgEntra() {
@@ -6384,7 +6350,7 @@ function renderUserBadge() {
   nameSpan.textContent = (state.currentUser.username || '') + roleLabel;
   badge.appendChild(nameSpan);
   if (_authUser) {
-    badge.onclick = function() { if (confirm('Disconnettersi da ' + _authUser.email + '?')) googleSignOut(); };
+    badge.onclick = function() { if (confirm('Disconnettersi da ' + (_authUser.displayName || _authUser.email) + '?')) doSignOut(); };
   }
   document.body.appendChild(badge);
 }
@@ -6486,7 +6452,7 @@ function renderSettingsPanel() {
     logoutBtn.className = 'btn-blood';
     logoutBtn.style.cssText += 'margin-top:0.5rem;width:100%;justify-content:center;';
     logoutBtn.textContent = '⬤ Disconnetti';
-    logoutBtn.onclick = function() { ov.remove(); googleSignOut(); };
+    logoutBtn.onclick = function() { ov.remove(); doSignOut(); };
     body.appendChild(logoutBtn);
   }
 
@@ -7213,12 +7179,12 @@ var SRD_BESTIARIO = [
 {id:'srd_b_296',nome:'Drago di Bronzo Antico',tipo:'Drago',taglia:'Mastodontica',hp:'444 (24d20 + 192)',ca:'22 (armatura naturale)',velocita:'12 m, nuoto 12 m, volo 24 m',for:29,des:10,cos:27,int:18,sag:17,car:21,lingue:'Comune, Draconico',grsfida:'22',tratti:'Anfibio: respira aria e acqua. Resistenza Leggendaria (3/giorno).',azioni:'Multiattacco (Presenza Spaventosa + morso + 2 artigli). Morso: +16, portata 4,5 m, 20 (2d10+9) perforanti. Artiglio: +16, portata 3 m, 16 (2d6+9) taglienti. Coda: +16, portata 6 m, 18 (2d8+9) contundenti. Presenza Spaventosa: TS SAG CD 20 o spaventato 1 min. Arma a Soffio (Ricarica 5-6): Soffio Fulminante (linea 27 m, TS DES CD 23, 88 (16d10) fulmine) oppure Soffio Repulsivo (cono 27 m, TS FOR CD 23 o spinto indietro 27 m). Mutare Forma. Azioni Leggendarie (3): Attacco di Coda; Individuare; Attacco di Ala (2 az., TS DES CD 24, 16 (2d6+9) contundenti+prono).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-bronzo-antico.jpg'},
 {id:'srd_b_297',nome:'Drago di Bronzo Cucciolo',tipo:'Drago',taglia:'Media',hp:'32 (7d8)',ca:'17 (armatura naturale)',velocita:'9 m, nuoto 9 m, volo 18 m',for:17,des:10,cos:15,int:12,sag:11,car:15,lingue:'Draconico',grsfida:'2',tratti:'Anfibio: respira aria e acqua.',azioni:'Morso: +5, portata 1,5 m, 8 (1d10+3) perforanti. Arma a Soffio (Ricarica 5-6): Soffio Fulminante (linea 4,5 m, TS DES CD 12, 22 (4d10) fulmine) oppure Soffio Repulsivo (cono 4,5 m, TS FOR CD 12 o spinto indietro 4,5 m).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-bronzo-cucciolo.png'},
 {id:'srd_b_298',nome:'Drago di Bronzo Giovane',tipo:'Drago',taglia:'Grande',hp:'142 (15d10 + 60)',ca:'18 (armatura naturale)',velocita:'12 m, nuoto 12 m, volo 24 m',for:21,des:10,cos:19,int:14,sag:13,car:17,lingue:'Comune, Draconico',grsfida:'8',tratti:'Anfibio: respira aria e acqua.',azioni:'Multiattacco (morso + 2 artigli). Morso: +8, portata 3 m, 16 (2d10+5) perforanti. Artiglio: +8, portata 1,5 m, 12 (2d6+5) taglienti. Arma a Soffio (Ricarica 5-6): Soffio Fulminante (linea 9 m, TS DES CD 15, 55 (10d10) fulmine) oppure Soffio Repulsivo (cono 9 m, TS FOR CD 15 o spinto indietro 9 m).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-bronzo-giovane.png'},
-{id:'srd_b_299',nome:'Drago di Rame Adulto',tipo:'Drago',taglia:'Enorme',hp:'184 (16d12 + 80)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-adulto.png',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-metallici/draghi-di-rame/drago-di-rame-adulto/'},
-{id:'srd_b_300',nome:'Drago di Rame Antico',tipo:'Drago',taglia:'Mastodontica',hp:'350 (20d20 + 140)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-antico.jpeg',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-metallici/draghi-di-rame/drago-di-rame-antico/'},
-{id:'srd_b_301',nome:'Drago di Rame Cucciolo',tipo:'Drago',taglia:'Media',hp:'22 (4d8 + 4)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-cucciolo.jpg',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-metallici/draghi-di-rame/drago-di-rame-cucciolo/'},
-{id:'srd_b_302',nome:'Drago di Rame Giovane',tipo:'Drago',taglia:'Grande',hp:'119 (14d10 + 42)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-giovane.png',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-metallici/draghi-di-rame/drago-di-rame-giovane/'},
-{id:'srd_b_303',nome:'Drago Nero Adulto',tipo:'Drago',taglia:'Enorme',hp:'195 (17d12 + 85)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-adulto.png',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-cromatici/draghi-neri/drago-nero-adulto/'},
-{id:'srd_b_304',nome:'Drago Nero Antico',tipo:'Drago',taglia:'Mastodontica',hp:'367 (21d20 + 147)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-antico.jpeg',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-cromatici/draghi-neri/drago-nero-antico/'},
+{id:'srd_b_299',nome:'Drago di Rame Adulto',tipo:'Drago',taglia:'Enorme',hp:'184 (16d12 + 80)',ca:'18 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:23,des:12,cos:21,int:18,sag:15,car:17,lingue:'Comune, Draconico',grsfida:'14',tratti:'Resistenza Leggendaria (3/Giorno): Se il drago fallisce un tiro salvezza, può scegliere invece di riuscire. TS: DES +6, COS +10, SAG +7, CAR +8. Abilità: Furtività +6, Inganno +8, Percezione +12. Immunità: Acido. Sensi: Scurovisione 36 m, vista cieca 18 m, Perc. passiva 22.',azioni:'Multiattacco: Presenza Spaventosa + morso + 2 artigli. Morso: +11, portata 3 m, 17 (2d10+6) perforanti. Artiglio: +11, portata 1,5 m, 13 (2d6+6) taglienti. Coda: +11, portata 4,5 m, 15 (2d8+6) contundenti. Presenza Spaventosa: CD 16 SAG, spaventato 1 min entro 36 m. Arma a Soffio (Ricarica 5-6): Soffio Acido (linea 18 m, CD 18 DES, 54 (12d8) acido) o Soffio Rallentante (cono 18 m, CD 18 COS, velocità dimezzata + 1 attacco + no reazioni per 1 min). Azioni Leggendarie (3): Individuare; Attacco di Coda; Attacco di Ala (2 az., CD 19 DES, 13 (2d6+6) contundenti + prono).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-adulto.png'},
+{id:'srd_b_300',nome:'Drago di Rame Antico',tipo:'Drago',taglia:'Mastodontica',hp:'350 (20d20 + 140)',ca:'21 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:27,des:12,cos:25,int:20,sag:17,car:19,lingue:'Comune, Draconico',grsfida:'21',tratti:'Resistenza Leggendaria (3/Giorno): Se il drago fallisce un tiro salvezza, può scegliere invece di riuscire. TS: DES +8, COS +14, SAG +10, CAR +11. Abilità: Furtività +8, Inganno +11, Percezione +17. Immunità: Acido. Sensi: Scurovisione 36 m, vista cieca 18 m, Perc. passiva 27.',azioni:'Multiattacco: Presenza Spaventosa + morso + 2 artigli. Morso: +15, portata 4,5 m, 19 (2d10+8) perforanti. Artiglio: +15, portata 3 m, 15 (2d6+8) taglienti. Coda: +15, portata 6 m, 17 (2d8+8) contundenti. Presenza Spaventosa: CD 19 SAG, spaventato 1 min entro 36 m. Arma a Soffio (Ricarica 5-6): Soffio Acido (linea 27 m x 3 m, CD 22 DES, 63 (14d8) acido) o Soffio Rallentante (cono 27 m, CD 22 COS, velocità dimezzata + 1 attacco + no reazioni per 1 min). Mutare Forma: trasformazione magica in umanoide/bestia GS pari o inferiore. Azioni Leggendarie (3): Individuare; Attacco di Coda; Attacco di Ala (2 az., CD 23 DES, 15 (2d6+8) contundenti + prono).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-antico.jpeg'},
+{id:'srd_b_301',nome:'Drago di Rame Cucciolo',tipo:'Drago',taglia:'Media',hp:'22 (4d8 + 4)',ca:'16 (armatura naturale)',velocita:'9 m, scalata 9 m, volo 18 m',for:15,des:12,cos:13,int:14,sag:11,car:13,lingue:'Draconico',grsfida:'1',tratti:'TS: DES +3, COS +3, SAG +2, CAR +3. Abilità: Furtività +3, Percezione +4. Immunità: Acido. Sensi: Scurovisione 18 m, vista cieca 3 m, Perc. passiva 14.',azioni:'Morso: +4, portata 1,5 m, 7 (1d10+2) perforanti. Arma a Soffio (Ricarica 5-6): Soffio Acido (linea 6 m, CD 11 DES, 18 (4d8) acido) o Soffio Rallentante (cono 4,5 m, CD 11 COS, velocità dimezzata + 1 attacco + no reazioni per 1 min).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-cucciolo.jpg'},
+{id:'srd_b_302',nome:'Drago di Rame Giovane',tipo:'Drago',taglia:'Grande',hp:'119 (14d10 + 42)',ca:'17 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:19,des:12,cos:17,int:16,sag:13,car:15,lingue:'Comune, Draconico',grsfida:'7',tratti:'TS: DES +4, COS +6, SAG +4, CAR +5. Abilità: Furtività +4, Inganno +5, Percezione +7. Immunità: Acido. Sensi: Scurovisione 36 m, vista cieca 9 m, Perc. passiva 17.',azioni:'Multiattacco: morso + 2 artigli. Morso: +7, portata 3 m, 15 (2d10+4) perforanti. Artiglio: +7, portata 1,5 m, 11 (2d6+4) taglienti. Arma a Soffio (Ricarica 5-6): Soffio Acido (linea 12 m, CD 14 DES, 40 (9d8) acido) o Soffio Rallentante (cono 9 m, CD 14 COS, velocità dimezzata + 1 attacco + no reazioni per 1 min).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-di-rame-giovane.png'},
+{id:'srd_b_303',nome:'Drago Nero Adulto',tipo:'Drago',taglia:'Enorme',hp:'195 (17d12 + 85)',ca:'19 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:23,des:14,cos:21,int:14,sag:13,car:17,lingue:'Comune, Draconico',grsfida:'17',tratti:'Anfibio: può respirare aria e acqua. Resistenza Leggendaria (3/Giorno): Se il drago fallisce un tiro salvezza, può scegliere invece di riuscire. TS: DES +7, COS +10, SAG +6, CAR +8. Abilità: Furtività +7, Percezione +11. Immunità: Acido. Sensi: Scurovisione 36 m, vista cieca 18 m, Perc. passiva 21.',azioni:'Multiattacco: Presenza Spaventosa + morso + 2 artigli. Morso: +11, portata 3 m, 17 (2d10+6) perforanti + 4 (1d8) acido. Artiglio: +11, portata 1,5 m, 13 (2d6+6) taglienti. Coda: +11, portata 4,5 m, 15 (2d8+6) contundenti. Presenza Spaventosa: CD 16 SAG, spaventato 1 min entro 36 m. Soffio Acido (Ricarica 5-6): linea 18 m x 1,5 m, CD 18 DES, 54 (12d8) acido. Azioni Leggendarie (3): Individuare; Attacco di Coda; Attacco di Ala (2 az., CD 19 DES, 13 (2d6+6) contundenti + prono).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-adulto.png'},
+{id:'srd_b_304',nome:'Drago Nero Antico',tipo:'Drago',taglia:'Mastodontica',hp:'367 (21d20 + 147)',ca:'22 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:27,des:14,cos:25,int:16,sag:15,car:19,lingue:'Comune, Draconico',grsfida:'21',tratti:'Anfibio: può respirare aria e acqua. Resistenza Leggendaria (3/Giorno): Se il drago fallisce un tiro salvezza, può scegliere invece di riuscire. TS: DES +9, COS +14, SAG +9, CAR +11. Abilità: Furtività +9, Percezione +16. Immunità: Acido. Sensi: Scurovisione 36 m, vista cieca 18 m, Perc. passiva 26.',azioni:'Multiattacco: Presenza Spaventosa + morso + 2 artigli. Morso: +15, portata 4,5 m, 19 (2d10+8) perforanti + 9 (4d6) acido. Artiglio: +15, portata 3 m, 15 (2d6+8) taglienti. Coda: +15, portata 6 m, 17 (2d8+8) contundenti. Presenza Spaventosa: CD 19 SAG, spaventato 1 min entro 36 m. Soffio Acido (Ricarica 5-6): linea 27 m x 3 m, CD 22 DES, 67 (15d8) acido. Azioni Leggendarie (3): Individuare; Attacco di Coda; Attacco di Ala (2 az., CD 23 DES, 15 (2d6+8) contundenti + prono).',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-antico.jpeg'},
 {id:'srd_b_305',nome:'Drago Nero Cucciolo',tipo:'Drago',taglia:'Media',hp:'33 (6d8 + 6)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-cucciolo.jpg',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-cromatici/draghi-neri/drago-nero-cucciolo/'},
 {id:'srd_b_306',nome:'Drago Nero Giovane',tipo:'Drago',taglia:'Grande',hp:'127 (15d10 + 45)',ca:'',velocita:'',for:10,des:10,cos:10,int:10,sag:14,car:11,lingue:'—',tratti:'',azioni:'',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-nero-giovane.jpg',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-cromatici/draghi-neri/drago-nero-giovane/'},
 {id:'srd_b_307',nome:'Drago Rosso Adulto',tipo:'Drago',taglia:'Enorme',hp:'256 (19d12 + 133)',ca:'19 (armatura naturale)',velocita:'12 m, scalata 12 m, volo 24 m',for:27,des:10,cos:25,int:16,sag:13,car:21,lingue:'Comune, Draconico',grsfida:'17',tratti:'Resistenza Leggendaria (3/Giorno).',azioni:'Multiattacco (Presenza Spaventosa CD SAG 19 + morso + 2 artigli). Morso: +14, portata 3 m, 19 (2d10+8) perforanti + 7 (2d6) fuoco. Artiglio: +14, 15 (2d6+8) taglienti. Coda: +14, portata 4,5 m, 17 (2d8+8) contundenti. Soffio Infuocato (ricarica 5-6): cono 18 m, CD DES 21, 63 (18d6) fuoco.',immagine:'https://dungeonedraghi.it/wp-content/uploads/2020/03/drago-rosso-adulto.png',url:'https://dungeonedraghi.it/compendio/bestiario/mostri/draghi/draghi-cromatici/draghi-rossi/drago-rosso-adulto/'},
@@ -7971,7 +7937,6 @@ function render() {
   else if (state.section === 'incantesimi') { if (isDM()) main.appendChild(renderIncantesimiAggiuntivi()); else main.appendChild(renderDadi()); }
   else if (state.section === 'worldbuilding') { if (isDM()) main.appendChild(renderWorldbuilding()); else main.appendChild(renderDadi()); }
   else if (state.section === 'bacheca') main.appendChild(_getGroupId() ? renderBacheca() : renderNoGroup());
-  else if (state.section === 'regolamento') main.appendChild(renderRegolamento());
   else if (state.section === 'storia') { if (isDM()) { try { main.appendChild(renderStoria()); } catch(e) { var _se=document.createElement('div');_se.style.cssText='padding:2rem;color:#ff9c9c;font-family:monospace;font-size:13px;';_se.innerHTML='<b>Errore Storia:</b><br><pre>'+String(e)+'</pre>';main.appendChild(_se); } } else main.appendChild(renderDadi()); }
   else if (state.section === 'schedepg') { if (!_getGroupId()) { main.appendChild(renderNoGroup()); } else if (isDM()) { if(state.schedePGViewMode) main.appendChild(_buildSchedaWithLavagna()); else main.appendChild(renderSchedePG()); } else main.appendChild(renderDadi()); }
   else if (state.section === 'libri') main.appendChild(renderLibri());
@@ -9050,7 +9015,6 @@ function renderSidebar() {
     {id:'iniziativa',label:'Iniziativa',icon:ICON.swords},
     {id:'caos',label:'Statistiche & Caos',icon:ICON.skullDice},
     {id:'bacheca',label:'Bacheca Ricercati',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="7" cy="9" r="1" fill="currentColor"/><circle cx="7" cy="13" r="1" fill="currentColor"/><circle cx="7" cy="17" r="1" fill="currentColor"/></svg>'},
-    {id:'regolamento',label:'Regolamento',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>'},
     {id:'note',label:'Note di Sessione',icon:ICON.scroll,playerOnly:true},
     {id:'scheda',label:'Scheda PG',playerOnly:true,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'}
   ];
@@ -9184,7 +9148,7 @@ function renderSidebar() {
     logoutBtn.textContent = '\u293B Disconnetti';
     logoutBtn.onmouseenter = function(){ this.style.borderColor='var(--border-gold)'; this.style.color='var(--gold)'; };
     logoutBtn.onmouseleave = function(){ this.style.borderColor='rgba(201,165,92,0.25)'; this.style.color='var(--gold-dim)'; };
-    logoutBtn.onclick = googleSignOut;
+    logoutBtn.onclick = doSignOut;
     footer.appendChild(logoutBtn);
   }
 
