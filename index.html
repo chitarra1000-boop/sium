@@ -786,19 +786,22 @@
     background: var(--bg-panel);
     border: 1px solid var(--border-gold);
     border-radius: 5px;
-    max-width: 860px;
-    width: 100%;
-    max-height: 92vh;
+    width: 96vw;
+    max-width: 1200px;
+    max-height: 94vh;
     overflow-y: auto;
     box-shadow: var(--shadow-modal);
   }
   .detail-modal-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
-  @media (min-width: 600px) {
-    .detail-modal-grid { grid-template-columns: 260px 1fr; }
+  @media (min-width: 700px) {
+    .detail-modal-grid { grid-template-columns: 300px 1fr; }
+  }
+  @media (min-width: 1000px) {
+    .detail-modal-grid { grid-template-columns: 340px 1fr; }
   }
   .detail-modal-img-wrap {
     width: 100%;
@@ -14328,15 +14331,21 @@ function updateBestiarioGrid() {
 
 function fmtStatBlock(text) {
   if (!text) return '';
-  var escaped = escapeHtml(text);
-  // Manda a capo prima di ogni nome di abilità/attacco (parola/e seguita da ":")
-  // Riconosce pattern come "Morso:", "Attacco multiplo.", "Artigli:", "Soffio (ricarica 5-6):" ecc.
-  escaped = escaped.replace(/\.\s+([A-ZÀÈÉÌÒÙ][^<\n]{0,60}:)/g, '.<br><br><strong>$1</strong>');
-  // Prima occorrenza: se inizia con una parola seguita da ":" (es. "Attacco multiplo.")
-  escaped = escaped.replace(/^([A-ZÀÈÉÌÒÙ][^<\n]{0,60}:)/, '<strong>$1</strong>');
-  // Separa anche "Attacco multiplo." su riga propria prima del resto
-  escaped = escaped.replace(/\.\s+([A-ZÀÈÉÌÒÙ][^<\n]{0,60}\.)\s+([A-ZÀÈÉÌÒÙ])/g, '.<br><br><strong>$1</strong> $2');
-  return escaped;
+  // Normalizza a capo: \r\n → \n
+  text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  // Dividi per paragrafi (doppio a capo = nuovo blocco abilità/azione)
+  var paras = text.split(/\n\n+/);
+  var html = paras.map(function(para) {
+    para = para.trim();
+    if (!para) return '';
+    var escaped = escapeHtml(para);
+    // Sostituisci singoli \n con <br> all'interno del paragrafo
+    escaped = escaped.replace(/\n/g, '<br>');
+    // Metti in grassetto il nome all'inizio del paragrafo (es. "Multiattacco:", "Soffio (Ricarica 5-6):")
+    escaped = escaped.replace(/^([A-ZÀÈÉÌÒÙÄ][^:<br>]{0,80}:)\s*/, '<strong style="color:var(--gold-dim);font-family:\'Cinzel\',serif;font-size:14px;">$1</strong> ');
+    return '<div style="margin-bottom:0.9rem;">' + escaped + '</div>';
+  }).join('');
+  return html;
 }
 
 function openDetailModal(type, data) {
