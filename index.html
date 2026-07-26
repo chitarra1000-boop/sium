@@ -14555,9 +14555,11 @@ function renderBestiarCard(m) {
   /* Immagine */
   var imgWrap = document.createElement('div');
   imgWrap.className = 'card-image-wrap';
+  imgWrap.style.cssText = 'aspect-ratio:3/4;background:var(--bg-base);';
   if (m.immagine) {
     var im = document.createElement('img');
     im.alt = m.nome; im.src = m.immagine;
+    im.style.cssText = 'width:100%;height:100%;object-fit:contain;';
     im.onerror = function() { imgWrap.innerHTML = '<div class="img-placeholder">🐉</div>'; };
     imgWrap.appendChild(im);
   } else {
