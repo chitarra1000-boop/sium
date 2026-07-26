@@ -14612,12 +14612,12 @@ function renderBestiarCard(m) {
     delBtn.style.cssText = 'padding:0.4rem 0.65rem;';
     delBtn.innerHTML = ICON.trash;
     (function(monster) {
-      editBtn.onclick = function(e) { e.stopPropagation(); state.bestEditingId = monster.id; state.bestShowForm = true; render(); };
+      editBtn.onclick = function(e) { e.stopPropagation(); state.bestEditingId = monster.id; state.bestShowForm = true; var ef=document.getElementById('modal-root'); if(ef) ef.remove(); document.body.appendChild(renderBestiarForm()); };
       delBtn.onclick = function(e) {
         e.stopPropagation();
         if (confirm('Eliminare "' + monster.nome + '" dal bestiario?')) {
           state.bestiario = state.bestiario.filter(function(x){ return x.id !== monster.id; });
-          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); renderMain();
+          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
         }
       };
     })(m);
@@ -14655,12 +14655,12 @@ function renderBestiarCard(m) {
     delBtn.style.cssText = 'padding:0.4rem 0.65rem;';
     delBtn.innerHTML = ICON.trash;
     (function(monster) {
-      editBtn.onclick = function(e) { e.stopPropagation(); state.bestEditingId = monster.id; state.bestShowForm = true; render(); };
+      editBtn.onclick = function(e) { e.stopPropagation(); state.bestEditingId = monster.id; state.bestShowForm = true; var ef=document.getElementById('modal-root'); if(ef) ef.remove(); document.body.appendChild(renderBestiarForm()); };
       delBtn.onclick = function(e) {
         e.stopPropagation();
         if (confirm('Eliminare "' + monster.nome + '" dal bestiario?')) {
           state.bestiario = state.bestiario.filter(function(x){ return x.id !== monster.id; });
-          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); renderMain();
+          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
         }
       };
     })(m);
@@ -15028,7 +15028,7 @@ function renderBestiarForm() {
         azioni:form.azioni, azioniLeggendarie:form.azioniLeggendarie});
       notify('Mostro aggiunto al bestiario.');
     }
-    fbSaveBestiario(); saveToStorage(); closeBestForm(); renderMain();
+    fbSaveBestiario(); saveToStorage(); closeBestForm(); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
   }
   return back;
 }
