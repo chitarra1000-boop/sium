@@ -14450,7 +14450,7 @@ function openDetailModal(type, data) {
     [['HP',data.hp,'#c84040'],['CA',data.ca,'#c9a55c'],['VEL',data.velocita,'#5c9ec9']].forEach(function(s){
       if (!s[1]) return;
       var pill=document.createElement('div');
-      pill.style.cssText='background:'+s[2]+'22;border:1px solid '+s[2]+'55;border-radius:4px;padding:0.3rem 0.75rem;font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;color:'+s[2]+';';
+      pill.style.cssText='background:'+s[2]+'22;border:1px solid '+s[2]+'88;border-radius:4px;padding:0.4rem 1rem;font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;color:'+s[2]+';';
       pill.textContent=s[0]+': '+s[1];
       pillRow.appendChild(pill);
     });
@@ -14462,11 +14462,11 @@ function openDetailModal(type, data) {
     [['FOR',data.for],['DES',data.des],['COS',data.cos],['INT',data.int],['SAG',data.sag],['CAR',data.car]].forEach(function(s){
       var cell=document.createElement('div');
       cell.style.cssText='text-align:center;padding:0.4rem 0.1rem;background:var(--bg-base);';
-      var lbl=document.createElement('div'); lbl.style.cssText='font-family:\'Cinzel\',serif;font-size:9px;font-weight:700;color:var(--gold-dim);letter-spacing:0.1em;';
+      var lbl=document.createElement('div'); lbl.style.cssText='font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;color:var(--gold-bright);letter-spacing:0.1em;';
       lbl.textContent=s[0];
-      var val=document.createElement('div'); val.style.cssText='font-family:\'EB Garamond\',serif;font-size:18px;font-weight:700;color:var(--text-strong);line-height:1.2;';
+      var val=document.createElement('div'); val.style.cssText='font-family:\'EB Garamond\',serif;font-size:22px;font-weight:700;color:var(--text-strong);line-height:1.2;';
       val.textContent=s[1]||'—';
-      var mod=document.createElement('div'); mod.style.cssText='font-family:\'EB Garamond\',serif;font-size:12px;color:var(--text-muted);';
+      var mod=document.createElement('div'); mod.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;color:var(--text-main);';
       var mv=s[1]?Math.floor((s[1]-10)/2):null;
       mod.textContent=mv!==null?(mv>=0?'+'+mv:''+mv):'';
       cell.appendChild(lbl); cell.appendChild(val); cell.appendChild(mod);
@@ -14476,26 +14476,26 @@ function openDetailModal(type, data) {
 
     if (data.lingue) {
       var lingP=document.createElement('p');
-      lingP.style.cssText='font-size:14px;color:var(--text-muted);margin:0 0 0.4rem;font-family:\'EB Garamond\',serif;font-style:italic;';
-      lingP.innerHTML='<span style="color:var(--gold-dim);font-style:normal;">🗣 </span>'+escapeHtml(data.lingue);
+      lingP.style.cssText='font-size:17px;color:var(--text-main);margin:0 0 0.6rem;font-family:\'EB Garamond\',serif;';
+      lingP.innerHTML='<span style="color:var(--gold-bright);font-weight:700;font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:0.08em;">🗣 LINGUE&nbsp;</span>'+escapeHtml(data.lingue);
       rightCol.appendChild(lingP);
     }
     if (data.ts) {
       var tsP=document.createElement('p');
-      tsP.style.cssText='font-size:13px;color:var(--text-muted);margin:0 0 0.4rem;font-family:\'EB Garamond\',serif;';
-      tsP.innerHTML='<span style="color:var(--gold-dim);font-weight:700;">TS: </span>'+escapeHtml(data.ts);
+      tsP.style.cssText='font-size:17px;color:var(--text-main);margin:0 0 0.6rem;font-family:\'EB Garamond\',serif;';
+      tsP.innerHTML='<span style="color:var(--gold-bright);font-weight:700;font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:0.08em;">TIRI SALVEZZA&nbsp;</span>'+escapeHtml(data.ts);
       rightCol.appendChild(tsP);
     }
     if (data.sensi) {
       var sensiP=document.createElement('p');
-      sensiP.style.cssText='font-size:13px;color:var(--text-muted);margin:0 0 0.4rem;font-family:\'EB Garamond\',serif;';
-      sensiP.innerHTML='<span style="color:var(--gold-dim);font-weight:700;">👁 Sensi: </span>'+escapeHtml(data.sensi);
+      sensiP.style.cssText='font-size:17px;color:var(--text-main);margin:0 0 0.6rem;font-family:\'EB Garamond\',serif;';
+      sensiP.innerHTML='<span style="color:var(--gold-bright);font-weight:700;font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:0.08em;">👁 SENSI&nbsp;</span>'+escapeHtml(data.sensi);
       rightCol.appendChild(sensiP);
     }
     if (data.abilita) {
       var abP=document.createElement('p');
-      abP.style.cssText='font-size:13px;color:var(--text-muted);margin:0 0 0.4rem;font-family:\'EB Garamond\',serif;';
-      abP.innerHTML='<span style="color:var(--gold-dim);font-weight:700;">✦ Abilità: </span>'+escapeHtml(data.abilita);
+      abP.style.cssText='font-size:17px;color:var(--text-main);margin:0 0 0.6rem;font-family:\'EB Garamond\',serif;';
+      abP.innerHTML='<span style="color:var(--gold-bright);font-weight:700;font-family:\'Cinzel\',serif;font-size:13px;letter-spacing:0.08em;">✦ ABILITÀ&nbsp;</span>'+escapeHtml(data.abilita);
       rightCol.appendChild(abP);
     }
   }
@@ -14524,36 +14524,36 @@ function openDetailModal(type, data) {
     if (data.tratti) {
       var ts=document.createElement('div');
       ts.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
-      var th=document.createElement('div'); th.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.5rem;';
+      var th=document.createElement('div'); th.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold-bright);margin-bottom:0.75rem;';
       th.textContent='✦ Tratti Speciali';
-      var tt=document.createElement('div'); tt.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.75;color:var(--text-main);';
+      var tt=document.createElement('div'); tt.style.cssText='font-family:\'EB Garamond\',serif;font-size:17px;line-height:1.8;color:var(--text-main);';
       tt.innerHTML=fmtStatBlock(data.tratti);
       ts.appendChild(th); ts.appendChild(tt); body.appendChild(ts);
     }
     if (data.azioni) {
       var as=document.createElement('div');
       as.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
-      var ah=document.createElement('div'); ah.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.5rem;';
+      var ah=document.createElement('div'); ah.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold-bright);margin-bottom:0.75rem;';
       ah.textContent='⚔ Azioni';
-      var at=document.createElement('div'); at.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.75;color:var(--text-main);';
+      var at=document.createElement('div'); at.style.cssText='font-family:\'EB Garamond\',serif;font-size:17px;line-height:1.8;color:var(--text-main);';
       at.innerHTML=fmtStatBlock(data.azioni);
       as.appendChild(ah); as.appendChild(at); body.appendChild(as);
     }
     if (data.incantesimi) {
       var isc=document.createElement('div');
       isc.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
-      var ish=document.createElement('div'); ish.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dim);margin-bottom:0.5rem;';
+      var ish=document.createElement('div'); ish.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold-bright);margin-bottom:0.75rem;';
       ish.textContent='✦ Incantesimi';
-      var ist=document.createElement('div'); ist.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.75;color:var(--text-main);';
+      var ist=document.createElement('div'); ist.style.cssText='font-family:\'EB Garamond\',serif;font-size:17px;line-height:1.8;color:var(--text-main);';
       ist.innerHTML=fmtStatBlock(data.incantesimi);
       isc.appendChild(ish); isc.appendChild(ist); body.appendChild(isc);
     }
     if (data.azioniLeggendarie) {
       var alg=document.createElement('div');
       alg.style.cssText='margin-top:1.25rem;border-top:1px solid var(--border-subtle);padding-top:1rem;';
-      var alh=document.createElement('div'); alh.style.cssText='font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-bright);margin-bottom:0.5rem;';
+      var alh=document.createElement('div'); alh.style.cssText='font-family:\'Cinzel\',serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold-bright);margin-bottom:0.75rem;';
       alh.textContent='★ Azioni Leggendarie';
-      var alt=document.createElement('div'); alt.style.cssText='font-family:\'EB Garamond\',serif;font-size:15px;line-height:1.75;color:var(--text-main);';
+      var alt=document.createElement('div'); alt.style.cssText='font-family:\'EB Garamond\',serif;font-size:17px;line-height:1.8;color:var(--text-main);';
       alt.innerHTML=fmtStatBlock(data.azioniLeggendarie);
       alg.appendChild(alh); alg.appendChild(alt); body.appendChild(alg);
     }
