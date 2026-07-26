@@ -919,15 +919,19 @@
   .type-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     font-family: 'Cinzel', serif;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.16em;
-    color: var(--gold-dim);
+    letter-spacing: 0.14em;
+    color: var(--gold-bright);
+    background: rgba(100,70,10,0.55);
+    border: 1px solid #c9a55c99;
+    border-radius: 3px;
+    padding: 0.2rem 0.55rem;
   }
-  .type-chip::before { content: ''; width: 14px; height: 1px; background: var(--gold-dim); }
+  .type-chip::before { content: none; }
 
   .initiative-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start; }
   @media (max-width: 1100px) { .initiative-layout { grid-template-columns: 1fr; } }
@@ -7496,6 +7500,7 @@ var state = {
   bestSearch: '',
   bestFiltroTaglia: '',
   bestFiltroTipo: '',
+  bestFiltroGS: '',
   bestEditingId: null,
   bestShowForm: false,
   bestTab: 'bestiario',
@@ -14294,9 +14299,11 @@ function updateBestiarioGrid() {
   var q = (state.bestSearch || '').toLowerCase().trim();
   var fTaglia = state.bestFiltroTaglia || '';
   var fTipo = state.bestFiltroTipo || '';
+  var fGS = state.bestFiltroGS || '';
   var filtered = state.bestiario.filter(function(m) {
     if (fTaglia && (m.taglia||'') !== fTaglia) return false;
     if (fTipo && (m.tipo||'') !== fTipo) return false;
+    if (fGS && (m.grsfida||'') !== fGS) return false;
     if (!q) return true;
     return (m.nome||'').toLowerCase().indexOf(q) >= 0;
   }).sort(function(a,b){return (a.nome||'').localeCompare(b.nome||'','it');});
@@ -14376,9 +14383,9 @@ function openDetailModal(type, data) {
   chipRow.style.cssText = 'display:flex;gap:0.4rem;margin-top:0.4rem;flex-wrap:wrap;';
   if (type === 'mostro') {
     if (data.tipo) { var c1=document.createElement('span'); c1.className='type-chip'; c1.textContent=data.tipo; chipRow.appendChild(c1); }
-    if (data.taglia) { var c2=document.createElement('span'); c2.className='type-chip'; c2.style.cssText='background:rgba(120,80,20,0.75);border-color:#c9a55c88;'; c2.textContent=data.taglia; chipRow.appendChild(c2); }
-    if (data.allineamento) { var c3=document.createElement('span'); c3.className='type-chip'; c3.style.cssText='background:rgba(60,80,120,0.75);border-color:#5c9ec988;'; c3.textContent=data.allineamento; chipRow.appendChild(c3); }
-    if (data.grsfida) { var c4=document.createElement('span'); c4.className='type-chip'; c4.style.cssText='background:rgba(140,40,40,0.75);border-color:#c8404088;'; c4.textContent='GS '+data.grsfida; chipRow.appendChild(c4); }
+    if (data.taglia) { var c2=document.createElement('span'); c2.className='type-chip'; c2.style.cssText='background:rgba(120,80,10,0.7);border:1px solid #c9a55c;color:#f0cc80;'; c2.textContent=data.taglia; chipRow.appendChild(c2); }
+    if (data.allineamento) { var c3=document.createElement('span'); c3.className='type-chip'; c3.style.cssText='background:rgba(40,80,140,0.7);border:1px solid #5c9ec9;color:#90c8ef;'; c3.textContent=data.allineamento; chipRow.appendChild(c3); }
+    if (data.grsfida) { var c4=document.createElement('span'); c4.className='type-chip'; c4.style.cssText='background:rgba(140,30,30,0.7);border:1px solid #e05050;color:#ff9090;'; c4.textContent='GS '+data.grsfida+(data.pe?' ('+data.pe+' PE)':''); chipRow.appendChild(c4); }
   } else {
     if (data.tipo) { var c1=document.createElement('span'); c1.className='type-chip'; c1.textContent=data.tipo; chipRow.appendChild(c1); }
     if (data.rarita) { var c2=document.createElement('span'); c2.className='rarity-tag '+rarityClass(data.rarita); c2.textContent=data.rarita; chipRow.appendChild(c2); }
@@ -14847,6 +14854,7 @@ function renderBestiarForm() {
     abilita: editing ? (editing.abilita||'') : '',
     lingue: editing ? (editing.lingue||'') : '',
     tratti: editing ? (editing.tratti||'') : '',
+    incantesimi: editing ? (editing.incantesimi||'') : '',
     url: editing ? (editing.url||'') : '',
     immagine: editing ? (editing.immagine||'') : '',
     azioni: editing ? (editing.azioni||'') : '',
@@ -14937,6 +14945,7 @@ function renderBestiarForm() {
   mbody.appendChild(addBF('Abilità','text','abilita',{placeholder:'Percezione +6, Furtività +4, Inganno +8…'}));
   mbody.appendChild(addBF('Lingue parlate','text','lingue',{placeholder:'Comune, Draconico, Infernale…'}));
   mbody.appendChild(addBF('Tratti Speciali','textarea','tratti',{placeholder:'Es. Sensi acuiti. Vantaggio ai tiri percezione. Resistenza al veleno…'}));
+  mbody.appendChild(addBF('Incantesimi','textarea','incantesimi',{placeholder:'Es. L\'incantatore è un mago di 9° livello. Slot: 1°×4, 2°×3… Trucchetti: dardo incantato, danza delle luci…'}));
   mbody.appendChild(addBF('URL Riferimento','text','url',{placeholder:'https://…'}));
   var imgD = document.createElement('div');
   imgD.innerHTML = '<label class="field-label">Immagine</label>';
@@ -14989,7 +14998,7 @@ function renderBestiarForm() {
           m.for=form.for; m.des=form.des; m.cos=form.cos;
           m.int=form.int; m.sag=form.sag; m.car=form.car;
           m.ts=form.ts; m.sensi=form.sensi; m.abilita=form.abilita;
-          m.lingue=form.lingue; m.tratti=form.tratti;
+          m.lingue=form.lingue; m.tratti=form.tratti; m.incantesimi=form.incantesimi;
           m.url=form.url; m.immagine=form.immagine;
           m.azioni=form.azioni; m.azioniLeggendarie=form.azioniLeggendarie;
         }
@@ -15003,7 +15012,7 @@ function renderBestiarForm() {
         for:form.for, des:form.des, cos:form.cos,
         int:form.int, sag:form.sag, car:form.car,
         ts:form.ts, sensi:form.sensi, abilita:form.abilita,
-        lingue:form.lingue, tratti:form.tratti,
+        lingue:form.lingue, tratti:form.tratti, incantesimi:form.incantesimi,
         url:form.url, immagine:form.immagine,
         azioni:form.azioni, azioniLeggendarie:form.azioniLeggendarie});
       notify('Mostro aggiunto al bestiario.');
@@ -16045,6 +16054,10 @@ function renderBestiario() {
     swW.appendChild(swI); sw.appendChild(swW); row.appendChild(sw);
     row.appendChild(makeSelectFilter('Taglia', state.bestFiltroTaglia, [''].concat(TAGLIE_MOSTRO), function(v){ state.bestFiltroTaglia=v; updateBestiarioGrid(); }, '— Tutte le taglie —'));
     row.appendChild(makeSelectFilter('Tipo Creatura', state.bestFiltroTipo, [''].concat(TIPI_MOSTRO), function(v){ state.bestFiltroTipo=v; updateBestiarioGrid(); }, '— Tutti i tipi —'));
+    (function(){
+      var gsVals = ['','0','1/8','1/4','1/2','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','30'];
+      row.appendChild(makeSelectFilter('Grado Sfida', state.bestFiltroGS, gsVals, function(v){ state.bestFiltroGS=v; updateBestiarioGrid(); }, '— Tutti i GS —'));
+    })();
     if (isAdmin()) {
       var abW=document.createElement('div');
       var ab=document.createElement('button'); ab.className='btn-gold';
