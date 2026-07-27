@@ -14616,8 +14616,14 @@ function renderBestiarCard(m) {
       delBtn.onclick = function(e) {
         e.stopPropagation();
         if (confirm('Eliminare "' + monster.nome + '" dal bestiario?')) {
+          // Aggiungi a bestiarioDeleted così non ricompare al refresh
+          if (!state.bestiarioDeleted) state.bestiarioDeleted = [];
+          if (state.bestiarioDeleted.indexOf(monster.id) < 0) state.bestiarioDeleted.push(monster.id);
+          fbSaveBestiarioDeleted();
           state.bestiario = state.bestiario.filter(function(x){ return x.id !== monster.id; });
-          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
+          fbSaveBestiario(); saveToStorage();
+          notify('Mostro eliminato.');
+          card.remove(); // rimuove solo questa card, scroll invariato
         }
       };
     })(m);
@@ -14659,8 +14665,13 @@ function renderBestiarCard(m) {
       delBtn.onclick = function(e) {
         e.stopPropagation();
         if (confirm('Eliminare "' + monster.nome + '" dal bestiario?')) {
+          if (!state.bestiarioDeleted) state.bestiarioDeleted = [];
+          if (state.bestiarioDeleted.indexOf(monster.id) < 0) state.bestiarioDeleted.push(monster.id);
+          fbSaveBestiarioDeleted();
           state.bestiario = state.bestiario.filter(function(x){ return x.id !== monster.id; });
-          fbSaveBestiario(); saveToStorage(); notify('Mostro eliminato.'); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
+          fbSaveBestiario(); saveToStorage();
+          notify('Mostro eliminato.');
+          card.remove();
         }
       };
     })(m);
@@ -15028,7 +15039,7 @@ function renderBestiarForm() {
         azioni:form.azioni, azioniLeggendarie:form.azioniLeggendarie});
       notify('Mostro aggiunto al bestiario.');
     }
-    fbSaveBestiario(); saveToStorage(); closeBestForm(); var _sy=window.scrollY; renderMain(); window.scrollTo(0,_sy);
+    fbSaveBestiario(); saveToStorage(); var _sy=window.scrollY; closeBestForm(); renderMain(); requestAnimationFrame(function(){ window.scrollTo(0,_sy); });
   }
   return back;
 }
