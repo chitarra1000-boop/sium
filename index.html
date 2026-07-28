@@ -5823,10 +5823,16 @@ var _wbListenerRef = null; // riferimento al listener Firebase corrente del worl
 var _mappaViewAsUser  = null;
 var _storiaViewAsUser = null;
 var _mappaListenerRef = null;
+var _mappaOwnerMap    = {}; // mapId → username proprietario (usato in modalità 'Tutte')
 
 /* Restituisce il path Firebase base per le mappe dell'utente corrente (o di quello visualizzato). */
 function _mappaBasePath() {
   if (isAdmin() && !_mappaViewAsUser) return 'state/mappa';
+  if (_mappaViewAsUser === '__tutte__') {
+    var mid = state.mappaActiveId;
+    if (mid && _mappaOwnerMap[mid]) return 'users/' + _mappaOwnerMap[mid] + '/mappa';
+    return 'state/mappa';
+  }
   var uid = _mappaViewAsUser || (_authUser && _authUser.uid) || (state.currentUser && state.currentUser.username);
   return uid ? 'users/' + uid + '/mappa' : 'state/mappa';
 }
@@ -5834,13 +5840,17 @@ function _mappaBasePath() {
 /* Restituisce il path Firebase per il worldbuilding di una mappa (segue _mappaViewAsUser). */
 function _wbPath(mapId) {
   if (isAdmin() && !_mappaViewAsUser) return 'state/worldbuilding/' + mapId;
+  if (_mappaViewAsUser === '__tutte__') {
+    if (mapId && _mappaOwnerMap[mapId]) return 'users/' + _mappaOwnerMap[mapId] + '/worldbuilding/' + mapId;
+    return 'state/worldbuilding/' + mapId;
+  }
   var uid = _mappaViewAsUser || (_authUser && _authUser.uid) || (state.currentUser && state.currentUser.username);
   return uid ? 'users/' + uid + '/worldbuilding/' + mapId : 'state/worldbuilding/' + mapId;
 }
 
 /* Restituisce il path Firebase per la libreria storie da visualizzare. */
 function _storieActivePath() {
-  if (isAdmin() && _storiaViewAsUser) return 'storie_private/' + _storiaViewAsUser;
+  if (isAdmin() && _storiaViewAsUser && _storiaViewAsUser !== '__tutte__') return 'storie_private/' + _storiaViewAsUser;
   return _storiePrivatePath();
 }
 
@@ -5915,7 +5925,43 @@ function _attachMappaListener() {
   if (_mappaListenerRef) { _mappaListenerRef.off(); _mappaListenerRef = null; }
   // Reset stato mappa prima di caricare nuovi dati
   state.mappaList = {}; state.mappaActiveId = ''; state.mappaUrl = ''; state.mappaFlags = {};
-  _lastWbMapId = null; // forza re-attach worldbuilding
+  _lastWbMapId = null;
+  _mappaOwnerMap = {};
+
+  if (_mappaViewAsUser === '__tutte__') {
+    // Modalità "Tutte le mappe": aggrega da tutti gli utenti con letture singole
+    var _tPaths = [{ path: 'state/mappa', owner: null }];
+    if (_remoteUsers && typeof _remoteUsers === 'object') {
+      Object.keys(_remoteUsers).forEach(function(uid) {
+        _tPaths.push({ path: 'users/' + uid + '/mappa', owner: uid });
+      });
+    }
+    var _tDone = 0;
+    _tPaths.forEach(function(p) {
+      _db.ref(p.path).once('value', function(snap) {
+        var v = snap.val();
+        if (v && v.maps && typeof v.maps === 'object') {
+          Object.keys(v.maps).forEach(function(mid) {
+            state.mappaList[mid] = v.maps[mid];
+            if (p.owner) _mappaOwnerMap[mid] = p.owner;
+          });
+        }
+        _tDone++;
+        if (_tDone === _tPaths.length) {
+          var keys = Object.keys(state.mappaList);
+          if (keys.length > 0) {
+            state.mappaActiveId = keys[0];
+            var am = state.mappaList[state.mappaActiveId];
+            if (am) { state.mappaUrl = am.url || ''; state.mappaFlags = am.flags || {}; }
+            _attachWorldbuildingListener(state.mappaActiveId);
+          }
+          if (state.section === 'mappa') renderMain();
+        }
+      });
+    });
+    return;
+  }
+
   _mappaListenerRef = _db.ref(_mappaBasePath());
   _mappaListenerRef.on('value', function(snap) {
     var v = snap.val();
@@ -19914,28 +19960,35 @@ function renderMappa() {
     // ---- FILTRO PERSONA (solo admin) ----
     if (isAdmin()) {
       var personaWrap = document.createElement('div');
-      personaWrap.style.cssText = 'display:inline-flex;align-items:center;gap:0.4rem;background:rgba(60,120,200,0.08);border:1px solid rgba(100,160,240,0.25);border-radius:5px;padding:0.2rem 0.5rem;';
+      personaWrap.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;gap:0.35rem;';
       var personaLabel = document.createElement('span');
-      personaLabel.style.cssText = 'font-size:12px;color:var(--text-faint);white-space:nowrap;';
-      personaLabel.textContent = '👤';
+      personaLabel.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.12em;color:rgba(245,166,35,0.5);white-space:nowrap;margin-right:0.15rem;';
+      personaLabel.textContent = 'MAPPE:';
       personaWrap.appendChild(personaLabel);
-      var personaSel = document.createElement('select');
-      personaSel.style.cssText = 'font-size:12px;padding:0.2rem 0.4rem;border-radius:4px;background:var(--bg-card-elevated);border:1px solid var(--border-default);color:var(--text-primary);max-width:130px;cursor:pointer;';
-      personaSel.title = 'Visualizza mappe di...';
-      var pOpt0 = document.createElement('option'); pOpt0.value = ''; pOpt0.textContent = state.currentUser ? state.currentUser.username + ' (tue)' : 'Le mie mappe'; personaSel.appendChild(pOpt0);
+      var _mkPersonaPill = function(label, val) {
+        var isActive = (val === '' && !_mappaViewAsUser) || (val !== '' && val === _mappaViewAsUser);
+        var btn = document.createElement('button');
+        btn.textContent = label;
+        btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.06em;padding:0.28rem 0.75rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all 0.15s;' +
+          'border:1.5px solid ' + (isActive ? '#f5a623' : 'rgba(245,166,35,0.3)') + ';' +
+          'background:' + (isActive ? 'rgba(245,166,35,0.22)' : 'rgba(245,166,35,0.04)') + ';' +
+          'color:' + (isActive ? '#f5c842' : 'rgba(245,166,35,0.6)') + ';' +
+          'font-weight:' + (isActive ? '700' : '400') + ';';
+        btn.onclick = function() {
+          _mappaViewAsUser = val === '' ? null : val;
+          _attachMappaListener();
+          if (state.section === 'mappa') renderMain();
+        };
+        return btn;
+      };
+      personaWrap.appendChild(_mkPersonaPill('🌐 Tutte', '__tutte__'));
+      personaWrap.appendChild(_mkPersonaPill('⭐ ' + (state.currentUser ? state.currentUser.username : 'Mie'), ''));
       if (_remoteUsers && typeof _remoteUsers === 'object') {
         Object.keys(_remoteUsers).sort().forEach(function(uid) {
           if (uid === (state.currentUser && state.currentUser.username)) return;
-          var o = document.createElement('option'); o.value = uid; o.textContent = uid; personaSel.appendChild(o);
+          personaWrap.appendChild(_mkPersonaPill('👤 ' + uid, uid));
         });
       }
-      personaSel.value = _mappaViewAsUser || '';
-      personaSel.onchange = function() {
-        _mappaViewAsUser = personaSel.value || null;
-        _attachMappaListener();
-        if (state.section === 'mappa') renderMain();
-      };
-      personaWrap.appendChild(personaSel);
       dmControls.appendChild(personaWrap);
     }
 
@@ -20779,6 +20832,31 @@ function _caricaLibreria(callback) {
   });
 }
 
+function _caricaLibreriaTutti(callback) {
+  if (!_db) { callback([]); return; }
+  var usernames = _remoteUsers ? Object.keys(_remoteUsers) : [];
+  var myUser = state.currentUser && state.currentUser.username;
+  if (myUser && usernames.indexOf(myUser) < 0) usernames.push(myUser);
+  if (usernames.length === 0) { callback([]); return; }
+  var allStories = [];
+  var done = 0;
+  usernames.forEach(function(uid) {
+    _db.ref('storie_private/' + uid).once('value', function(snap) {
+      var v = snap.val();
+      if (v && typeof v === 'object') {
+        Object.keys(v).forEach(function(id) {
+          if (v[id]) allStories.push(Object.assign({}, v[id], { _owner: uid, _realId: id }));
+        });
+      }
+      done++;
+      if (done === usernames.length) {
+        allStories.sort(function(a,b){ return (b.savedAt||0)-(a.savedAt||0); });
+        callback(allStories);
+      }
+    });
+  });
+}
+
 function storiaFlushSave() {
   var ed = document.getElementById('storia-editor');
   if (ed) state.storia.content = ed.innerHTML;
@@ -21212,31 +21290,33 @@ function renderStoria() {
   /* ---- Barra filtro persona (solo admin) ---- */
   if (isAdmin()) {
     var storiaFilterBar = document.createElement('div');
-    storiaFilterBar.style.cssText = 'display:flex;align-items:center;gap:0.6rem;padding:0.3rem 0.9rem;background:rgba(60,120,200,0.06);border-bottom:1px solid var(--border-subtle);flex-shrink:0;';
+    storiaFilterBar.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:0.4rem;padding:0.45rem 0.9rem;background:rgba(60,120,200,0.05);border-bottom:1px solid var(--border-subtle);flex-shrink:0;';
     var sfLabel = document.createElement('span');
-    sfLabel.style.cssText = 'font-size:11px;font-family:\'Cinzel\',serif;color:var(--text-faint);letter-spacing:0.08em;white-space:nowrap;';
-    sfLabel.textContent = '👤 Visualizza storie di:';
+    sfLabel.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.12em;color:rgba(100,160,240,0.55);white-space:nowrap;margin-right:0.15rem;';
+    sfLabel.textContent = 'STORIE:';
     storiaFilterBar.appendChild(sfLabel);
-    var sfSel = document.createElement('select');
-    sfSel.style.cssText = 'font-size:12px;padding:0.2rem 0.5rem;border-radius:4px;background:var(--bg-card-elevated);border:1px solid var(--border-default);color:var(--text-primary);cursor:pointer;';
-    var sfOpt0 = document.createElement('option'); sfOpt0.value = ''; sfOpt0.textContent = '— Le mie storie —'; sfSel.appendChild(sfOpt0);
+    var _mkStoriaPill = function(label, val) {
+      var isActive = (val === '' && !_storiaViewAsUser) || (val !== '' && val === _storiaViewAsUser);
+      var btn = document.createElement('button');
+      btn.textContent = label;
+      btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;letter-spacing:0.06em;padding:0.28rem 0.75rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all 0.15s;' +
+        'border:1.5px solid ' + (isActive ? 'rgba(100,160,240,0.85)' : 'rgba(100,160,240,0.3)') + ';' +
+        'background:' + (isActive ? 'rgba(100,160,240,0.2)' : 'rgba(100,160,240,0.04)') + ';' +
+        'color:' + (isActive ? '#a0c8f8' : 'rgba(100,160,240,0.6)') + ';' +
+        'font-weight:' + (isActive ? '700' : '400') + ';';
+      btn.onclick = function() {
+        _storiaViewAsUser = val === '' ? null : val;
+        renderMain();
+      };
+      return btn;
+    };
+    storiaFilterBar.appendChild(_mkStoriaPill('📚 Tutte', '__tutte__'));
+    storiaFilterBar.appendChild(_mkStoriaPill('⭐ ' + (state.currentUser ? state.currentUser.username : 'Mie'), ''));
     if (_remoteUsers && typeof _remoteUsers === 'object') {
       Object.keys(_remoteUsers).sort().forEach(function(uid) {
         if (uid === (state.currentUser && state.currentUser.username)) return;
-        var o = document.createElement('option'); o.value = uid; o.textContent = uid; sfSel.appendChild(o);
+        storiaFilterBar.appendChild(_mkStoriaPill('👤 ' + uid, uid));
       });
-    }
-    sfSel.value = _storiaViewAsUser || '';
-    sfSel.onchange = function() {
-      _storiaViewAsUser = sfSel.value || null;
-      renderMain();
-    };
-    storiaFilterBar.appendChild(sfSel);
-    if (_storiaViewAsUser) {
-      var sfBadge = document.createElement('span');
-      sfBadge.style.cssText = 'font-size:11px;font-family:\'Cinzel\',serif;background:rgba(60,120,200,0.15);border:1px solid rgba(100,160,240,0.35);color:#88b8f0;border-radius:4px;padding:0.1rem 0.5rem;';
-      sfBadge.textContent = '📖 Storie di ' + _storiaViewAsUser + ' (sola lettura)';
-      storiaFilterBar.appendChild(sfBadge);
     }
     wrap.appendChild(storiaFilterBar);
   }
@@ -21367,12 +21447,69 @@ function renderStoria() {
     container.innerHTML = '';
     var hdr = document.createElement('div');
     hdr.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;color:var(--gold-bright);letter-spacing:0.1em;margin-bottom:0.4rem;';
-    hdr.textContent = _storiaViewAsUser ? ('STORIE DI ' + _storiaViewAsUser.toUpperCase()) : 'LE TUE STORIE';
+    hdr.textContent = _storiaViewAsUser === '__tutte__' ? 'TUTTE LE STORIE'
+                    : _storiaViewAsUser ? ('STORIE DI ' + _storiaViewAsUser.toUpperCase())
+                    : 'LE TUE STORIE';
     container.appendChild(hdr);
     var loading = document.createElement('div');
     loading.style.cssText = 'color:var(--text-faint);font-size:13px;';
     loading.textContent = 'Caricamento...';
     container.appendChild(loading);
+
+    // ---- Modalità TUTTE ----
+    if (_storiaViewAsUser === '__tutte__') {
+      _caricaLibreriaTutti(function(allStories) {
+        container.removeChild(loading);
+        if (allStories.length === 0) {
+          var empty = document.createElement('div');
+          empty.style.cssText = 'color:var(--text-faint);font-size:13px;font-style:italic;';
+          empty.textContent = 'Nessuna storia trovata.';
+          container.appendChild(empty); return;
+        }
+        allStories.forEach(function(s) {
+          var card = document.createElement('div');
+          card.style.cssText = 'display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.9rem;background:rgba(201,165,92,0.07);border:1px solid var(--border-subtle);border-radius:8px;cursor:pointer;transition:background 0.15s;';
+          card.onmouseenter = function(){ card.style.background='rgba(201,165,92,0.14)'; };
+          card.onmouseleave = function(){ card.style.background='rgba(201,165,92,0.07)'; };
+          var info = document.createElement('div'); info.style.cssText = 'flex:1;min-width:0;';
+          var nome = document.createElement('div');
+          nome.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          nome.textContent = s.nome || 'Senza nome';
+          var meta = document.createElement('div');
+          meta.style.cssText = 'font-size:10px;color:var(--text-faint);margin-top:2px;display:flex;gap:0.5rem;';
+          var ownerTag = document.createElement('span');
+          ownerTag.style.cssText = 'background:rgba(100,160,240,0.15);border:1px solid rgba(100,160,240,0.3);color:#88b8f0;border-radius:4px;padding:0 0.35rem;font-size:9px;';
+          ownerTag.textContent = s._owner;
+          var dataSpan = document.createElement('span');
+          dataSpan.textContent = s.savedAt ? new Date(s.savedAt).toLocaleString('it-IT') : '';
+          meta.appendChild(ownerTag); meta.appendChild(dataSpan);
+          info.appendChild(nome); info.appendChild(meta);
+          card.onclick = function() {
+            state.storia.content = typeof s.content === 'string' ? s.content : '';
+            state.storia.currentStoryId = s._realId;
+            state.storia.currentStoryName = s.nome || '';
+            state.storia.showLibrary = false;
+            storyNameLabel.textContent = '📖 ' + (s.nome || '') + ' (' + s._owner + ')';
+            saveStatus.textContent = '';
+            libraryBtn.innerHTML = '📚 Seleziona Storia';
+            var edWrap2 = document.getElementById('storia-editor-wrap');
+            var libWrap2 = document.getElementById('storia-library-wrap');
+            if (libWrap2) libWrap2.style.display = 'none';
+            if (edWrap2) {
+              edWrap2.style.display = '';
+              var ed2 = document.getElementById('storia-editor');
+              if (ed2) { ed2.innerHTML = state.storia.content || '<p><br></p>'; }
+            }
+            refreshStoriaMarkers();
+          };
+          card.appendChild(info);
+          container.appendChild(card);
+        });
+      });
+      return;
+    }
+
+    // ---- Modalità normale (singolo utente) ----
     _caricaLibreria(function(storie) {
       container.removeChild(loading);
       var ids = Object.keys(storie);
