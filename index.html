@@ -16279,18 +16279,20 @@ function renderScheda() {
     var row=document.createElement('div'); row.style.cssText='display:flex;align-items:center;gap:2px;padding:1px 0;border-bottom:1px solid rgba(0,0,0,0.06);';
     var star=document.createElement('span');
     star.textContent=s[maestKey]?'★':'☆';
-    star.title='Maestria: raddoppia il bonus di competenza';
-    star.style.cssText='font-size:9px;cursor:pointer;flex-shrink:0;line-height:1;user-select:none;color:'+(s[maestKey]?'#c8a000':'#bbb')+';';
+    star.title='Maestria (★): raddoppia il bonus di competenza — attiva prima la competenza (●)';
+    star.style.cssText='font-size:12px;cursor:pointer;flex-shrink:0;line-height:1;user-select:none;color:'+(s[maestKey]?'#c8a000':'#aaa')+';transition:color 0.15s;';
     var bub=makeBubble(!!s[profKey],function(v){
       s[profKey]=v;
-      if(!v){s[maestKey]=false;star.textContent='☆';star.style.color='#bbb';}
+      if(!v){s[maestKey]=false;star.textContent='☆';star.style.color='#aaa';}
       updateSchedaDerived();ss();
     });
+    star.onmouseenter=function(){if(!s[maestKey])star.style.color=s[profKey]?'#c8a000':'#888';};
+    star.onmouseleave=function(){star.style.color=s[maestKey]?'#c8a000':'#aaa';};
     star.onclick=function(){
       if(!s[profKey])return;
       s[maestKey]=!s[maestKey];
       star.textContent=s[maestKey]?'★':'☆';
-      star.style.color=s[maestKey]?'#c8a000':'#bbb';
+      star.style.color=s[maestKey]?'#c8a000':'#aaa';
       updateSchedaDerived();ss();
     };
     var val=document.createElement('span'); val.id='pd-sk-'+idSuffix; val.style.cssText='font-size:9px;font-weight:bold;min-width:18px;text-align:right;'; val.textContent=fsvM(s[statKey],profKey,maestKey);
@@ -19603,6 +19605,25 @@ function renderSchedePG() {
 }
 
 function renderDadi() {
+  /* ---- CSS animazioni dado (iniettato una volta) ---- */
+  if (!document.getElementById('_diceAnimCSS')) {
+    var _dcss = document.createElement('style');
+    _dcss.id = '_diceAnimCSS';
+    _dcss.textContent =
+      '@keyframes _dRoll{' +
+        '0%{transform:rotate(-25deg) scale(0.6);opacity:0.3;}' +
+        '20%{transform:rotate(18deg) scale(1.18);opacity:1;}' +
+        '45%{transform:rotate(-12deg) scale(0.92);}' +
+        '65%{transform:rotate(7deg) scale(1.06);}' +
+        '80%{transform:rotate(-4deg) scale(0.98);}' +
+        '100%{transform:rotate(0deg) scale(1);opacity:1;}' +
+      '}' +
+      '@keyframes _dReveal{from{transform:scale(0.4) rotate(15deg);opacity:0;}to{transform:scale(1) rotate(0deg);opacity:1;}}' +
+      '._dRolling{animation:_dRoll 0.68s cubic-bezier(.2,.8,.4,1) forwards;}' +
+      '._dReveal{animation:_dReveal 0.28s ease-out forwards;}';
+    document.head.appendChild(_dcss);
+  }
+
   var wrap = document.createElement('div');
 
   var header = document.createElement('header');
@@ -19623,13 +19644,13 @@ function renderDadi() {
   var diceBox = document.createElement('div');
   diceBox.className = 'dice-panel';
 
-  // Titolo tipo dado
+  /* Titolo tipo dado */
   var diceTitle = document.createElement('div');
   diceTitle.style.cssText = 'font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.25em;color:var(--gold-dim);margin-bottom:1rem;';
   diceTitle.textContent = 'Seleziona il Dado';
   diceBox.appendChild(diceTitle);
 
-  // Griglia tipi dado
+  /* Griglia tipi dado */
   var diceGrid = document.createElement('div');
   diceGrid.className = 'dice-type-grid';
   [4, 6, 8, 10, 12, 20, 100].forEach(function(d) {
@@ -19640,14 +19661,15 @@ function renderDadi() {
       state.diceType = d;
       diceGrid.querySelectorAll('.dice-type-btn').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
+      rollBtn.innerHTML = '🎲 Lancia d' + d;
     };
     diceGrid.appendChild(btn);
   });
   diceBox.appendChild(diceGrid);
 
-  // Formula multi-dado
+  /* Formula multi-dado */
   var formulaWrap = document.createElement('div');
-  formulaWrap.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-bottom:0.5rem;';
+  formulaWrap.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-bottom:0.75rem;';
   var formulaInput = document.createElement('input');
   formulaInput.type = 'text'; formulaInput.placeholder = 'es. 2d6+3, d20, 4d8-2';
   formulaInput.style.cssText = 'flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-family:"EB Garamond",serif;font-size:13px;padding:0.35rem 0.6rem;border-radius:4px;outline:none;';
@@ -19655,29 +19677,179 @@ function renderDadi() {
   formulaWrap.appendChild(formulaInput);
   diceBox.appendChild(formulaWrap);
 
-  // Display risultato
-  var resultEl = document.createElement('div');
-  resultEl.className = 'dice-result-display';
-  resultEl.id = 'dice-result';
-  resultEl.textContent = '—';
-  diceBox.appendChild(resultEl);
+  /* Area visuale dadi SVG */
+  var diceVisual = document.createElement('div');
+  diceVisual.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:flex-end;min-height:114px;margin:0.5rem 0 0.25rem;padding:0.25rem 0;';
+  diceBox.appendChild(diceVisual);
 
-  // Info trucco (solo per DM/privilegiati, invisibile agli altri)
+  /* Totale */
+  var totalLbl = document.createElement('div');
+  totalLbl.style.cssText = 'text-align:center;font-family:\'Cinzel\',serif;font-size:20px;font-weight:700;color:var(--gold);min-height:28px;margin-bottom:0.4rem;letter-spacing:0.06em;';
+  diceBox.appendChild(totalLbl);
+
+  /* Info trucco DM */
   var truccoInfo = document.createElement('div');
   truccoInfo.id = 'dice-trucco-info';
   truccoInfo.style.cssText = 'font-family:\'Cinzel\',serif;font-size:9px;text-transform:uppercase;letter-spacing:0.15em;color:rgba(201,165,92,0.45);margin-bottom:0.75rem;min-height:1em;';
   if (isDM()) truccoInfo.textContent = '⚔ Modalità vantaggio attiva (segreto)';
   diceBox.appendChild(truccoInfo);
 
-  // Pulsante lancia
+  /* ---- SVG dado builder ---- */
+  var _NS = 'http://www.w3.org/2000/svg';
+  /* palette: [ombra, bordo, testo] */
+  var _DCP = {
+    4:   ['#2d1155','#9966dd','#ddc8ff'],
+    6:   ['#0d2d55','#3377cc','#99ccff'],
+    8:   ['#073d27','#22995e','#77ffbb'],
+    10:  ['#4a1f04','#bb6622','#ffcc88'],
+    12:  ['#0a2550','#2255aa','#88bbff'],
+    20:  ['#4a0707','#cc2222','#ffaaaa'],
+    100: ['#1a1a4a','#5555bb','#aaaaff']
+  };
+  /* punti poligono per ogni tipo (viewBox 0 0 100 100) */
+  var _DPT = {
+    4:  '50,8 93,88 7,88',
+    8:  '50,5 95,50 50,95 5,50',
+    10: '50,5 91,31 76,88 24,88 9,31',
+    12: '50,5 94,36 77,87 23,87 6,36',
+    20: '50,5 91,27 91,73 50,95 9,73 9,27'
+  };
+  var _DIP = { /* poligono interno (bordo decorativo) */
+    4:  '50,22 78,75 22,75',
+    8:  '50,22 78,50 50,78 22,50',
+    10: '50,22 76,44 65,75 35,75 24,44',
+    12: '50,22 77,46 64,76 36,76 23,46',
+    20: '50,22 76,40 76,60 50,78 24,60 24,40'
+  };
+
+  function _buildDieSVG(faces, value, rolling, isCrit, isFail) {
+    var svg = document.createElementNS(_NS, 'svg');
+    svg.setAttribute('viewBox','0 0 100 100');
+    svg.style.cssText = 'width:90px;height:90px;flex-shrink:0;overflow:visible;';
+    if (rolling) svg.classList.add('_dRolling');
+
+    var pal = isCrit ? ['#3a2800','#c8a000','#ffe066']
+             : isFail ? ['#2a0505','#992222','#ff8888']
+             : (_DCP[faces] || _DCP[20]);
+
+    /* gradiente radiale */
+    var defs = document.createElementNS(_NS,'defs');
+    var gid = '_dg'+Date.now()+Math.floor(Math.random()*9999);
+    var grad = document.createElementNS(_NS,'radialGradient');
+    grad.setAttribute('id',gid); grad.setAttribute('cx','38%'); grad.setAttribute('cy','32%'); grad.setAttribute('r','65%');
+    var st0 = document.createElementNS(_NS,'stop'); st0.setAttribute('offset','0%'); st0.setAttribute('stop-color',pal[2]); st0.setAttribute('stop-opacity','0.22');
+    var st1 = document.createElementNS(_NS,'stop'); st1.setAttribute('offset','100%'); st1.setAttribute('stop-color',pal[0]); st1.setAttribute('stop-opacity','1');
+    grad.appendChild(st0); grad.appendChild(st1); defs.appendChild(grad); svg.appendChild(defs);
+
+    /* forma esterna */
+    var outer;
+    if (faces === 6) {
+      outer = document.createElementNS(_NS,'rect');
+      outer.setAttribute('x','6'); outer.setAttribute('y','6');
+      outer.setAttribute('width','88'); outer.setAttribute('height','88'); outer.setAttribute('rx','13');
+    } else if (faces === 100) {
+      outer = document.createElementNS(_NS,'circle');
+      outer.setAttribute('cx','50'); outer.setAttribute('cy','50'); outer.setAttribute('r','44');
+    } else {
+      outer = document.createElementNS(_NS,'polygon');
+      outer.setAttribute('points', _DPT[faces] || _DPT[20]);
+    }
+    outer.setAttribute('fill','url(#'+gid+')');
+    outer.setAttribute('stroke', pal[1]); outer.setAttribute('stroke-width','3');
+    svg.appendChild(outer);
+
+    /* forma interna decorativa */
+    if (_DIP[faces]) {
+      var inner = document.createElementNS(_NS,'polygon');
+      inner.setAttribute('points', _DIP[faces]);
+      inner.setAttribute('fill','none'); inner.setAttribute('stroke',pal[1]);
+      inner.setAttribute('stroke-width','1.5'); inner.setAttribute('opacity','0.55');
+      svg.appendChild(inner);
+    } else if (faces === 6) {
+      var r6 = document.createElementNS(_NS,'rect');
+      r6.setAttribute('x','17'); r6.setAttribute('y','17');
+      r6.setAttribute('width','66'); r6.setAttribute('height','66'); r6.setAttribute('rx','6');
+      r6.setAttribute('fill','none'); r6.setAttribute('stroke',pal[1]);
+      r6.setAttribute('stroke-width','1.5'); r6.setAttribute('opacity','0.55');
+      svg.appendChild(r6);
+    } else if (faces === 100) {
+      var c2 = document.createElementNS(_NS,'circle');
+      c2.setAttribute('cx','50'); c2.setAttribute('cy','50'); c2.setAttribute('r','34');
+      c2.setAttribute('fill','none'); c2.setAttribute('stroke',pal[1]);
+      c2.setAttribute('stroke-width','1.5'); c2.setAttribute('opacity','0.55');
+      svg.appendChild(c2);
+    }
+
+    /* numero */
+    var ty = (faces === 4) ? 68 : 58;
+    var fs = value !== null && String(value).length > 2 ? 20 : (String(value||'?').length > 1 ? 26 : 30);
+    var txt = document.createElementNS(_NS,'text');
+    txt.setAttribute('x','50'); txt.setAttribute('y', String(ty));
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','middle');
+    txt.setAttribute('font-size',String(fs)); txt.setAttribute('font-weight','700');
+    txt.setAttribute('font-family','Cinzel,serif');
+    txt.setAttribute('fill', rolling ? pal[1] : pal[2]);
+    txt.textContent = rolling ? '?' : (value !== null ? String(value) : '?');
+    svg.appendChild(txt);
+
+    /* badge crit / fumble */
+    if (!rolling && (isCrit || isFail)) {
+      var badge = document.createElementNS(_NS,'text');
+      badge.setAttribute('x','50'); badge.setAttribute('y','96');
+      badge.setAttribute('text-anchor','middle'); badge.setAttribute('font-size','9');
+      badge.setAttribute('font-family','sans-serif');
+      badge.setAttribute('fill', isCrit ? '#ffe066' : '#ff8888');
+      badge.textContent = isCrit ? '★ CRITICO' : '💀 FUMBLE';
+      svg.appendChild(badge);
+    }
+
+    return svg;
+  }
+
+  function _showRoll(rolls, faces, total, mod) {
+    /* Fase 1: animazione */
+    diceVisual.innerHTML = ''; totalLbl.textContent = '';
+    rolls.forEach(function() {
+      var w = document.createElement('div');
+      w.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+      w.appendChild(_buildDieSVG(faces, null, true, false, false));
+      diceVisual.appendChild(w);
+    });
+    /* Fase 2: risultato */
+    setTimeout(function() {
+      diceVisual.innerHTML = '';
+      rolls.forEach(function(v) {
+        var isCrit = faces === 20 && v === 20;
+        var isFail = faces === 20 && v === 1;
+        var w = document.createElement('div');
+        w.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+        var svg = _buildDieSVG(faces, v, false, isCrit, isFail);
+        svg.classList.add('_dReveal');
+        w.appendChild(svg);
+        diceVisual.appendChild(w);
+      });
+      /* etichetta totale */
+      var lbl = '';
+      if (rolls.length > 1) {
+        lbl = rolls.join(' + ');
+        if (mod) lbl += (mod > 0 ? ' + '+mod : ' − '+Math.abs(mod));
+        lbl += ' = ' + total;
+      } else if (mod) {
+        lbl = rolls[0] + (mod > 0 ? ' + '+mod : ' − '+Math.abs(mod)) + ' = ' + total;
+      }
+      totalLbl.textContent = lbl || '';
+      var onlyCrit = faces === 20 && rolls.length === 1 && total === 20;
+      var onlyFail = faces === 20 && rolls.length === 1 && total === 1;
+      totalLbl.style.color = onlyCrit ? '#ffe066' : onlyFail ? '#ff8888' : 'var(--gold)';
+    }, 720);
+  }
+
+  /* Pulsante lancia */
   var rollBtn = document.createElement('button');
   rollBtn.className = 'dice-roll-btn';
   rollBtn.innerHTML = '🎲 Lancia d' + state.diceType;
-  rollBtn.onclick = function() {
-    // Suono dadi
-    unlockAudio(function(){ _synthDiceRoll && _synthDiceRoll(); });
 
-    // Controlla se c'è una formula personalizzata
+  rollBtn.onclick = function() {
     var formula = formulaInput ? formulaInput.value.trim().toLowerCase() : '';
     if (formula) {
       var fMatch = formula.match(/^(\d*)d(\d+)([+-]\d+)?$/);
@@ -19692,13 +19864,8 @@ function renderDadi() {
           rolls.push(rv); total += rv;
         }
         total += mod;
-        var isCrit = faces === 20 && nDice === 1 && total === 20;
-        var isFail = faces === 20 && nDice === 1 && total === 1;
-        resultEl.className = 'dice-result-display' + (isCrit ? ' crit' : isFail ? ' fail' : '');
-        resultEl.textContent = total;
-        if (rolls.length > 1) resultEl.title = rolls.join('+') + (mod ? (mod > 0 ? '+'+mod : mod) : '') + ' = ' + total;
-        resultEl.classList.add('dice-anim');
-        setTimeout(function(){ resultEl.classList.remove('dice-anim'); }, 350);
+        var dispFaces = _DCP[faces] ? faces : 6;
+        _showRoll(rolls, dispFaces, total, mod);
         rollBtn.innerHTML = '🎲 Lancia';
         state.diceHistory.unshift({ value: total, diceType: faces, username: state.currentUser ? state.currentUser.username : '?', formula: formula });
         if (state.diceHistory.length > 20) state.diceHistory.pop();
@@ -19706,15 +19873,14 @@ function renderDadi() {
           _db.ref('diceRolls').push({ value: total, diceType: faces, username: state.currentUser.username, timestamp: firebase.database.ServerValue.TIMESTAMP });
         }
         updateDiceHistory(histList);
-        return; // evita il codice sotto
+        return;
       }
     }
 
     var dtype = state.diceType;
-    var result;
     var usaTrucco = isDM() && dtype === 20;
+    var result;
     if (usaTrucco) {
-      // Vantaggio: lancia due dadi, prende il maggiore
       var r1 = Math.floor(Math.random() * 20) + 1;
       var r2 = Math.floor(Math.random() * 20) + 1;
       result = Math.max(r1, r2);
@@ -19722,38 +19888,27 @@ function renderDadi() {
       result = Math.floor(Math.random() * dtype) + 1;
     }
 
+    _showRoll([result], dtype, result, 0);
+    rollBtn.innerHTML = '🎲 Lancia d' + dtype;
+
     var isCrit = dtype === 20 && result === 20;
     var isFail = dtype === 20 && result === 1;
-    resultEl.className = 'dice-result-display' + (isCrit ? ' crit' : isFail ? ' fail' : '');
-    resultEl.textContent = result;
-    resultEl.classList.add('dice-anim');
-    setTimeout(function(){ resultEl.classList.remove('dice-anim'); }, 350);
 
-    rollBtn.textContent = ''; rollBtn.innerHTML = '🎲 Lancia d' + dtype;
-
-    // Salva nello storico
     state.diceHistory.unshift({ value: result, diceType: dtype, username: state.currentUser ? state.currentUser.username : '?', trucco: usaTrucco });
     if (state.diceHistory.length > 20) state.diceHistory.pop();
 
-    // Notifica Firebase
     if (_db && state.currentUser) {
-      _db.ref('diceRolls').push({
-        value: result,
-        diceType: dtype,
-        username: state.currentUser.username,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      });
+      _db.ref('diceRolls').push({ value: result, diceType: dtype, username: state.currentUser.username, timestamp: firebase.database.ServerValue.TIMESTAMP });
     }
 
     updateDiceHistory(histList);
 
-    // Feedback visivo
     if (isCrit) notify('🌟 CRITICO! ' + state.currentUser.username + ' ha fatto 20!');
     if (isFail) notify('💀 FALLIMENTO CRITICO! ' + state.currentUser.username + ' ha fatto 1!');
   };
   diceBox.appendChild(rollBtn);
 
-  // Storico
+  /* Storico */
   var histSection = document.createElement('div');
   histSection.className = 'dice-history';
   var histTitle = document.createElement('div'); histTitle.className = 'dice-history-title'; histTitle.textContent = 'Ultimi Lanci';
@@ -19763,8 +19918,6 @@ function renderDadi() {
   histSection.appendChild(histList);
   diceBox.appendChild(histSection);
 
-  // Il listener diceRolls è già in setupRealtimeListeners — qui aggiorniamo solo la lista locale
-  // quando l'utente naviga sulla sezione dadi (i dati sono già in state.diceHistory)
   updateDiceHistory(histList);
 
   panel.appendChild(diceBox);
