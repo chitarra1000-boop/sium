@@ -5827,19 +5827,18 @@ var _mappaOwnerMap    = {}; // mapId → username proprietario (usato in modalit
 
 /* Restituisce il path Firebase base per le mappe dell'utente corrente (o di quello visualizzato). */
 function _mappaBasePath() {
-  if (isAdmin() && !_mappaViewAsUser) return 'state/mappa';
   if (_mappaViewAsUser === '__tutte__') {
     var mid = state.mappaActiveId;
     if (mid && _mappaOwnerMap[mid]) return 'users/' + _mappaOwnerMap[mid] + '/mappa';
     return 'state/mappa';
   }
+  /* Ogni utente (admin incluso) salva sotto il proprio username */
   var uid = _mappaViewAsUser || (_authUser && _authUser.uid) || (state.currentUser && state.currentUser.username);
   return uid ? 'users/' + uid + '/mappa' : 'state/mappa';
 }
 
 /* Restituisce il path Firebase per il worldbuilding di una mappa (segue _mappaViewAsUser). */
 function _wbPath(mapId) {
-  if (isAdmin() && !_mappaViewAsUser) return 'state/worldbuilding/' + mapId;
   if (_mappaViewAsUser === '__tutte__') {
     if (mapId && _mappaOwnerMap[mapId]) return 'users/' + _mappaOwnerMap[mapId] + '/worldbuilding/' + mapId;
     return 'state/worldbuilding/' + mapId;
@@ -5930,10 +5929,14 @@ function _attachMappaListener() {
 
   if (_mappaViewAsUser === '__tutte__') {
     // Modalità "Tutte le mappe": aggrega da tutti gli utenti con letture singole
-    var _tPaths = [{ path: 'state/mappa', owner: null }];
+    var _tPaths = [{ path: 'state/mappa', owner: null }]; // legacy
+    var _tSeen = {};
+    // Path personale dell'admin corrente
+    var _myUid = _authUser && _authUser.uid;
+    if (_myUid) { _tPaths.push({ path: 'users/' + _myUid + '/mappa', owner: _myUid }); _tSeen[_myUid] = true; }
     if (_remoteUsers && typeof _remoteUsers === 'object') {
       Object.keys(_remoteUsers).forEach(function(uid) {
-        _tPaths.push({ path: 'users/' + uid + '/mappa', owner: uid });
+        if (!_tSeen[uid]) { _tPaths.push({ path: 'users/' + uid + '/mappa', owner: uid }); _tSeen[uid] = true; }
       });
     }
     var _tDone = 0;
