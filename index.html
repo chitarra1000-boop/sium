@@ -19811,8 +19811,146 @@ var OVERLAY_DEFS = [
   { key:'associations', label:'Associazioni',  icon:'◈' }
 ];
 var _flagMarkers = {};
+var _secMapFid = null;
 
+/* ─────────────────────────────────────────────────────────────
+   VISTA MAPPA SECONDARIA  (pin invisibili stile AC Syndicate)
+───────────────────────────────────────────────────────────── */
+function _openSecondaryMapView(fid) {
+  _secMapFid = fid;
+  var f = state.mappaFlags[fid] || {};
+  var mapContainer = document.querySelector('.mappa-container');
+  if (!mapContainer) return;
 
+  /* rimuovi overlay precedente */
+  var old = document.getElementById('mappa-sec-overlay');
+  if (old) old.remove();
+
+  /* nascondi controlli DM e leaflet */
+  var dmCtrls = mapContainer.querySelector('.mappa-dm-controls');
+  if (dmCtrls) dmCtrls.style.display = 'none';
+  var lmap = document.getElementById('leaflet-map');
+  if (lmap) lmap.style.display = 'none';
+  var layerBar = mapContainer.querySelector('.mappa-layer-bar');
+  if (layerBar) layerBar.style.display = 'none';
+  /* chiudi anche il pannello laterale se aperto */
+  var infoP = document.querySelector('.mappa-info-panel');
+  if (infoP) infoP.classList.remove('open');
+
+  var overlay = document.createElement('div');
+  overlay.id = 'mappa-sec-overlay';
+  overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:500;background:#0c0702;display:flex;flex-direction:column;overflow:hidden;';
+
+  /* ── barra superiore ── */
+  var topBar = document.createElement('div');
+  topBar.style.cssText = 'display:flex;align-items:center;padding:0.45rem 0.8rem;background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(201,165,92,0.3);flex-shrink:0;';
+  var backBtn = document.createElement('button');
+  backBtn.className = 'mappa-btn mappa-btn-add-map';
+  backBtn.innerHTML = '← Torna alla Mappa';
+  backBtn.onclick = function() { _closeSecondaryMapView(); };
+  topBar.appendChild(backBtn);
+  overlay.appendChild(topBar);
+
+  /* ── corpo a 3 colonne ── */
+  var body = document.createElement('div');
+  body.style.cssText = 'flex:1;display:flex;overflow:hidden;min-height:0;';
+
+  /* SINISTRA: boss */
+  var leftCol = document.createElement('div');
+  leftCol.style.cssText = 'width:220px;flex-shrink:0;padding:1rem 0.75rem;background:rgba(10,6,2,0.9);border-right:1px solid rgba(201,165,92,0.18);overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem;';
+  if (f.bossVisibile && (f.bossNome || f.bossImmagine)) {
+    var bossCard = document.createElement('div');
+    bossCard.style.cssText = 'background:rgba(26,13,4,0.95);border:1px solid rgba(201,165,92,0.38);border-radius:7px;padding:0.8rem 0.6rem;text-align:center;';
+    var bcLabel = document.createElement('div');
+    bcLabel.style.cssText = 'font-family:\'Cinzel\',serif;font-size:8px;font-weight:700;letter-spacing:0.2em;color:rgba(201,165,92,0.55);text-transform:uppercase;margin-bottom:0.55rem;';
+    bcLabel.textContent = 'CAPO DELLA ZONA';
+    bossCard.appendChild(bcLabel);
+    if (f.bossImmagine) {
+      var bossImg = document.createElement('img');
+      bossImg.src = f.bossImmagine;
+      bossImg.style.cssText = 'width:110px;height:130px;object-fit:cover;border-radius:5px;border:1px solid rgba(201,165,92,0.4);display:block;margin:0 auto 0.55rem;';
+      bossCard.appendChild(bossImg);
+    } else {
+      var bossph = document.createElement('div');
+      bossph.style.cssText = 'width:110px;height:130px;background:rgba(40,22,6,0.6);border-radius:5px;border:1px solid rgba(201,165,92,0.25);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 0.55rem;';
+      bossph.textContent = '👤';
+      bossCard.appendChild(bossph);
+    }
+    if (f.bossNome) {
+      var bossNEl = document.createElement('div');
+      bossNEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:#f5d070;letter-spacing:0.06em;text-shadow:0 0 10px rgba(245,166,35,0.45);';
+      bossNEl.textContent = f.bossNome;
+      bossCard.appendChild(bossNEl);
+    }
+    if (f.bossTitolo) {
+      var bossTE = document.createElement('div');
+      bossTE.style.cssText = 'font-size:10px;color:var(--text-faint);font-style:italic;margin-top:0.25rem;';
+      bossTE.textContent = f.bossTitolo;
+      bossCard.appendChild(bossTE);
+    }
+    leftCol.appendChild(bossCard);
+  } else if (isDM()) {
+    var bossHint = document.createElement('div');
+    bossHint.style.cssText = 'font-size:10px;color:rgba(201,165,92,0.25);font-style:italic;padding:0.5rem;text-align:center;';
+    bossHint.textContent = 'Boss non configurato o nascosto';
+    leftCol.appendChild(bossHint);
+  }
+  body.appendChild(leftCol);
+
+  /* CENTRO: immagine mappa secondaria */
+  var centerCol = document.createElement('div');
+  centerCol.style.cssText = 'flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#0a0602;';
+  if (f.mappaSec) {
+    var secImg = document.createElement('img');
+    secImg.src = f.mappaSec;
+    secImg.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+    centerCol.appendChild(secImg);
+  } else {
+    var noSecHint = document.createElement('div');
+    noSecHint.style.cssText = 'text-align:center;color:rgba(201,165,92,0.28);';
+    noSecHint.innerHTML = '<div style="font-size:48px;margin-bottom:0.6rem;">🗺</div>' +
+      '<div style="font-family:\'Cinzel\',serif;font-size:14px;letter-spacing:0.1em;">Nessuna mappa caricata</div>' +
+      (isDM() ? '<div style="font-size:11px;margin-top:0.4rem;opacity:0.7;">Modifica il pin per caricare la mappa della zona</div>' : '');
+    centerCol.appendChild(noSecHint);
+  }
+  /* nome luogo in basso */
+  if (f.nome) {
+    var nameOv = document.createElement('div');
+    nameOv.style.cssText = 'position:absolute;bottom:0;left:0;right:0;padding:1.2rem 2rem 0.9rem;background:linear-gradient(to top,rgba(0,0,0,0.88) 0%,transparent 100%);pointer-events:none;text-align:center;';
+    var nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:clamp(18px,3vw,30px);font-weight:900;letter-spacing:0.2em;color:#f5d070;text-shadow:0 2px 14px rgba(0,0,0,0.95),0 0 24px rgba(245,166,35,0.5);text-transform:uppercase;';
+    nameEl.textContent = f.nome;
+    nameOv.appendChild(nameEl);
+    centerCol.appendChild(nameOv);
+  }
+  body.appendChild(centerCol);
+
+  /* DESTRA: pannello info */
+  var rightCol = document.createElement('div');
+  rightCol.style.cssText = 'width:290px;flex-shrink:0;background:rgba(12,7,2,0.96);border-left:1px solid rgba(201,165,92,0.18);overflow-y:auto;';
+  var fakePanel = document.createElement('div');
+  fakePanel.innerHTML = '<div class="mappa-info-header"><span class="mappa-info-title">📜 Scheda Luogo</span></div><div class="mappa-info-body"></div>';
+  rightCol.appendChild(fakePanel);
+  renderMappaFlagPanel(fakePanel, fid);
+  body.appendChild(rightCol);
+
+  overlay.appendChild(body);
+  mapContainer.appendChild(overlay);
+}
+
+function _closeSecondaryMapView() {
+  _secMapFid = null;
+  var overlay = document.getElementById('mappa-sec-overlay');
+  if (overlay) overlay.remove();
+  var mapContainer = document.querySelector('.mappa-container');
+  if (!mapContainer) return;
+  var dmCtrls = mapContainer.querySelector('.mappa-dm-controls');
+  if (dmCtrls) dmCtrls.style.display = '';
+  var lmap = document.getElementById('leaflet-map');
+  if (lmap) lmap.style.display = '';
+  var layerBar = mapContainer.querySelector('.mappa-layer-bar');
+  if (layerBar) layerBar.style.display = '';
+}
 
 function refreshMappaFlags() {
   if (!_leafletMap || !_flagLayer) return;
@@ -19821,33 +19959,52 @@ function refreshMappaFlags() {
   Object.keys(state.mappaFlags || {}).forEach(function(fid) {
     var f = state.mappaFlags[fid];
     if (f && typeof f.lat === 'number' && typeof f.lng === 'number') {
+
+      /* ── PIN INVISIBILE ── */
+      if (f.visibile === false) {
+        if (!isDM()) return; /* i giocatori non vedono nulla */
+        /* Ghost marker: visibile solo al DM, semitrasparente */
+        var ghostIcon = L.divIcon({
+          className: '',
+          html: '<div title="Pin invisibile" style="width:36px;height:40px;display:flex;align-items:flex-end;justify-content:center;opacity:0.40;filter:grayscale(0.6) drop-shadow(0 2px 5px rgba(0,0,0,0.7));">' +
+                '<svg viewBox="0 0 36 40" width="36" height="40" xmlns="http://www.w3.org/2000/svg">' +
+                '<rect x="17" y="16" width="2.5" height="22" rx="1.2" fill="#555"/>' +
+                '<circle cx="18" cy="13" r="12" fill="#333" stroke="#777" stroke-width="1.5" stroke-dasharray="3,2"/>' +
+                '<text x="18" y="18" text-anchor="middle" font-size="13" fill="#aaa">👁</text>' +
+                '</svg></div>',
+          iconSize: [36, 40], iconAnchor: [18, 38]
+        });
+        var ghostMarker = L.marker([f.lat, f.lng], {icon: ghostIcon});
+        (function(fid_) {
+          ghostMarker.on('click', function() { _openSecondaryMapView(fid_); });
+        })(fid);
+        ghostMarker.addTo(_flagLayer);
+        _flagMarkers[fid] = ghostMarker;
+        return;
+      }
+
+      /* ── PIN NORMALE ── */
       var flagIcon = L.divIcon({
         className: '',
         html: '<div style="width:36px;height:40px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.8));">' +
               '<svg viewBox="0 0 36 40" width="36" height="40" xmlns="http://www.w3.org/2000/svg">' +
-              '<!-- stelo -->' +
               '<rect x="17" y="16" width="2.5" height="22" rx="1.2" fill="#5a3010" stroke="#3a1e08" stroke-width="0.5"/>' +
-              '<!-- moneta corpo -->' +
               '<circle cx="18" cy="13" r="12" fill="url(#cg)" stroke="#7a4e08" stroke-width="1.2"/>' +
-              '<!-- bordo inciso -->' +
               '<circle cx="18" cy="13" r="10" fill="none" stroke="#c8860a" stroke-width="0.7" stroke-dasharray="2,1.2"/>' +
-              '<!-- brillantezza -->' +
               '<ellipse cx="14" cy="9" rx="4" ry="2.5" fill="rgba(255,240,160,0.35)" transform="rotate(-20,14,9)"/>' +
-              '<!-- ✦ centro -->' +
               '<text x="18" y="17.5" text-anchor="middle" font-size="10" font-family="serif" fill="#7a4500" font-weight="bold">✦</text>' +
               '<defs><radialGradient id="cg" cx="38%" cy="32%" r="62%"><stop offset="0%" stop-color="#ffe87a"/><stop offset="45%" stop-color="#d4a820"/><stop offset="100%" stop-color="#8b5e08"/></radialGradient></defs>' +
               '</svg></div>',
         iconSize: [36, 40], iconAnchor: [18, 38]
       });
       var marker = L.marker([f.lat, f.lng], {icon: flagIcon});
-      marker.on('click', function() {
-        state.mappaSelectedFlag = fid;
-        var panel = document.querySelector('.mappa-info-panel');
-        if (panel) {
-          panel.classList.add('open');
-          renderMappaFlagPanel(panel, fid);
-        }
-      });
+      (function(fid_) {
+        marker.on('click', function() {
+          state.mappaSelectedFlag = fid_;
+          var panel = document.querySelector('.mappa-info-panel');
+          if (panel) { panel.classList.add('open'); renderMappaFlagPanel(panel, fid_); }
+        });
+      })(fid);
       marker.addTo(_flagLayer);
       _flagMarkers[fid] = marker;
     }
@@ -19874,6 +20031,26 @@ function renderMappaFlagPanel(panel, fid) {
     };
     nomeWrap.appendChild(nomeLbl); nomeWrap.appendChild(nomeInp); body.appendChild(nomeWrap);
 
+    /* ── Toggle PIN INVISIBILE ── */
+    var visRow = document.createElement('div');
+    visRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0 0.45rem;border-bottom:1px solid rgba(201,165,92,0.12);margin-bottom:0.1rem;';
+    var visLbl = document.createElement('span');
+    visLbl.className = 'mappa-field-lbl';
+    visLbl.style.marginBottom = '0';
+    visLbl.textContent = '🕵️ Pin Invisibile (apre mappa zona)';
+    var visChk = document.createElement('input');
+    visChk.type = 'checkbox';
+    visChk.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:#f5a623;flex-shrink:0;';
+    visChk.checked = f.visibile === false;
+    visChk.onchange = function() {
+      if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+      state.mappaFlags[fid].visibile = this.checked ? false : true;
+      _db && _db.ref(_mappaFlagPath(fid) + '/visibile').set(this.checked ? false : true);
+      refreshMappaFlags();
+      renderMappaFlagPanel(panel, fid);
+    };
+    visRow.appendChild(visLbl); visRow.appendChild(visChk);
+    body.appendChild(visRow);
 
   // Gradimento → slider reputazione
   var gradWrap = document.createElement('div');
@@ -20064,6 +20241,150 @@ function renderMappaFlagPanel(panel, fid) {
     body.appendChild(makeCitySection('Luoghi di Interesse', '🏛', 'luoghi'));
     body.appendChild(makeCitySection('NPC Chiave', '👤', 'npcChiave'));
     body.appendChild(makeCitySection('Loot & Segreti', '💎', 'lootSegreti'));
+
+    /* ── SEZIONE MAPPA SECONDARIA (solo se pin invisibile) ── */
+    if (f.visibile === false) {
+      var secSec = document.createElement('div');
+      secSec.style.cssText = 'border:1px solid rgba(201,165,92,0.22);border-radius:6px;padding:0.7rem 0.65rem;margin:0.6rem 0;background:rgba(16,8,2,0.55);';
+
+      var secTitle = document.createElement('div');
+      secTitle.style.cssText = 'font-family:\'Cinzel\',serif;font-size:10px;font-weight:700;color:var(--gold-bright);letter-spacing:0.14em;margin-bottom:0.65rem;';
+      secTitle.textContent = '🗺 MAPPA SECONDARIA';
+      secSec.appendChild(secTitle);
+
+      /* immagine mappa zona */
+      var secImgLbl = document.createElement('span'); secImgLbl.className = 'mappa-field-lbl'; secImgLbl.textContent = 'Immagine mappa zona';
+      secSec.appendChild(secImgLbl);
+      if (f.mappaSec) {
+        var secPrev = document.createElement('img');
+        secPrev.src = f.mappaSec;
+        secPrev.style.cssText = 'width:100%;max-height:70px;object-fit:cover;border-radius:4px;margin-bottom:0.4rem;border:1px solid rgba(201,165,92,0.25);';
+        secSec.appendChild(secPrev);
+      }
+      var secBtns = document.createElement('div');
+      secBtns.style.cssText = 'display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.65rem;';
+      var secFileBt = document.createElement('button'); secFileBt.className = 'mappa-btn';
+      secFileBt.textContent = f.mappaSec ? '📁 Cambia' : '📁 Carica File';
+      secFileBt.onclick = function() {
+        var inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
+        inp.onchange = function(e) {
+          var file = e.target.files[0]; if (!file) return;
+          var rd = new FileReader();
+          rd.onload = function(ev) {
+            if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+            state.mappaFlags[fid].mappaSec = ev.target.result;
+            _db && _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(ev.target.result);
+            renderMappaFlagPanel(panel, fid);
+          };
+          rd.readAsDataURL(file);
+        };
+        inp.click();
+      };
+      secBtns.appendChild(secFileBt);
+      var secUrlBt = document.createElement('button'); secUrlBt.className = 'mappa-btn';
+      secUrlBt.textContent = '🔗 URL';
+      secUrlBt.onclick = function() {
+        var url = prompt('URL immagine mappa zona:');
+        if (url) {
+          if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+          state.mappaFlags[fid].mappaSec = url;
+          _db && _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(url);
+          renderMappaFlagPanel(panel, fid);
+        }
+      };
+      secBtns.appendChild(secUrlBt);
+      secSec.appendChild(secBtns);
+
+      /* boss */
+      var bossLbl2 = document.createElement('span'); bossLbl2.className = 'mappa-field-lbl'; bossLbl2.textContent = '👤 Nome Boss';
+      secSec.appendChild(bossLbl2);
+      var bossNInp = document.createElement('input'); bossNInp.type='text'; bossNInp.className='mappa-field-input';
+      bossNInp.value = f.bossNome || ''; bossNInp.placeholder='Nome del boss...';
+      bossNInp.oninput = function() {
+        if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+        state.mappaFlags[fid].bossNome = this.value;
+        _db && _db.ref(_mappaFlagPath(fid)+'/bossNome').set(this.value);
+      };
+      secSec.appendChild(bossNInp);
+
+      var bossTInp = document.createElement('input'); bossTInp.type='text'; bossTInp.className='mappa-field-input';
+      bossTInp.value = f.bossTitolo || ''; bossTInp.placeholder='Titolo/ruolo del boss (opzionale)...';
+      bossTInp.style.marginTop = '0.3rem';
+      bossTInp.oninput = function() {
+        if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+        state.mappaFlags[fid].bossTitolo = this.value;
+        _db && _db.ref(_mappaFlagPath(fid)+'/bossTitolo').set(this.value);
+      };
+      secSec.appendChild(bossTInp);
+
+      /* foto boss */
+      var bossImgLbl2 = document.createElement('span'); bossImgLbl2.className = 'mappa-field-lbl'; bossImgLbl2.style.marginTop='0.45rem'; bossImgLbl2.textContent = 'Foto Boss';
+      secSec.appendChild(bossImgLbl2);
+      if (f.bossImmagine) {
+        var bossImgPrev = document.createElement('img');
+        bossImgPrev.src = f.bossImmagine;
+        bossImgPrev.style.cssText = 'width:70px;height:85px;object-fit:cover;border-radius:4px;border:1px solid rgba(201,165,92,0.3);margin-bottom:0.3rem;display:block;';
+        secSec.appendChild(bossImgPrev);
+      }
+      var bossImgBtns2 = document.createElement('div');
+      bossImgBtns2.style.cssText = 'display:flex;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.5rem;';
+      var biFB = document.createElement('button'); biFB.className='mappa-btn';
+      biFB.textContent = f.bossImmagine ? '📁 Cambia Foto' : '📁 Foto (File)';
+      biFB.onclick = function() {
+        var inp = document.createElement('input'); inp.type='file'; inp.accept='image/*';
+        inp.onchange = function(e) {
+          var file = e.target.files[0]; if (!file) return;
+          var rd = new FileReader();
+          rd.onload = function(ev) {
+            if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+            state.mappaFlags[fid].bossImmagine = ev.target.result;
+            _db && _db.ref(_mappaFlagPath(fid)+'/bossImmagine').set(ev.target.result);
+            renderMappaFlagPanel(panel, fid);
+          };
+          rd.readAsDataURL(file);
+        };
+        inp.click();
+      };
+      bossImgBtns2.appendChild(biFB);
+      var biUB = document.createElement('button'); biUB.className='mappa-btn';
+      biUB.textContent = '🔗 URL';
+      biUB.onclick = function() {
+        var url = prompt('URL foto boss:');
+        if (url) {
+          if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+          state.mappaFlags[fid].bossImmagine = url;
+          _db && _db.ref(_mappaFlagPath(fid)+'/bossImmagine').set(url);
+          renderMappaFlagPanel(panel, fid);
+        }
+      };
+      bossImgBtns2.appendChild(biUB);
+      secSec.appendChild(bossImgBtns2);
+
+      /* toggle mostra boss */
+      var bvRow = document.createElement('div');
+      bvRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:0.35rem 0;border-top:1px solid rgba(201,165,92,0.1);margin-top:0.1rem;';
+      var bvLbl = document.createElement('span'); bvLbl.className='mappa-field-lbl'; bvLbl.style.marginBottom='0';
+      bvLbl.textContent = '👁 Mostra riquadro boss';
+      var bvChk = document.createElement('input'); bvChk.type='checkbox';
+      bvChk.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:#f5a623;flex-shrink:0;';
+      bvChk.checked = f.bossVisibile === true;
+      bvChk.onchange = function() {
+        if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+        state.mappaFlags[fid].bossVisibile = this.checked;
+        _db && _db.ref(_mappaFlagPath(fid)+'/bossVisibile').set(this.checked);
+      };
+      bvRow.appendChild(bvLbl); bvRow.appendChild(bvChk);
+      secSec.appendChild(bvRow);
+
+      /* pulsante apri vista */
+      var openSecBt = document.createElement('button');
+      openSecBt.style.cssText = 'width:100%;margin-top:0.55rem;padding:0.45rem;background:rgba(201,165,92,0.14);border:1px solid rgba(201,165,92,0.45);color:var(--gold);font-family:\'Cinzel\',serif;font-size:10px;font-weight:700;letter-spacing:0.1em;border-radius:4px;cursor:pointer;';
+      openSecBt.textContent = '🗺 APRI VISTA MAPPA ZONA';
+      openSecBt.onclick = function() { _openSecondaryMapView(fid); };
+      secSec.appendChild(openSecBt);
+
+      body.appendChild(secSec);
+    }
 
     // Elimina flag
     var delBtn = document.createElement('button');
