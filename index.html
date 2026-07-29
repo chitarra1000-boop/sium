@@ -9166,148 +9166,226 @@ var _coinsOpen = false;
 
 function _renderShopPanel(container) {
   container.innerHTML = '';
-  var rarityColors = { 'Comune': '#aaa', 'Non comune': '#5fa', 'Raro': '#48f', 'Molto raro': '#a5f', 'Leggendario': '#fa5', 'Artefatto': '#f55' };
-  var TIPI_NEGOZIO = [
-    { id:'generale', label:'Generale' },
-    { id:'armi', label:'Armi & Armature' },
-    { id:'magia', label:'Oggetti Magici' },
-    { id:'pozioni', label:'Pozioni & Erbe' },
-    { id:'lusso', label:'Oggetti di Lusso' }
-  ];
-  var livelli = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+  var RC = { 'Comune':'#9a9a9a','Non comune':'#40c060','Raro':'#4488ff','Molto raro':'#aa44ff','Leggendario':'#ffa020','Artefatto':'#ff4444','Divino':'#ffe060','Unico':'#ff80c0' };
 
-  var hdr = document.createElement('div');
-  hdr.style.cssText = 'font-family:\'Cinzel\',serif;font-size:14px;font-weight:700;color:var(--gold-bright);letter-spacing:0.12em;margin-bottom:0.75rem;';
-  hdr.textContent = '🏪 Generatore Negozio';
-  container.appendChild(hdr);
+  /* ── Illustrazione SVG baracchino ── */
+  var svgWrap = document.createElement('div');
+  svgWrap.style.cssText = 'width:100%;overflow:hidden;border-radius:10px 10px 0 0;background:#1a0e04;';
+  svgWrap.innerHTML = '<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">' +
+    /* cielo e pavimento */
+    '<rect width="600" height="220" fill="#12080200"/>' +
+    /* pali laterali */
+    '<rect x="22" y="38" width="20" height="178" rx="5" fill="#3d2208"/><rect x="558" y="38" width="20" height="178" rx="5" fill="#3d2208"/>' +
+    /* dorso banco */
+    '<rect x="42" y="90" width="516" height="92" rx="4" fill="#2a1506"/>' +
+    /* tendone principale – strisce alternanti */
+    '<clipPath id="awClip"><path d="M20 34 H580 V90 Q560 102 540 90 Q520 78 500 90 Q480 102 460 90 Q440 78 420 90 Q400 102 380 90 Q360 78 340 90 Q320 102 300 90 Q280 78 260 90 Q240 102 220 90 Q200 78 180 90 Q160 102 140 90 Q120 78 100 90 Q80 102 60 90 Q40 78 20 90 Z"/></clipPath>' +
+    '<rect x="20" y="34" width="560" height="56" fill="#7a3a0a" clip-path="url(#awClip)"/>' +
+    '<rect x="20" y="34" width="560" height="56" fill="url(#awStripes)" clip-path="url(#awClip)"/>' +
+    '<defs><pattern id="awStripes" x="0" y="0" width="60" height="56" patternUnits="userSpaceOnUse"><rect width="30" height="56" fill="#c9853a"/><rect x="30" width="30" height="56" fill="#7a3a0a"/></pattern></defs>' +
+    /* bordo inferiore tendone ondulato */
+    '<path d="M20 90 Q40 102 60 90 Q80 78 100 90 Q120 102 140 90 Q160 78 180 90 Q200 102 220 90 Q240 78 260 90 Q280 102 300 90 Q320 78 340 90 Q360 102 380 90 Q400 78 420 90 Q440 102 460 90 Q480 78 500 90 Q520 102 540 90 Q560 78 580 90 L580 96 Q560 108 540 96 Q520 84 500 96 Q480 108 460 96 Q440 84 420 96 Q400 108 380 96 Q360 84 340 96 Q320 108 300 96 Q280 84 260 96 Q240 108 220 96 Q200 84 180 96 Q160 108 140 96 Q120 84 100 96 Q80 108 60 96 Q40 84 20 96 Z" fill="#5a2808"/>' +
+    /* corda in alto */
+    '<line x1="20" y1="34" x2="580" y2="34" stroke="#5c3a1a" stroke-width="4"/>' +
+    /* insegna appesa */
+    '<line x1="258" y1="34" x2="252" y2="62" stroke="#5c3a1a" stroke-width="2"/><line x1="342" y1="34" x2="348" y2="62" stroke="#5c3a1a" stroke-width="2"/>' +
+    '<rect x="242" y="58" width="116" height="32" rx="5" fill="#4a2a08" stroke="#c9a55c" stroke-width="1.5"/>' +
+    '<text x="300" y="78" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#f0d070" letter-spacing="2">IL MERCANTE</text>' +
+    /* bancone */
+    '<rect x="42" y="158" width="516" height="14" rx="3" fill="#6b3d12"/><rect x="42" y="170" width="516" height="42" rx="3" fill="#4a2808"/><rect x="62" y="160" width="476" height="8" rx="2" fill="#8b5518"/>' +
+    /* pozione viola */
+    '<ellipse cx="120" cy="160" rx="14" ry="5" fill="#1a0a28"/><rect x="107" y="122" width="26" height="38" rx="10" fill="#7030c0"/><ellipse cx="120" cy="122" rx="13" ry="5" fill="#9050e0"/><rect x="116" y="114" width="8" height="10" rx="3" fill="#4a2808"/><ellipse cx="120" cy="160" rx="14" ry="3" fill="#50204080"/>' +
+    /* pozione rossa */
+    '<ellipse cx="165" cy="160" rx="14" ry="5" fill="#200808"/><rect x="152" y="124" width="26" height="36" rx="10" fill="#c02828"/><ellipse cx="165" cy="124" rx="13" ry="5" fill="#e04040"/><rect x="161" y="116" width="8" height="10" rx="3" fill="#4a2808"/>' +
+    /* pozione verde */
+    '<ellipse cx="210" cy="160" rx="12" ry="4" fill="#082008"/><rect x="199" y="128" width="22" height="32" rx="9" fill="#208020"/><ellipse cx="210" cy="128" rx="11" ry="4" fill="#30a030"/><rect x="207" y="121" width="6" height="9" rx="2" fill="#4a2808"/>' +
+    /* rotolo */
+    '<rect x="258" y="132" width="58" height="28" rx="3" fill="#e8d5a0"/><ellipse cx="258" cy="146" rx="8" ry="14" fill="#c8a860"/><ellipse cx="316" cy="146" rx="8" ry="14" fill="#c8a860"/><line x1="268" y1="138" x2="306" y2="138" stroke="#7a5030" stroke-width="1.2"/><line x1="268" y1="143" x2="306" y2="143" stroke="#7a5030" stroke-width="1.2"/><line x1="268" y1="148" x2="306" y2="148" stroke="#7a5030" stroke-width="1.2"/><line x1="268" y1="153" x2="306" y2="153" stroke="#7a5030" stroke-width="1.2"/>' +
+    /* scrigno */
+    '<rect x="360" y="126" width="60" height="34" rx="5" fill="#5c3a1a"/><rect x="360" y="126" width="60" height="13" rx="5" fill="#7a5030"/><rect x="382" y="121" width="16" height="9" rx="3" fill="#c9a55c"/><circle cx="390" cy="125" r="3" fill="#f0d070"/>' +
+    /* spada */
+    '<rect x="466" y="100" width="7" height="60" rx="2" fill="#c0c8d4"/><rect x="450" y="126" width="40" height="6" rx="2" fill="#c9a55c"/><ellipse cx="469" cy="100" rx="6" ry="8" fill="#e0d090"/><rect x="466" y="156" width="7" height="12" rx="3" fill="#9a7040"/>' +
+    /* gemma */
+    '<polygon points="528,120 545,130 538,148 518,148 511,130" fill="#30a0e8" stroke="#60c8ff" stroke-width="1.5"/><polygon points="528,120 545,130 536,128 522,128" fill="#60c8ff" opacity="0.6"/>' +
+    /* lanterna sx */
+    '<line x1="110" y1="34" x2="110" y2="66" stroke="#5c3a1a" stroke-width="2"/><rect x="100" y="66" width="20" height="28" rx="4" fill="#2a1506" stroke="#6b4c23" stroke-width="1"/><rect x="103" y="69" width="14" height="22" rx="2" fill="rgba(255,180,40,0.18)"/><circle cx="110" cy="80" r="6" fill="rgba(255,180,40,0.55)"/><ellipse cx="110" cy="94" rx="10" ry="3" fill="#2a1506"/>' +
+    /* lanterna dx */
+    '<line x1="490" y1="34" x2="490" y2="66" stroke="#5c3a1a" stroke-width="2"/><rect x="480" y="66" width="20" height="28" rx="4" fill="#2a1506" stroke="#6b4c23" stroke-width="1"/><rect x="483" y="69" width="14" height="22" rx="2" fill="rgba(255,180,40,0.18)"/><circle cx="490" cy="80" r="6" fill="rgba(255,180,40,0.55)"/><ellipse cx="490" cy="94" rx="10" ry="3" fill="#2a1506"/>' +
+    /* sfondo ombre */
+    '<rect x="42" y="90" width="516" height="68" fill="rgba(0,0,0,0.18)"/>' +
+  '</svg>';
+  container.appendChild(svgWrap);
 
-  var tipoRow = document.createElement('div');
-  tipoRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.5rem;';
-  TIPI_NEGOZIO.forEach(function(t) {
+  /* ── Controlli sotto il baracchino ── */
+  var ctrl = document.createElement('div');
+  ctrl.style.cssText = 'padding:1.1rem 1.4rem;background:rgba(30,15,4,0.92);border:1px solid rgba(201,165,92,0.3);border-top:none;border-radius:0 0 10px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;';
+
+  /* Livello party — pills */
+  var lvlLabel = document.createElement('span');
+  lvlLabel.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;letter-spacing:0.1em;color:rgba(201,165,92,0.65);white-space:nowrap;';
+  lvlLabel.textContent = 'LIVELLO PARTY:';
+  ctrl.appendChild(lvlLabel);
+
+  var lvlBands = [{label:'1–5', min:1, max:5},{label:'6–10', min:6, max:10},{label:'11–15', min:11, max:15},{label:'16–20', min:16, max:20}];
+  var curLvl = state.shopFilter.livello || 5;
+  lvlBands.forEach(function(b) {
+    var isA = curLvl >= b.min && curLvl <= b.max;
     var btn = document.createElement('button');
-    var isA = state.shopFilter.tipo === t.id;
-    btn.textContent = t.label;
-    btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:10px;padding:0.2rem 0.6rem;border-radius:12px;cursor:pointer;border:1px solid '+(isA?'var(--gold)':'var(--border-subtle)')+';background:'+(isA?'rgba(201,165,92,0.2)':'var(--bg-card)')+';color:'+(isA?'var(--gold-bright)':'var(--text-faint)')+';';
-    btn.onclick = function(){ state.shopFilter.tipo = t.id; _renderShopPanel(container); };
-    tipoRow.appendChild(btn);
+    btn.textContent = b.label;
+    btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;font-weight:700;padding:0.3rem 0.85rem;border-radius:20px;cursor:pointer;transition:all 0.15s;' +
+      'border:1.5px solid '+(isA?'#f5a623':'rgba(201,165,92,0.3)')+';' +
+      'background:'+(isA?'rgba(245,166,35,0.2)':'rgba(18,10,2,0.7)')+';' +
+      'color:'+(isA?'#f5c842':'rgba(201,165,92,0.55)')+';' +
+      'box-shadow:'+(isA?'0 0 8px rgba(245,166,35,0.3)':'none')+';';
+    btn.onclick = function() {
+      state.shopFilter.livello = Math.round((b.min + b.max) / 2);
+      _renderShopPanel(container);
+    };
+    ctrl.appendChild(btn);
   });
-  container.appendChild(tipoRow);
 
-  var lvlRow = document.createElement('div');
-  lvlRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;';
-  var lvlLbl = document.createElement('span');
-  lvlLbl.style.cssText = 'font-size:11px;color:var(--text-faint);white-space:nowrap;';
-  lvlLbl.textContent = 'Livello party:';
-  var lvlSel = document.createElement('select');
-  lvlSel.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-size:12px;padding:0.2rem 0.4rem;border-radius:3px;';
-  livelli.forEach(function(l){ var o = document.createElement('option'); o.value = l; o.textContent = l; if (l === state.shopFilter.livello) o.selected = true; lvlSel.appendChild(o); });
-  lvlSel.onchange = function(){ state.shopFilter.livello = parseInt(lvlSel.value); };
-  lvlRow.appendChild(lvlLbl); lvlRow.appendChild(lvlSel);
-  container.appendChild(lvlRow);
-
+  /* Pulsante genera */
   var genBtn = document.createElement('button');
-  genBtn.style.cssText = 'width:100%;padding:0.5rem;background:rgba(201,165,92,0.15);border:1.5px solid var(--gold);color:var(--gold-bright);font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;letter-spacing:0.1em;border-radius:5px;cursor:pointer;margin-bottom:0.75rem;';
-  genBtn.textContent = '✨ Genera Inventario';
-  container.appendChild(genBtn);
+  genBtn.style.cssText = 'margin-left:auto;font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;letter-spacing:0.1em;padding:0.5rem 1.6rem;border-radius:6px;cursor:pointer;background:rgba(201,165,92,0.18);border:1.5px solid #f5a623;color:#f5c842;box-shadow:0 0 12px rgba(245,166,35,0.2);transition:all 0.15s;';
+  genBtn.textContent = '✨ Apri il Negozio';
+  genBtn.onmouseenter = function(){ genBtn.style.background='rgba(201,165,92,0.3)'; };
+  genBtn.onmouseleave = function(){ genBtn.style.background='rgba(201,165,92,0.18)'; };
+  ctrl.appendChild(genBtn);
+  container.appendChild(ctrl);
 
+  /* ── Lista oggetti generati ── */
   var listEl = document.createElement('div');
-  listEl.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;max-height:320px;overflow-y:auto;';
+  listEl.style.cssText = 'margin-top:0.75rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0.55rem;';
   container.appendChild(listEl);
 
-  genBtn.onclick = function(){ _generateShop(listEl, rarityColors); };
+  genBtn.onclick = function(){ _generateShop(listEl, RC); };
 }
 
-function _generateShop(listEl, rarityColors) {
+function _generateShop(listEl, RC) {
   listEl.innerHTML = '';
-  var lvl = state.shopFilter.livello;
-  var tipo = state.shopFilter.tipo;
+  var lvl = state.shopFilter.livello || 5;
 
-  var weights = { 'Comune': 60, 'Non comune': 25, 'Raro': 10, 'Molto raro': 4, 'Leggendario': 1 };
-  if (lvl >= 5)  { weights['Non comune'] = 30; weights['Comune'] = 45; }
-  if (lvl >= 10) { weights['Raro'] = 20; weights['Non comune'] = 30; weights['Comune'] = 35; }
-  if (lvl >= 15) { weights['Molto raro'] = 12; weights['Raro'] = 25; weights['Non comune'] = 30; }
-  if (lvl >= 17) { weights['Leggendario'] = 5; weights['Molto raro'] = 18; }
+  /* Pesi rarità per livello — include Leggendario, Divino, Unico ad alto livello */
+  var W = { 'Comune':55,'Non comune':25,'Raro':12,'Molto raro':5,'Leggendario':2,'Artefatto':0,'Divino':0,'Unico':1 };
+  if (lvl >= 6)  { W['Non comune']=28; W['Comune']=48; W['Raro']=14; }
+  if (lvl >= 10) { W['Raro']=20; W['Non comune']=28; W['Comune']=36; W['Molto raro']=10; W['Leggendario']=4; W['Unico']=2; }
+  if (lvl >= 13) { W['Molto raro']=16; W['Raro']=22; W['Non comune']=24; W['Comune']=24; W['Leggendario']=8; W['Unico']=4; W['Divino']=2; }
+  if (lvl >= 16) { W['Leggendario']=14; W['Molto raro']=20; W['Raro']=20; W['Non comune']=18; W['Comune']=14; W['Unico']=7; W['Divino']=5; W['Artefatto']=2; }
+  if (lvl >= 19) { W['Leggendario']=18; W['Molto raro']=18; W['Unico']=10; W['Divino']=10; W['Artefatto']=5; W['Comune']=10; W['Non comune']=14; W['Raro']=15; }
+
+  /* Pool base + extra leggendari/divini/unici */
+  var extra = [
+    {nome:'Torcia',tipo:'Equipaggiamento',rarita:'Comune',prezzo:1,valuta:'mr',descrizione:'Illumina 6m per 1 ora.'},
+    {nome:'Kit da guaritore',tipo:'Equipaggiamento',rarita:'Comune',prezzo:5,valuta:'mo'},
+    {nome:'Pozione di Guarigione',tipo:'Pozione',rarita:'Comune',prezzo:50,valuta:'mo',descrizione:'Recupera 2d4+2 PF.'},
+    {nome:'Pozione di Guarigione Maggiore',tipo:'Pozione',rarita:'Non comune',prezzo:300,valuta:'mo',descrizione:'Recupera 4d4+4 PF.'},
+    {nome:'Pozione di Guarigione Suprema',tipo:'Pozione',rarita:'Molto raro',prezzo:1350,valuta:'mo',descrizione:'Recupera 10d4+20 PF.'},
+    {nome:'Pozione di Invisibilità',tipo:'Pozione',rarita:'Molto raro',prezzo:180,valuta:'mo'},
+    {nome:'Pozione di Velocità',tipo:'Pozione',rarita:'Molto raro',prezzo:400,valuta:'mo'},
+    {nome:'Pozione di Volare',tipo:'Pozione',rarita:'Molto raro',prezzo:500,valuta:'mo'},
+    {nome:'Antitossina',tipo:'Pozione',rarita:'Comune',prezzo:50,valuta:'mo'},
+    {nome:'Spada lunga +1',tipo:'Arma magica',rarita:'Non comune',prezzo:500,valuta:'mo'},
+    {nome:'Spada lunga +2',tipo:'Arma magica',rarita:'Raro',prezzo:4000,valuta:'mo'},
+    {nome:'Spada lunga +3',tipo:'Arma magica',rarita:'Molto raro',prezzo:24000,valuta:'mo'},
+    {nome:'Cotta di maglia +1',tipo:'Armatura magica',rarita:'Raro',prezzo:1500,valuta:'mo'},
+    {nome:'Armatura a piastre +2',tipo:'Armatura magica',rarita:'Molto raro',prezzo:30000,valuta:'mo'},
+    {nome:'Arco corto +1',tipo:'Arma magica',rarita:'Non comune',prezzo:500,valuta:'mo'},
+    {nome:'Lancia del Tuono',tipo:'Arma magica',rarita:'Raro',prezzo:6000,valuta:'mo',descrizione:'1/giorno: colpo di fulmine 3d6 (CD DES 14).'},
+    {nome:'Spada Fiammeggiante',tipo:'Arma magica',rarita:'Raro',prezzo:8000,valuta:'mo',descrizione:'+2d6 fuoco ai colpi. Può essere accesa/spenta come azione bonus.'},
+    {nome:'Spada dei Nove Inferni',tipo:'Arma magica',rarita:'Molto raro',prezzo:45000,valuta:'mo',descrizione:'+2, 2d6 danni necrotici extra.'},
+    {nome:'Occhio di Vecna',tipo:'Artefatto',rarita:'Artefatto',prezzo:0,valuta:'mo',descrizione:'Artefatto leggendario. Sostituisce un occhio reale; poteri divinatori immensi.'},
+    {nome:'Mano di Vecna',tipo:'Artefatto',rarita:'Artefatto',prezzo:0,valuta:'mo',descrizione:'Artefatto leggendario. Poteri necromantici e di forza sovrumana.'},
+    {nome:'Tomo della Comprensione',tipo:'Oggetto meraviglioso',rarita:'Molto raro',prezzo:50000,valuta:'mo',descrizione:'Leggi 48h: +2 SAG permanente.'},
+    {nome:'Tomo della Padronanza',tipo:'Oggetto meraviglioso',rarita:'Molto raro',prezzo:50000,valuta:'mo',descrizione:'+2 DES permanente.'},
+    {nome:'Tomo dell\'Intelletto',tipo:'Oggetto meraviglioso',rarita:'Molto raro',prezzo:50000,valuta:'mo',descrizione:'+2 INT permanente.'},
+    {nome:'Spada di Risposta',tipo:'Arma magica',rarita:'Leggendario',prezzo:75000,valuta:'mo',descrizione:'+3, reazione per attaccare chi ti ha colpito.'},
+    {nome:'Lama del Destino',tipo:'Arma unica',rarita:'Unico',prezzo:0,valuta:'mo',descrizione:'Forgiata dagli dei. +3, ignora resistenze, effetti dipendono dal portatore.'},
+    {nome:'Elmo della Brillanza',tipo:'Oggetto meraviglioso',rarita:'Molto raro',prezzo:40000,valuta:'mo',descrizione:'10 diamanti, 20 rubini, 30 opali di fuoco, 40 opali. Vari poteri di luce e fuoco.'},
+    {nome:'Anello dei Desideri',tipo:'Anello',rarita:'Leggendario',prezzo:0,valuta:'mo',descrizione:'Contiene 1d3 cariche del potere Desiderio.'},
+    {nome:'Bacchetta dei Prodigi',tipo:'Bacchetta',rarita:'Leggendario',prezzo:0,valuta:'mo',descrizione:'7 cariche. Effetti casuali di potere cosmico.'},
+    {nome:'Amuleto della Salute',tipo:'Oggetto meraviglioso',rarita:'Raro',prezzo:8000,valuta:'mo',descrizione:'COS diventa 19.'},
+    {nome:'Cintura della Forza da Gigante della Tempesta',tipo:'Oggetto meraviglioso',rarita:'Leggendario',prezzo:200000,valuta:'mo',descrizione:'FOR diventa 29.'},
+    {nome:'Mantello dell\'Invisibilità',tipo:'Oggetto meraviglioso',rarita:'Leggendario',prezzo:80000,valuta:'mo',descrizione:'Invisibilità a volontà (azione).'},
+    {nome:'Portale Portatile',tipo:'Oggetto meraviglioso',rarita:'Raro',prezzo:12000,valuta:'mo',descrizione:'Apre un varco dimensionale in qualsiasi superficie piana.'},
+    {nome:'Cubo del Controllo dei Piani',tipo:'Oggetto meraviglioso',rarita:'Leggendario',prezzo:0,valuta:'mo',descrizione:'Controlla i portali planari.'},
+    {nome:'Corona degli Astri',tipo:'Arma divina',rarita:'Divino',prezzo:0,valuta:'mo',descrizione:'Dono degli dei. Poteri celesti illimitati finché il portatore è degno.'},
+    {nome:'Lancia di Longino',tipo:'Arma divina',rarita:'Divino',prezzo:0,valuta:'mo',descrizione:'Arma sacra. +3, danni radianti x2 contro non morti.'},
+    {nome:'Scudo dell\'Alba',tipo:'Arma divina',rarita:'Divino',prezzo:0,valuta:'mo',descrizione:'Irraggia luce solare. Immunità ai non morti.'},
+    {nome:'Spada Santa di Pelor',tipo:'Arma divina',rarita:'Divino',prezzo:0,valuta:'mo',descrizione:'+3, cura 2d8 PF al portatore ad ogni colpo. Solo per allineamenti buoni.'},
+    {nome:'Pergamena di Resurrezione',tipo:'Pergamena',rarita:'Leggendario',prezzo:0,valuta:'mo',descrizione:'Lancia Resurrezione Vera una volta.'},
+    {nome:'Pietra Ioun della Maestria',tipo:'Pietra Ioun',rarita:'Leggendario',prezzo:0,valuta:'mo',descrizione:'+6 bonus di competenza.'},
+    {nome:'Sacca degli Stratagemmi',tipo:'Oggetto meraviglioso',rarita:'Raro',prezzo:9000,valuta:'mo',descrizione:'Contiene 64 oggetti comuni (non magici).'},
+    {nome:'Stivali della Velocità',tipo:'Oggetto meraviglioso',rarita:'Raro',prezzo:7000,valuta:'mo',descrizione:'Raddoppia velocità, attacco bonus.'},
+    {nome:'Guanti della Forza da Orco',tipo:'Oggetto meraviglioso',rarita:'Non comune',prezzo:2000,valuta:'mo',descrizione:'FOR diventa 19.'}
+  ];
 
   var pool = [];
-  if (typeof SRD_OGGETTI !== 'undefined') {
-    pool = SRD_OGGETTI.filter(function(o) {
-      if (!o || !o.nome) return false;
-      if (tipo === 'armi') return o.tipo && (o.tipo.indexOf('Arma') >= 0 || o.tipo.indexOf('Armatura') >= 0);
-      if (tipo === 'pozioni') return o.tipo && o.tipo.indexOf('Pozione') >= 0;
-      if (tipo === 'magia') return o.rarita && o.rarita !== 'Comune';
-      if (tipo === 'lusso') return o.prezzo && o.prezzo > 200;
-      return true;
-    });
-  }
+  if (typeof SRD_OGGETTI !== 'undefined') pool = SRD_OGGETTI.filter(function(o){ return o && o.nome; });
+  pool = pool.concat(extra);
 
-  var base = [
-    {nome:'Torcia', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'mr', descrizione:'Illumina area 6m per 1 ora.'},
-    {nome:'Corda (15m)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
-    {nome:'Razione (1 giorno)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:5, valuta:'mr'},
-    {nome:'Kit da guaritore', tipo:'Equipaggiamento', rarita:'Comune', prezzo:5, valuta:'mo'},
-    {nome:'Pozione di Guarigione', tipo:'Pozione', rarita:'Comune', prezzo:50, valuta:'mo', descrizione:'Recupera 2d4+2 PF.'},
-    {nome:'Pozione di Guarigione Maggiore', tipo:'Pozione', rarita:'Non comune', prezzo:300, valuta:'mo', descrizione:'Recupera 4d4+4 PF.'},
-    {nome:'Pozione di Veleno', tipo:'Pozione', rarita:'Non comune', prezzo:100, valuta:'mo'},
-    {nome:'Antitossina', tipo:'Pozione', rarita:'Comune', prezzo:50, valuta:'mo'},
-    {nome:'Spada lunga', tipo:'Arma', rarita:'Comune', prezzo:15, valuta:'mo'},
-    {nome:'Arco lungo', tipo:'Arma', rarita:'Comune', prezzo:50, valuta:'mo'},
-    {nome:'Armatura di cuoio', tipo:'Armatura', rarita:'Comune', prezzo:10, valuta:'mo'},
-    {nome:'Cotta di maglia', tipo:'Armatura', rarita:'Comune', prezzo:75, valuta:'mo'},
-    {nome:'Armatura a piastre', tipo:'Armatura', rarita:'Comune', prezzo:1500, valuta:'mo'},
-    {nome:'Pietra focaia e acciaino', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
-    {nome:'Sacca da avventuriero', tipo:'Equipaggiamento', rarita:'Comune', prezzo:10, valuta:'mo'},
-    {nome:'Scala (3m)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
-    {nome:'Olio (flacone)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
-    {nome:'Polvere di Diamante', tipo:'Materiale', rarita:'Non comune', prezzo:50, valuta:'mo'},
-    {nome:'Inchiostro (30ml)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:10, valuta:'mo'},
-    {nome:'Lente di ingrandimento', tipo:'Equipaggiamento', rarita:'Comune', prezzo:100, valuta:'mo'}
-  ];
-  pool = pool.concat(base);
-
-  var numItems = 6 + Math.floor(Math.random() * 7);
-  var picked = [];
-  var attempts = 0;
-  while (picked.length < numItems && attempts < 200) {
+  /* Pesca pesata — esattamente 10 oggetti unici */
+  var totalW = 0; for (var k in W) totalW += W[k];
+  var picked = [], attempts = 0;
+  while (picked.length < 10 && attempts < 400) {
     attempts++;
-    var r = Math.random() * 100;
-    var cum = 0, targetRarity = 'Comune';
-    for (var rar in weights) { cum += weights[rar]; if (r < cum) { targetRarity = rar; break; } }
-    var rarPool = pool.filter(function(o){ return o.rarita === targetRarity; });
-    if (rarPool.length === 0) rarPool = pool;
-    var pick = rarPool[Math.floor(Math.random() * rarPool.length)];
+    var r = Math.random() * totalW, cum = 0, tRar = 'Comune';
+    for (var rk in W) { cum += W[rk]; if (r < cum) { tRar = rk; break; } }
+    var sub = pool.filter(function(o){ return (o.rarita || 'Comune') === tRar; });
+    if (!sub.length) sub = pool;
+    var pick = sub[Math.floor(Math.random() * sub.length)];
     if (!picked.some(function(p){ return p.nome === pick.nome; })) picked.push(pick);
   }
 
-  if (picked.length === 0) {
-    listEl.innerHTML = '<div style="color:var(--text-faint);font-size:12px;">Nessun oggetto trovato.</div>';
+  if (!picked.length) {
+    listEl.innerHTML = '<div style="color:var(--text-faint);font-size:12px;padding:1rem;">Nessun oggetto trovato.</div>';
     return;
   }
 
-  _synthCoin && _synthCoin();
+  /* Ordina: dalla rarità più alta alla più bassa */
+  var rarOrder = {'Divino':0,'Unico':1,'Artefatto':2,'Leggendario':3,'Molto raro':4,'Raro':5,'Non comune':6,'Comune':7};
+  picked.sort(function(a,b){ return (rarOrder[a.rarita]||7)-(rarOrder[b.rarita]||7); });
 
   picked.forEach(function(item) {
+    var rc = RC[item.rarita] || '#9a9a9a';
+    var isDivine = item.rarita === 'Divino' || item.rarita === 'Unico' || item.rarita === 'Artefatto';
     var card = document.createElement('div');
-    card.style.cssText = 'padding:0.4rem 0.6rem;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:4px;';
-    var top = document.createElement('div');
-    top.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem;';
-    var nameEl = document.createElement('span');
-    nameEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;color:var(--text-main);flex:1;';
+    card.style.cssText = 'padding:0.65rem 0.8rem;border-radius:6px;cursor:default;transition:all 0.15s;' +
+      'background:rgba(20,12,3,0.85);' +
+      'border:1px solid ' + (isDivine ? rc : 'rgba(201,165,92,0.18)') + ';' +
+      (isDivine ? 'box-shadow:0 0 10px ' + rc + '40;' : '');
+
+    /* Nome + rarità */
+    var topRow = document.createElement('div');
+    topRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;margin-bottom:0.3rem;';
+    var nameEl = document.createElement('div');
+    nameEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;color:' + (isDivine ? rc : 'var(--text-main)') + ';flex:1;' + (isDivine ? 'text-shadow:0 0 8px '+rc+'80;' : '');
     nameEl.textContent = item.nome;
     var rarEl = document.createElement('span');
-    var rc = rarityColors[item.rarita] || '#aaa';
-    rarEl.style.cssText = 'font-size:9px;color:'+rc+';border:1px solid '+rc+';padding:0 0.3rem;border-radius:3px;white-space:nowrap;';
+    rarEl.style.cssText = 'font-size:9px;font-family:\'Cinzel\',serif;font-weight:700;letter-spacing:0.07em;color:'+rc+';border:1px solid '+rc+'60;padding:0.1rem 0.4rem;border-radius:10px;white-space:nowrap;background:'+rc+'12;';
     rarEl.textContent = item.rarita || 'Comune';
+    topRow.appendChild(nameEl); topRow.appendChild(rarEl);
+    card.appendChild(topRow);
+
+    /* Tipo + prezzo */
+    var metaRow = document.createElement('div');
+    metaRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:0.5rem;';
+    var tipoEl = document.createElement('span');
+    tipoEl.style.cssText = 'font-size:9px;color:var(--text-faint);font-style:italic;';
+    tipoEl.textContent = item.tipo || '';
     var priceEl = document.createElement('span');
-    priceEl.style.cssText = 'font-size:10px;color:var(--gold-dim);white-space:nowrap;';
-    if (item.prezzo) priceEl.textContent = item.prezzo + ' ' + (item.valuta || 'mo').toUpperCase();
-    top.appendChild(nameEl); top.appendChild(rarEl); top.appendChild(priceEl);
-    card.appendChild(top);
+    priceEl.style.cssText = 'font-size:10px;color:var(--gold-dim);font-family:\'Cinzel\',serif;white-space:nowrap;';
+    priceEl.textContent = item.prezzo ? item.prezzo.toLocaleString('it-IT') + ' ' + (item.valuta||'mo').toUpperCase() : (isDivine ? '∞ — Impagabile' : '');
+    metaRow.appendChild(tipoEl); metaRow.appendChild(priceEl);
+    card.appendChild(metaRow);
+
+    /* Descrizione */
     if (item.descrizione) {
       var desc = document.createElement('div');
-      desc.style.cssText = 'font-size:10px;color:var(--text-faint);margin-top:2px;';
-      desc.textContent = item.descrizione;
+      desc.style.cssText = 'font-size:10px;color:var(--text-faint);margin-top:0.35rem;line-height:1.4;border-top:1px solid rgba(201,165,92,0.1);padding-top:0.3rem;';
+      desc.textContent = item.descrizione.length > 120 ? item.descrizione.slice(0,120) + '…' : item.descrizione;
       card.appendChild(desc);
     }
+
     listEl.appendChild(card);
   });
 }
@@ -9362,7 +9440,6 @@ function _renderCoinsPanel(container) {
     state.monete.mr = total;
     coins.forEach(function(c){ inputs[c.key].value = state.monete[c.key]; });
     updateTotal();
-    _synthCoin && _synthCoin();
   };
   container.appendChild(normBtn);
 
@@ -9442,7 +9519,7 @@ function renderEmporio() {
 
   if (_shopOpen || _coinsOpen) {
     var sidePanel = document.createElement('div');
-    sidePanel.style.cssText = 'max-width:380px;margin:1rem auto;padding:1rem;background:var(--bg-panel);border:1px solid var(--border-gold);border-radius:8px;';
+    sidePanel.style.cssText = 'width:100%;margin:1rem 0;padding:1.25rem 1.5rem;background:var(--bg-panel);border:1px solid var(--border-gold);border-radius:10px;box-sizing:border-box;';
     if (_shopOpen) _renderShopPanel(sidePanel);
     else _renderCoinsPanel(sidePanel);
     wrap.appendChild(sidePanel);
@@ -13969,7 +14046,6 @@ function renderGeneratore() {
     if (!pool.length) return;
     var name = pool[Math.floor(Math.random() * pool.length)];
     ngDisplay.textContent = name;
-    _synthCoin && _synthCoin();
   };
 
   ngDisplay.onclick = function() {
