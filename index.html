@@ -19989,7 +19989,7 @@ function _openSecondaryMapView(fid) {
   var fakePanel = document.createElement('div');
   fakePanel.innerHTML = '<div class="mappa-info-header"><span class="mappa-info-title">📜 Scheda Luogo</span></div><div class="mappa-info-body"></div>';
   rightCol.appendChild(fakePanel);
-  renderMappaFlagPanel(fakePanel, fid, true);
+  renderMappaFlagPanel(fakePanel, fid, false);
   bodyRow.appendChild(rightCol);
 
   overlay.appendChild(bodyRow);
