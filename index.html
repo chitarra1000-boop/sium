@@ -7669,7 +7669,14 @@ var state = {
 
   /* ===== ELIMINAZIONI ADMIN ===== */
   bestiarioDeleted: [],  // IDs mostri SRD eliminati dall'admin
-  armiDeleted: []        // IDs armi SRD eliminate dall'admin
+  armiDeleted: [],       // IDs armi SRD eliminate dall'admin
+
+  /* ===== NEGOZIO & MONETE ===== */
+  shopFilter: { livello: 5, tipo: 'generale' },
+  monete: { mr: 0, ma: 0, mo: 0, mp: 0 },
+
+  /* ===== GENERATORE NOMI NPC ===== */
+  _ngGender: 'qualsiasi'
 };
 
 /* Numero di settori per ciascuno stadio */
@@ -9154,6 +9161,221 @@ function renderSidebar() {
   return sb;
 }
 
+var _shopOpen = false;
+var _coinsOpen = false;
+
+function _renderShopPanel(container) {
+  container.innerHTML = '';
+  var rarityColors = { 'Comune': '#aaa', 'Non comune': '#5fa', 'Raro': '#48f', 'Molto raro': '#a5f', 'Leggendario': '#fa5', 'Artefatto': '#f55' };
+  var TIPI_NEGOZIO = [
+    { id:'generale', label:'Generale' },
+    { id:'armi', label:'Armi & Armature' },
+    { id:'magia', label:'Oggetti Magici' },
+    { id:'pozioni', label:'Pozioni & Erbe' },
+    { id:'lusso', label:'Oggetti di Lusso' }
+  ];
+  var livelli = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'font-family:\'Cinzel\',serif;font-size:14px;font-weight:700;color:var(--gold-bright);letter-spacing:0.12em;margin-bottom:0.75rem;';
+  hdr.textContent = '🏪 Generatore Negozio';
+  container.appendChild(hdr);
+
+  var tipoRow = document.createElement('div');
+  tipoRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.5rem;';
+  TIPI_NEGOZIO.forEach(function(t) {
+    var btn = document.createElement('button');
+    var isA = state.shopFilter.tipo === t.id;
+    btn.textContent = t.label;
+    btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:10px;padding:0.2rem 0.6rem;border-radius:12px;cursor:pointer;border:1px solid '+(isA?'var(--gold)':'var(--border-subtle)')+';background:'+(isA?'rgba(201,165,92,0.2)':'var(--bg-card)')+';color:'+(isA?'var(--gold-bright)':'var(--text-faint)')+';';
+    btn.onclick = function(){ state.shopFilter.tipo = t.id; _renderShopPanel(container); };
+    tipoRow.appendChild(btn);
+  });
+  container.appendChild(tipoRow);
+
+  var lvlRow = document.createElement('div');
+  lvlRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;';
+  var lvlLbl = document.createElement('span');
+  lvlLbl.style.cssText = 'font-size:11px;color:var(--text-faint);white-space:nowrap;';
+  lvlLbl.textContent = 'Livello party:';
+  var lvlSel = document.createElement('select');
+  lvlSel.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-size:12px;padding:0.2rem 0.4rem;border-radius:3px;';
+  livelli.forEach(function(l){ var o = document.createElement('option'); o.value = l; o.textContent = l; if (l === state.shopFilter.livello) o.selected = true; lvlSel.appendChild(o); });
+  lvlSel.onchange = function(){ state.shopFilter.livello = parseInt(lvlSel.value); };
+  lvlRow.appendChild(lvlLbl); lvlRow.appendChild(lvlSel);
+  container.appendChild(lvlRow);
+
+  var genBtn = document.createElement('button');
+  genBtn.style.cssText = 'width:100%;padding:0.5rem;background:rgba(201,165,92,0.15);border:1.5px solid var(--gold);color:var(--gold-bright);font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;letter-spacing:0.1em;border-radius:5px;cursor:pointer;margin-bottom:0.75rem;';
+  genBtn.textContent = '✨ Genera Inventario';
+  container.appendChild(genBtn);
+
+  var listEl = document.createElement('div');
+  listEl.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;max-height:320px;overflow-y:auto;';
+  container.appendChild(listEl);
+
+  genBtn.onclick = function(){ _generateShop(listEl, rarityColors); };
+}
+
+function _generateShop(listEl, rarityColors) {
+  listEl.innerHTML = '';
+  var lvl = state.shopFilter.livello;
+  var tipo = state.shopFilter.tipo;
+
+  var weights = { 'Comune': 60, 'Non comune': 25, 'Raro': 10, 'Molto raro': 4, 'Leggendario': 1 };
+  if (lvl >= 5)  { weights['Non comune'] = 30; weights['Comune'] = 45; }
+  if (lvl >= 10) { weights['Raro'] = 20; weights['Non comune'] = 30; weights['Comune'] = 35; }
+  if (lvl >= 15) { weights['Molto raro'] = 12; weights['Raro'] = 25; weights['Non comune'] = 30; }
+  if (lvl >= 17) { weights['Leggendario'] = 5; weights['Molto raro'] = 18; }
+
+  var pool = [];
+  if (typeof SRD_OGGETTI !== 'undefined') {
+    pool = SRD_OGGETTI.filter(function(o) {
+      if (!o || !o.nome) return false;
+      if (tipo === 'armi') return o.tipo && (o.tipo.indexOf('Arma') >= 0 || o.tipo.indexOf('Armatura') >= 0);
+      if (tipo === 'pozioni') return o.tipo && o.tipo.indexOf('Pozione') >= 0;
+      if (tipo === 'magia') return o.rarita && o.rarita !== 'Comune';
+      if (tipo === 'lusso') return o.prezzo && o.prezzo > 200;
+      return true;
+    });
+  }
+
+  var base = [
+    {nome:'Torcia', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'mr', descrizione:'Illumina area 6m per 1 ora.'},
+    {nome:'Corda (15m)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
+    {nome:'Razione (1 giorno)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:5, valuta:'mr'},
+    {nome:'Kit da guaritore', tipo:'Equipaggiamento', rarita:'Comune', prezzo:5, valuta:'mo'},
+    {nome:'Pozione di Guarigione', tipo:'Pozione', rarita:'Comune', prezzo:50, valuta:'mo', descrizione:'Recupera 2d4+2 PF.'},
+    {nome:'Pozione di Guarigione Maggiore', tipo:'Pozione', rarita:'Non comune', prezzo:300, valuta:'mo', descrizione:'Recupera 4d4+4 PF.'},
+    {nome:'Pozione di Veleno', tipo:'Pozione', rarita:'Non comune', prezzo:100, valuta:'mo'},
+    {nome:'Antitossina', tipo:'Pozione', rarita:'Comune', prezzo:50, valuta:'mo'},
+    {nome:'Spada lunga', tipo:'Arma', rarita:'Comune', prezzo:15, valuta:'mo'},
+    {nome:'Arco lungo', tipo:'Arma', rarita:'Comune', prezzo:50, valuta:'mo'},
+    {nome:'Armatura di cuoio', tipo:'Armatura', rarita:'Comune', prezzo:10, valuta:'mo'},
+    {nome:'Cotta di maglia', tipo:'Armatura', rarita:'Comune', prezzo:75, valuta:'mo'},
+    {nome:'Armatura a piastre', tipo:'Armatura', rarita:'Comune', prezzo:1500, valuta:'mo'},
+    {nome:'Pietra focaia e acciaino', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
+    {nome:'Sacca da avventuriero', tipo:'Equipaggiamento', rarita:'Comune', prezzo:10, valuta:'mo'},
+    {nome:'Scala (3m)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
+    {nome:'Olio (flacone)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:1, valuta:'ma'},
+    {nome:'Polvere di Diamante', tipo:'Materiale', rarita:'Non comune', prezzo:50, valuta:'mo'},
+    {nome:'Inchiostro (30ml)', tipo:'Equipaggiamento', rarita:'Comune', prezzo:10, valuta:'mo'},
+    {nome:'Lente di ingrandimento', tipo:'Equipaggiamento', rarita:'Comune', prezzo:100, valuta:'mo'}
+  ];
+  pool = pool.concat(base);
+
+  var numItems = 6 + Math.floor(Math.random() * 7);
+  var picked = [];
+  var attempts = 0;
+  while (picked.length < numItems && attempts < 200) {
+    attempts++;
+    var r = Math.random() * 100;
+    var cum = 0, targetRarity = 'Comune';
+    for (var rar in weights) { cum += weights[rar]; if (r < cum) { targetRarity = rar; break; } }
+    var rarPool = pool.filter(function(o){ return o.rarita === targetRarity; });
+    if (rarPool.length === 0) rarPool = pool;
+    var pick = rarPool[Math.floor(Math.random() * rarPool.length)];
+    if (!picked.some(function(p){ return p.nome === pick.nome; })) picked.push(pick);
+  }
+
+  if (picked.length === 0) {
+    listEl.innerHTML = '<div style="color:var(--text-faint);font-size:12px;">Nessun oggetto trovato.</div>';
+    return;
+  }
+
+  _synthCoin && _synthCoin();
+
+  picked.forEach(function(item) {
+    var card = document.createElement('div');
+    card.style.cssText = 'padding:0.4rem 0.6rem;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:4px;';
+    var top = document.createElement('div');
+    top.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:0.4rem;';
+    var nameEl = document.createElement('span');
+    nameEl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;color:var(--text-main);flex:1;';
+    nameEl.textContent = item.nome;
+    var rarEl = document.createElement('span');
+    var rc = rarityColors[item.rarita] || '#aaa';
+    rarEl.style.cssText = 'font-size:9px;color:'+rc+';border:1px solid '+rc+';padding:0 0.3rem;border-radius:3px;white-space:nowrap;';
+    rarEl.textContent = item.rarita || 'Comune';
+    var priceEl = document.createElement('span');
+    priceEl.style.cssText = 'font-size:10px;color:var(--gold-dim);white-space:nowrap;';
+    if (item.prezzo) priceEl.textContent = item.prezzo + ' ' + (item.valuta || 'mo').toUpperCase();
+    top.appendChild(nameEl); top.appendChild(rarEl); top.appendChild(priceEl);
+    card.appendChild(top);
+    if (item.descrizione) {
+      var desc = document.createElement('div');
+      desc.style.cssText = 'font-size:10px;color:var(--text-faint);margin-top:2px;';
+      desc.textContent = item.descrizione;
+      card.appendChild(desc);
+    }
+    listEl.appendChild(card);
+  });
+}
+
+function _renderCoinsPanel(container) {
+  container.innerHTML = '';
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'font-family:\'Cinzel\',serif;font-size:14px;font-weight:700;color:var(--gold-bright);letter-spacing:0.12em;margin-bottom:0.75rem;';
+  hdr.textContent = '💰 Gestore Monete';
+  container.appendChild(hdr);
+
+  var coins = [
+    {key:'mp', label:'Platino', color:'#d0e8ff', rate:1000},
+    {key:'mo', label:'Oro', color:'#f5c842', rate:100},
+    {key:'ma', label:'Argento', color:'#c0c8d0', rate:10},
+    {key:'mr', label:'Rame', color:'#e0926a', rate:1}
+  ];
+
+  var inputs = {};
+  coins.forEach(function(c) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;';
+    var lbl = document.createElement('label');
+    lbl.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;color:'+c.color+';width:60px;flex-shrink:0;';
+    lbl.textContent = c.label;
+    var inp = document.createElement('input'); inp.type = 'number'; inp.min = '0'; inp.value = state.monete[c.key] || 0;
+    inp.style.cssText = 'flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-size:13px;padding:0.3rem 0.5rem;border-radius:4px;outline:none;text-align:right;';
+    inp.oninput = function(){ state.monete[c.key] = parseInt(inp.value) || 0; updateTotal(); };
+    inputs[c.key] = inp;
+    row.appendChild(lbl); row.appendChild(inp);
+    container.appendChild(row);
+  });
+
+  var totalEl = document.createElement('div');
+  totalEl.style.cssText = 'margin:0.6rem 0;padding:0.4rem 0.6rem;background:rgba(201,165,92,0.1);border:1px solid var(--border-gold);border-radius:4px;font-family:\'Cinzel\',serif;font-size:12px;color:var(--gold-bright);text-align:right;';
+  container.appendChild(totalEl);
+
+  function updateTotal() {
+    var total = (state.monete.mp||0)*1000 + (state.monete.mo||0)*100 + (state.monete.ma||0)*10 + (state.monete.mr||0);
+    totalEl.textContent = 'Totale: ' + total + ' MR = ' + (total/100).toFixed(0) + ' MO';
+  }
+  updateTotal();
+
+  var normBtn = document.createElement('button');
+  normBtn.style.cssText = 'width:100%;padding:0.4rem;background:rgba(201,165,92,0.12);border:1px solid var(--border-gold);color:var(--gold);font-family:\'Cinzel\',serif;font-size:11px;border-radius:4px;cursor:pointer;margin-bottom:0.4rem;';
+  normBtn.textContent = '⚖ Normalizza Monete';
+  normBtn.onclick = function() {
+    var total = (state.monete.mp||0)*1000 + (state.monete.mo||0)*100 + (state.monete.ma||0)*10 + (state.monete.mr||0);
+    state.monete.mp = Math.floor(total / 1000); total %= 1000;
+    state.monete.mo = Math.floor(total / 100);  total %= 100;
+    state.monete.ma = Math.floor(total / 10);   total %= 10;
+    state.monete.mr = total;
+    coins.forEach(function(c){ inputs[c.key].value = state.monete[c.key]; });
+    updateTotal();
+    _synthCoin && _synthCoin();
+  };
+  container.appendChild(normBtn);
+
+  var rstBtn = document.createElement('button');
+  rstBtn.style.cssText = 'width:100%;padding:0.3rem;background:transparent;border:1px solid var(--border-subtle);color:var(--text-faint);font-family:\'Cinzel\',serif;font-size:10px;border-radius:4px;cursor:pointer;';
+  rstBtn.textContent = 'Reset';
+  rstBtn.onclick = function() {
+    coins.forEach(function(c){ state.monete[c.key] = 0; inputs[c.key].value = 0; });
+    updateTotal();
+  };
+  container.appendChild(rstBtn);
+}
+
 function renderEmporio() {
   if (state.emporioTab === 'cyber') return renderEmporioCyber();
   if (state.emporioTab === 'droghe') return renderEmporioDroghe();
@@ -9190,6 +9412,20 @@ function renderEmporio() {
   btnLoad.onclick = loadArmi;
   rightHead.appendChild(btnLoad);
 
+  var btnShop = document.createElement('button');
+  btnShop.className = 'btn-dark';
+  btnShop.innerHTML = '🏪 Negozio';
+  if (_shopOpen) btnShop.style.cssText = 'border-color:var(--gold);color:var(--gold);';
+  btnShop.onclick = function() { _shopOpen = !_shopOpen; _coinsOpen = false; renderMain(); };
+  rightHead.appendChild(btnShop);
+
+  var btnCoins = document.createElement('button');
+  btnCoins.className = 'btn-dark';
+  btnCoins.innerHTML = '💰 Monete';
+  if (_coinsOpen) btnCoins.style.cssText = 'border-color:var(--gold);color:var(--gold);';
+  btnCoins.onclick = function() { _coinsOpen = !_coinsOpen; _shopOpen = false; renderMain(); };
+  rightHead.appendChild(btnCoins);
+
   top.appendChild(rightHead);
 
   hc.appendChild(top);
@@ -9203,6 +9439,14 @@ function renderEmporio() {
   hc.appendChild(notice);
   header.appendChild(hc);
   wrap.appendChild(header);
+
+  if (_shopOpen || _coinsOpen) {
+    var sidePanel = document.createElement('div');
+    sidePanel.style.cssText = 'max-width:380px;margin:1rem auto;padding:1rem;background:var(--bg-panel);border:1px solid var(--border-gold);border-radius:8px;';
+    if (_shopOpen) _renderShopPanel(sidePanel);
+    else _renderCoinsPanel(sidePanel);
+    wrap.appendChild(sidePanel);
+  }
 
   // --- TOGGLE BAR ---
   var cyberBar = document.createElement('div');
@@ -13573,6 +13817,86 @@ async function generaItemInBackground(idea, slots, isCombattente, existingNames)
   notify('\u2728 '+nuoviAggiunti+' nuov'+(nuoviAggiunti===1?'o oggetto aggiunto':'i oggetti aggiunti')+' all\'Emporio!');
 }
 
+/* ---- ARRAY NOMI NPC ---- */
+var NOMI_MASCHILI = [
+  'Luca','Marco','Giovanni','Pietro','Antonio','Francesco','Giorgio','Alberto','Carlo','Luigi',
+  'Mario','Roberto','Stefano','Andrea','Paolo','Giacomo','Filippo','Davide','Matteo','Lorenzo',
+  'Emilio','Fabrizio','Raffaele','Enzo','Gennaro','Salvatore','Domenico','Vincenzo','Bruno','Dario',
+  'Sergio','Federico','Nicola','Riccardo','Maurizio','Claudio','Massimo','Simone','Enrico','Cesare',
+  'Aldo','Giulio','Silvio','Renato','Angelo','Daniele','Augusto','Ernesto','Remo','Umberto',
+  'Sandro','Ottavio','Virgilio','Elio','Orazio','Leandro','Renzo','Silvestro','Uberto','Ugo',
+  'Goffredo','Rinaldo','Adelchi','Ermanno','Muzio','Galeazzo','Guerrino','Cuniberto','Liutprando',
+  'Astolfo','Rotari','Grimoaldo','Alboino','Autari','Bernardo','Corrado','Ferrante',
+  'Gherardo','Ilario','Jago','Lapo','Menico','Nereo','Olindo','Primo','Quirino','Rodolfo',
+  'Settimio','Terzo','Vitale','Waldo','Zenone','Anselmo','Bartolomeo','Celestino',
+  'Desiderio','Edmondo','Filomeno','Gregorio','Ildebrando','Junipero','Lamberto','Meinardo',
+  'Norberto','Ottone','Poppo','Rainiero','Sigeberto','Teodoro','Ugolino','Vespasiano','Wiberto',
+  'Aldric','Bram','Cael','Darios','Eldrin','Faelen','Gideon','Hadrian','Iven','Jorvan',
+  'Kaelan','Lyander','Maelik','Neron','Orin','Phaedris','Quillan','Rexar','Silan','Tharion',
+  'Ulvric','Vael','Warrick','Xander','Yarik','Zephyr','Aeron','Balin','Corvus','Draven',
+  'Eamon','Fenris','Gareth','Hadric','Isdar','Jareth','Kiran','Leoric','Malachar','Narek',
+  'Oryn','Pyrion','Rolan','Soren','Terryn','Urgon','Varro','Wulfric','Xeron','Yoric',
+  'Zoran','Asheron','Barryn','Casimir','Daeron','Erron','Galvyn','Jarvyn','Kethric','Malvyn',
+  'Rathorn','Tervyn','Alderon','Belthor','Calvir','Darmon','Florion','Gordin','Halvir','Karion',
+  'Leonar','Norvyn','Palvyn','Quentyn','Selvyn','Tolvyn','Varvyn','Wolvyn','Theron','Valor',
+  'Eron','Kael','Lyris','Caspian','Eldric','Arin','Balen','Ceron','Dalar','Elar',
+  'Faron','Galan','Halar','Ilan','Jalan','Kalan','Laran','Malan','Nalan','Olan',
+  'Ralan','Salan','Talan','Valan','Amric','Boric','Coric','Eoric','Foric','Goric',
+  'Horic','Joric','Koric','Loric','Moric','Noric','Oric','Roric','Soric','Toric',
+  'Aldhelm','Beowulf','Cedric','Dunstan','Edwin','Fremund','Godwin','Harald','Ingulf','Joscelin',
+  'Kenelm','Leofric','Oswin','Padraig','Reginald','Sewald','Thorvald','Ulric',
+  'Vortigern','Wayland','Zigfrid','Aethelred','Bohemund','Coenwulf','Dunwald','Egbert',
+  'Folkmar','Godebald','Heribert','Irmbert','Jobst','Konrad','Leutwin','Meginhard','Notker',
+  'Otfried','Radulf','Sigebert','Thankmar','Udalric','Volkmar','Wernher','Zeisolf',
+  'Aelindor','Celeborn','Elrond','Feanor','Galadhon','Haldor','Ithilien','Jarindel',
+  'Kaeladrin','Laerindel','Maeglin','Narindel','Oroindel','Pelindel','Rindel','Silindel','Tarindel',
+  'Uindel','Vaindel','Windel','Xindel','Yindel','Zindel','Aerindor','Berindor','Cerindor',
+  'Aldran','Baldric','Cormac','Dorian','Elden','Feryn','Gavril','Henric','Ivor','Jarvik',
+  'Kastryn','Lucian','Mordred','Nolan','Osric','Percival','Quillon','Roland','Sylvan','Tomas',
+  'Uther','Varian','Wendel','Xylon','Yoven','Zared','Arvid','Brogan','Cadan','Darvin'
+];
+
+var NOMI_FEMMINILI = [
+  'Maria','Anna','Laura','Sofia','Giulia','Elena','Francesca','Valentina','Alessia','Sara',
+  'Chiara','Silvia','Paola','Roberta','Serena','Marta','Elisa','Federica','Beatrice','Cristina',
+  'Simona','Claudia','Monica','Daniela','Michela','Raffaella','Patrizia','Luisa','Lucia','Caterina',
+  'Virginia','Giovanna','Teresa','Nicoletta','Antonella','Cinzia','Ilaria','Giada','Debora','Emanuela',
+  'Fiamma','Grazia','Irene','Jana','Katia','Livia','Mirella','Ornella','Rita','Sabrina',
+  'Tiziana','Viviana','Wanda','Xenia','Yolanda','Zita','Adelaide','Bianca','Celestina','Diana',
+  'Enrichetta','Flora','Gemma','Hildegarda','Immacolata','Jolanda','Lorella','Maristella','Nadia',
+  'Olimpia','Piera','Rossella','Stellina','Tatiana','Ursula','Wilma','Ylenia','Zelinda','Antonia',
+  'Carmela','Donata','Eleonora','Fedora','Giuseppa','Hilda','Ines','Jole','Lara','Marisa',
+  'Ninfa','Ondina','Pia','Adele','Bruna','Cosima','Delfina','Edda','Felicita','Gelsomina',
+  'Iolanda','Jenni','Lella','Nella','Odalina','Palma','Quirina','Renza','Stella',
+  'Tina','Ubalda','Valeria','Zelide','Amalia','Brunilde','Clotilde','Dina','Edvige','Filomena',
+  'Germana','Igina','Lia','Nives','Ofelia','Primula','Rosaria','Silvana','Tecla','Ugolina',
+  'Aelia','Brynn','Calista','Dara','Elara','Faeris','Gwen','Hela','Isha','Jara',
+  'Kara','Lyra','Mara','Nara','Ora','Phaedra','Ryn','Sylva','Thalia','Una',
+  'Vera','Wyra','Xara','Yara','Zara','Arya','Brea','Clea','Drea','Eryn',
+  'Frea','Gwen','Hlea','Ilea','Klea','Llea','Mlea','Nlea','Olea','Rlea',
+  'Slea','Tlea','Vlea','Wlea','Ylea','Zlea','Aelindra','Brielle','Caelith','Dariel',
+  'Elowen','Faerith','Gwendolin','Hariel','Isolde','Jariel','Kaelia','Lyrien','Miriel',
+  'Naeriel','Orileth','Phaelith','Quelith','Rielith','Sylviel','Thaliel','Uriel','Vaelith',
+  'Wyrien','Xyliel','Yaelith','Zyliel','Aerin','Kira','Mira','Orel','Phai','Quel',
+  'Riel','Syl','Thal','Ula','Vel','Wren','Xyl','Yael','Zyl','Amara',
+  'Brena','Cira','Delia','Fara','Gara','Hara','Iara','Para','Rara',
+  'Adela','Brunhild','Cunigunde','Dietlind','Elfriede','Friederike','Gerlinde','Hildegard','Irmgard',
+  'Jutta','Kunigunde','Luitgard','Mechthild','Notburga','Ortrun','Petronilla','Richardis','Sieglinde',
+  'Trudpert','Ulfhild','Walburga','Ximena','Yelena','Zephyrine','Adelheid','Bertha','Cristabel',
+  'Dagmar','Erdmuthe','Fronika','Genoveva','Hedwig','Ingrid','Jadviga','Katerina','Liselotte',
+  'Margarete','Otokar','Perchta','Roswittha','Salome','Thekla','Ursula','Verenka',
+  'Walpurga','Xanthippe','Ysabel','Zenobia','Aelswith','Cwenburg','Eadhild','Frigyth','Godgifu',
+  'Hereswith','Leoflaed','Mildthryth','Osthryth','Sexburh','Tette','Waerburh',
+  'Aelindra','Caladwen','Daelindra','Elindra','Faelindra','Gaelindra','Haelindra','Iaelindra',
+  'Jaelindra','Kaelindra','Laelindra','Maelindra','Naelindra','Oaelindra','Raelindra',
+  'Saelindra','Taelindra','Vaelindra','Waelindra','Xaelindra','Yaelindra','Zaelindra',
+  'Ariene','Brienne','Celine','Daphne','Elaine','Fiona','Galatea','Heloise','Ingrid','Juno',
+  'Kalinda','Lorien','Miruna','Naielle','Orielle','Pereth','Roswyn','Selene','Viviane','Ysolde',
+  'Alanda','Belara','Cyrene','Dwyn','Eirene','Falara','Gwyneira','Haleth','Imriel','Jaryn',
+  'Kaera','Linwe','Marien','Nienna','Olorin','Pyriel','Quelara','Rindis','Serien','Tiriel',
+  'Unien','Varien','Windara','Xylara','Yndis','Zylara','Calanthe','Deirdre','Elspeth','Fianna'
+];
+
 /* ---- RENDER PRINCIPALE ---- */
 function renderGeneratore() {
   var wrap = document.createElement('div');
@@ -13601,6 +13925,65 @@ function renderGeneratore() {
   hc.appendChild(notice);
   header.appendChild(hc);
   wrap.appendChild(header);
+
+  // ---- GENERATORE NOMI ----
+  var nameGenWrap = document.createElement('div');
+  nameGenWrap.style.cssText = 'background:var(--bg-panel);border:1px solid var(--border-gold);border-radius:8px;padding:1rem 1.25rem;margin:1rem auto;max-width:900px;';
+
+  var ngTitle = document.createElement('div');
+  ngTitle.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;font-weight:700;color:var(--gold-bright);letter-spacing:0.12em;margin-bottom:0.6rem;';
+  ngTitle.textContent = '🎲 Generatore di Nomi';
+  nameGenWrap.appendChild(ngTitle);
+
+  var ngRow = document.createElement('div');
+  ngRow.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;';
+
+  var ngGender = state._ngGender || 'qualsiasi';
+  ['Maschio','Femmina','Qualsiasi'].forEach(function(g) {
+    var gl = g.toLowerCase();
+    var isA = ngGender === gl;
+    var btn = document.createElement('button');
+    btn.textContent = g === 'Maschio' ? '♂ Maschio' : g === 'Femmina' ? '♀ Femmina' : '⚥ Qualsiasi';
+    btn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;padding:0.3rem 0.8rem;border-radius:20px;cursor:pointer;transition:all 0.15s;border:1.5px solid '+(isA?'var(--gold)':'var(--border-subtle)')+';background:'+(isA?'rgba(201,165,92,0.2)':'var(--bg-card)')+';color:'+(isA?'var(--gold-bright)':'var(--text-faint)')+';font-weight:'+(isA?'700':'400')+';';
+    btn.onclick = function(){ state._ngGender = gl; renderMain(); };
+    ngRow.appendChild(btn);
+  });
+
+  var ngBtn = document.createElement('button');
+  ngBtn.style.cssText = 'font-family:\'Cinzel\',serif;font-size:12px;font-weight:700;padding:0.35rem 1.2rem;border-radius:5px;cursor:pointer;background:rgba(201,165,92,0.18);border:1.5px solid var(--gold);color:var(--gold-bright);letter-spacing:0.1em;';
+  ngBtn.textContent = '✨ Genera';
+  ngRow.appendChild(ngBtn);
+
+  var ngDisplay = document.createElement('div');
+  ngDisplay.style.cssText = 'font-family:\'Cinzel\',serif;font-size:18px;font-weight:700;color:var(--gold-bright);padding:0.35rem 0.9rem;background:rgba(201,165,92,0.07);border:1px solid var(--border-gold);border-radius:5px;cursor:pointer;min-width:120px;text-align:center;letter-spacing:0.08em;';
+  ngDisplay.title = 'Clicca per copiare nel campo Nome';
+  ngDisplay.textContent = '—';
+  ngRow.appendChild(ngDisplay);
+
+  ngBtn.onclick = function() {
+    var pool = [];
+    var g = state._ngGender || 'qualsiasi';
+    if (g === 'maschio') pool = NOMI_MASCHILI;
+    else if (g === 'femmina') pool = NOMI_FEMMINILI;
+    else pool = NOMI_MASCHILI.concat(NOMI_FEMMINILI);
+    if (!pool.length) return;
+    var name = pool[Math.floor(Math.random() * pool.length)];
+    ngDisplay.textContent = name;
+    _synthCoin && _synthCoin();
+  };
+
+  ngDisplay.onclick = function() {
+    var name = ngDisplay.textContent;
+    if (name && name !== '—') {
+      state.npc.nome = name;
+      var nomeInput = document.getElementById('npc-nome-input');
+      if (nomeInput) { nomeInput.value = name; }
+      else renderMain();
+    }
+  };
+
+  nameGenWrap.appendChild(ngRow);
+  wrap.appendChild(nameGenWrap);
 
   var section = document.createElement('section');
   section.className = 'generatore-wrap pb-20';
@@ -13994,6 +14377,7 @@ function renderGeneratore() {
     var nc1=document.createElement('div');nc1.className='dnd-banner-name-col';
     var nl1=document.createElement('div');nl1.className='dnd-banner-name-label';nl1.style.fontSize='7px';nl1.textContent='Nome Personaggio';
     var nameInp1=ti(nv('nome'),'Nome...','dnd-banner-name-input dnd-name-sync');
+    nameInp1.id = 'npc-nome-input';
     nameInp1.style.fontSize='16px';
     nameInp1.addEventListener('input',function(){state.npc.nome=this.value;document.querySelectorAll('.dnd-name-sync').forEach(function(e){if(e!==nameInp1)e.value=state.npc.nome;});});
     nc1.appendChild(nl1);nc1.appendChild(nameInp1);banner1.appendChild(nc1);
@@ -18321,10 +18705,27 @@ function playScena(scenaId, grade) {
 /* ── cambia modalità explore/combat mantenendo posizione e grado ── */
 function setMode(mode) {
   if (mode === _regiaMode) return;
+  var prevMode = _regiaMode;
   _regiaMode = mode;
   if (_regiaGrade > 0 && state.regiaScena) {
-    /* Cross-fade verso nuova traccia */
-    playScena(state.regiaScena, _regiaGrade);
+    var prevSrc = resolveScenaUrl(state.regiaScena, prevMode);
+    var newSrc  = resolveScenaUrl(state.regiaScena, mode);
+    if (newSrc && newSrc !== prevSrc) {
+      // Traccia diversa per i due modi: fade out lento (1.4s) poi fade in
+      if (_audios['main'] && !_audios['main'].el.paused) {
+        audioFadeTo('main', 0, 1400, function() {
+          if (_regiaGrade > 0) playScena(state.regiaScena, _regiaGrade);
+        });
+      } else {
+        playScena(state.regiaScena, _regiaGrade);
+      }
+    } else {
+      // Stessa traccia: "breath" — abbassa poi rialza per segnalare il cambio
+      var v = GRADE_VOLUMES[_regiaGrade];
+      audioFadeTo('main', v * 0.12, 700, function() {
+        audioFadeTo('main', v, 1100);
+      });
+    }
   }
 }
 
@@ -18355,16 +18756,74 @@ function setSfxGrade(sfxId, grade) {
   audioFadeTo(slot, GRADE_VOLUMES[grade], 400);
 }
 
+var _waCtx = null;
+function _getWACtx() {
+  if (!_waCtx) { try { _waCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
+  return _waCtx;
+}
+function _synthBell() {
+  var ctx = _getWACtx(); if (!ctx) return;
+  var freqs = [523, 784, 1046, 1568];
+  freqs.forEach(function(freq, i) {
+    var osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = 'sine'; osc.frequency.value = freq;
+    var t = ctx.currentTime, vol = 0.6 / (i + 1), dur = 3 - i * 0.5;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    osc.start(t); osc.stop(t + dur);
+  });
+}
+function _synthThunder() {
+  var ctx = _getWACtx(); if (!ctx) return;
+  var sr = ctx.sampleRate, buf = ctx.createBuffer(1, sr * 3, sr), d = buf.getChannelData(0);
+  for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 0.4);
+  var src = ctx.createBufferSource(), flt = ctx.createBiquadFilter(), g = ctx.createGain();
+  flt.type = 'lowpass'; flt.frequency.value = 180;
+  src.buffer = buf; src.connect(flt); flt.connect(g); g.connect(ctx.destination);
+  var t = ctx.currentTime;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1.2, t + 0.06);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 3);
+  src.start(t); src.stop(t + 3);
+}
+function _synthCoin() {
+  var ctx = _getWACtx(); if (!ctx) return;
+  [1047, 1319].forEach(function(freq) {
+    var osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = 'triangle'; osc.frequency.value = freq;
+    var t = ctx.currentTime;
+    g.gain.setValueAtTime(0.4, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.start(t); osc.stop(t + 0.35);
+  });
+}
+function _synthDiceRoll() {
+  var ctx = _getWACtx(); if (!ctx) return;
+  for (var k = 0; k < 5; k++) {
+    (function(delay) {
+      var sr = ctx.sampleRate, dur = 0.07, buf = ctx.createBuffer(1, Math.floor(sr * dur), sr);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      var src = ctx.createBufferSource(), g = ctx.createGain();
+      src.buffer = buf; src.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+      src.start(ctx.currentTime + delay); src.stop(ctx.currentTime + delay + dur);
+    })(k * 0.05 + Math.random() * 0.03);
+  }
+}
+function _playSynth(sfxId) {
+  if (sfxId === 'campana') _synthBell();
+  else if (sfxId === 'tuoni') _synthThunder();
+}
 function playOneShot(sfxId, durationMs) {
   var src = resolveSfxUrl(sfxId);
-  if (!src) return;
+  if (!src) { _playSynth(sfxId); return; }
   var slot = 'oneshot_' + sfxId;
   var entry = _audios[slot];
   if (entry) { entry.el.pause(); delete _audios[slot]; }
   var el = getAudio(slot, src, false);
   el.volume = 1; el.currentTime = 0;
   var p = el.play();
-  if (p && p.catch) p.catch(function(e){ console.warn('[Regia oneshot]', e.message); });
+  if (p && p.catch) p.catch(function(e) { _playSynth(sfxId); });
   setTimeout(function() { var e2 = _audios[slot]; if (e2) { e2.el.pause(); e2.el.currentTime = 0; } }, durationMs);
 }
 
@@ -19124,6 +19583,16 @@ function renderDadi() {
   });
   diceBox.appendChild(diceGrid);
 
+  // Formula multi-dado
+  var formulaWrap = document.createElement('div');
+  formulaWrap.style.cssText = 'display:flex;gap:0.4rem;align-items:center;margin-bottom:0.5rem;';
+  var formulaInput = document.createElement('input');
+  formulaInput.type = 'text'; formulaInput.placeholder = 'es. 2d6+3, d20, 4d8-2';
+  formulaInput.style.cssText = 'flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-main);font-family:"EB Garamond",serif;font-size:13px;padding:0.35rem 0.6rem;border-radius:4px;outline:none;';
+  formulaInput.title = 'Formula dadi (es. 2d6+3)';
+  formulaWrap.appendChild(formulaInput);
+  diceBox.appendChild(formulaWrap);
+
   // Display risultato
   var resultEl = document.createElement('div');
   resultEl.className = 'dice-result-display';
@@ -19143,6 +19612,42 @@ function renderDadi() {
   rollBtn.className = 'dice-roll-btn';
   rollBtn.innerHTML = '🎲 Lancia d' + state.diceType;
   rollBtn.onclick = function() {
+    // Suono dadi
+    unlockAudio(function(){ _synthDiceRoll && _synthDiceRoll(); });
+
+    // Controlla se c'è una formula personalizzata
+    var formula = formulaInput ? formulaInput.value.trim().toLowerCase() : '';
+    if (formula) {
+      var fMatch = formula.match(/^(\d*)d(\d+)([+-]\d+)?$/);
+      if (fMatch) {
+        var nDice = parseInt(fMatch[1]) || 1;
+        var faces = parseInt(fMatch[2]);
+        var mod   = parseInt(fMatch[3] || '0');
+        nDice = Math.min(nDice, 20); faces = Math.min(faces, 1000);
+        var total = 0, rolls = [];
+        for (var ri = 0; ri < nDice; ri++) {
+          var rv = Math.floor(Math.random() * faces) + 1;
+          rolls.push(rv); total += rv;
+        }
+        total += mod;
+        var isCrit = faces === 20 && nDice === 1 && total === 20;
+        var isFail = faces === 20 && nDice === 1 && total === 1;
+        resultEl.className = 'dice-result-display' + (isCrit ? ' crit' : isFail ? ' fail' : '');
+        resultEl.textContent = total;
+        if (rolls.length > 1) resultEl.title = rolls.join('+') + (mod ? (mod > 0 ? '+'+mod : mod) : '') + ' = ' + total;
+        resultEl.classList.add('dice-anim');
+        setTimeout(function(){ resultEl.classList.remove('dice-anim'); }, 350);
+        rollBtn.innerHTML = '🎲 Lancia';
+        state.diceHistory.unshift({ value: total, diceType: faces, username: state.currentUser ? state.currentUser.username : '?', formula: formula });
+        if (state.diceHistory.length > 20) state.diceHistory.pop();
+        if (_db && state.currentUser) {
+          _db.ref('diceRolls').push({ value: total, diceType: faces, username: state.currentUser.username, timestamp: firebase.database.ServerValue.TIMESTAMP });
+        }
+        updateDiceHistory(histList);
+        return; // evita il codice sotto
+      }
+    }
+
     var dtype = state.diceType;
     var result;
     var usaTrucco = isDM() && dtype === 20;
