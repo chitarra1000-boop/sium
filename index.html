@@ -20103,11 +20103,12 @@ function _openSecondaryMapView(fid) {
   overlay.appendChild(bodyRow);
   mapContainer.appendChild(overlay);
 
-  // Se mappaSec non è in stato locale, prova a caricarlo da Firebase
-  if (_db && !f.mappaSec) {
+  // Leggi sempre mappaSec fresco da Firebase — se diverso da stato, aggiorna e riapri
+  if (_db) {
     _db.ref(_mappaFlagPath(fid)+'/mappaSec').once('value', function(snap) {
       var ms = snap.val();
-      if (ms && document.getElementById('mappa-sec-overlay')) {
+      var prev = state.mappaFlags[fid] && state.mappaFlags[fid].mappaSec;
+      if (ms && ms !== prev && document.getElementById('mappa-sec-overlay')) {
         if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
         state.mappaFlags[fid].mappaSec = ms;
         _closeSecondaryMapView();
@@ -20451,12 +20452,26 @@ function renderMappaFlagPanel(panel, fid, inSecView) {
           var file = e.target.files[0]; if (!file) return;
           var rd = new FileReader();
           rd.onload = function(ev) {
-            if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
-            state.mappaFlags[fid].mappaSec = ev.target.result;
-            _db && _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(ev.target.result);
-            if (_secMapFid === fid && document.getElementById('mappa-sec-overlay')) {
-              _closeSecondaryMapView(); _openSecondaryMapView(fid);
-            } else { renderMappaFlagPanel(panel, fid); }
+            var img = new Image();
+            img.onload = function() {
+              var MAX = 1400, w = img.width, h = img.height;
+              var scale = Math.min(1, MAX/w, MAX/h);
+              var cv = document.createElement('canvas');
+              cv.width = Math.round(w*scale); cv.height = Math.round(h*scale);
+              cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+              var compressed = cv.toDataURL('image/jpeg', 0.82);
+              if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
+              state.mappaFlags[fid].mappaSec = compressed;
+              if (_db) {
+                _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(compressed)
+                  .then(function(){ notify('Mappa zona salvata ✓', 'ok'); })
+                  .catch(function(err){ notify('Errore salvataggio mappa: '+err.message, 'err'); });
+              }
+              if (_secMapFid === fid && document.getElementById('mappa-sec-overlay')) {
+                _closeSecondaryMapView(); _openSecondaryMapView(fid);
+              } else { renderMappaFlagPanel(panel, fid); }
+            };
+            img.src = ev.target.result;
           };
           rd.readAsDataURL(file);
         };
@@ -20470,7 +20485,11 @@ function renderMappaFlagPanel(panel, fid, inSecView) {
         if (url) {
           if (!state.mappaFlags[fid]) state.mappaFlags[fid] = {};
           state.mappaFlags[fid].mappaSec = url;
-          _db && _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(url);
+          if (_db) {
+            _db.ref(_mappaFlagPath(fid)+'/mappaSec').set(url)
+              .then(function(){ notify('Mappa zona salvata ✓', 'ok'); })
+              .catch(function(err){ notify('Errore salvataggio mappa: '+err.message, 'err'); });
+          }
           if (_secMapFid === fid && document.getElementById('mappa-sec-overlay')) {
             _closeSecondaryMapView(); _openSecondaryMapView(fid);
           } else { renderMappaFlagPanel(panel, fid); }
