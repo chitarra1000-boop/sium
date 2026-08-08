@@ -16792,11 +16792,11 @@ function _openIncantesimoDetail(s) {
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
   overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
   var panel = document.createElement('div');
-  panel.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-gold);max-width:700px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;';
+  panel.style.cssText = 'background:var(--bg-card);border:1px solid var(--border-gold);max-width:700px;width:100%;max-height:90vh;overflow-y:auto;';
   panel.onclick = function(e){ e.stopPropagation(); };
   // Header
   var hdr = document.createElement('div');
-  hdr.style.cssText = 'padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border-gold);position:sticky;top:0;background:var(--bg-card);z-index:1;';
+  hdr.style.cssText = 'padding:1.25rem 1.5rem 1rem;border-bottom:1px solid var(--border-gold);background:var(--bg-card);';
   var topRow = document.createElement('div'); topRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;';
   var nameBlock = document.createElement('div');
   var lvlBadge = document.createElement('div');
