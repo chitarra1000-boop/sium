@@ -5599,10 +5599,25 @@ function setupRealtimeListeners() {
       seenSpDup[k]=1;
       return true;
     });
+    var srdArr = (typeof SRD_INCANTESIMI !== 'undefined' ? SRD_INCANTESIMI : []);
+    var srdByName = {};
+    srdArr.forEach(function(x){ if(x.nome) srdByName[(x.nome||'').toLowerCase()] = x; });
     var nomi = {};
     existing.forEach(function(x){ nomi[(x.nome||'').toLowerCase()] = 1; });
-    var toAdd = (typeof SRD_INCANTESIMI !== 'undefined' ? SRD_INCANTESIMI : []).filter(function(x){ return !nomi[(x.nome||'').toLowerCase()]; });
-    if (toAdd.length) {
+    var toAdd = srdArr.filter(function(x){ return !nomi[(x.nome||'').toLowerCase()]; });
+    // Aggiorna descrizione/altiLivelli degli incantesimi SRD già presenti in Firebase
+    var needsUpdate = false;
+    existing = existing.map(function(x) {
+      var srd = srdByName[(x.nome||'').toLowerCase()];
+      if (!srd || !srd.id || (srd.id+'').indexOf('srd_sp_') !== 0) return x;
+      var changed = false;
+      var upd = {};
+      if (srd.descrizione && x.descrizione !== srd.descrizione) { upd.descrizione = srd.descrizione; changed = true; }
+      if (srd.altiLivelli !== undefined && x.altiLivelli !== srd.altiLivelli) { upd.altiLivelli = srd.altiLivelli; changed = true; }
+      if (changed) { needsUpdate = true; return Object.assign({}, x, upd); }
+      return x;
+    });
+    if (toAdd.length || needsUpdate) {
       var merged = existing.concat(toAdd).sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||'','it'); });
       _localWrite.incantesimiAggiuntivi = true;
       _db.ref('state/incantesimiAggiuntivi').set(merged, function(){ _localWrite.incantesimiAggiuntivi = false; });
