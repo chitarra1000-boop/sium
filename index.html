@@ -3963,25 +3963,7 @@
      Soluzione: ingrandiamo la scena tanto quanto serve perché il form occupi
      spazio verticale sufficiente (~150 px) dentro al forziere.
      I prop laterali vengono parzialmente tagliati ma il forziere resta centrato. */
-  @media (max-aspect-ratio: 4/3) {
-    .login-scene {
-      width:  210vw;
-      height: calc(210vw * 507 / 1024);
-    }
-    .login-form-area {
-      padding: 11px 13px;
-      gap: 7px;
-    }
-    .login-field-label  { font-size: 9.5px; letter-spacing: 0.14em; }
-    .login-input-wrap   { padding: 5px 8px; border-radius: 2px; }
-    .login-input-wrap input { font-size: 13px; }
-    .login-input-wrap svg.login-input-ico { width: 13px; height: 13px; margin-right: 6px; }
-    .login-divider      { font-size: 7px; gap: 8px; }
-    .login-btn          { font-size: 10.5px; padding: 8px 10px; letter-spacing: 0.08em; margin-top: 3px; }
-    .login-btn .login-btn-short { display: inline; }
-    .login-btn .login-btn-full  { display: none; }
-    .login-error        { font-size: 9.5px; }
-  }
+  /* ====== TABLET portrait (600px–900px) ====== */
   @media (max-aspect-ratio: 4/3) and (min-width: 600px) {
     .login-scene {
       width:  130vw;
@@ -3995,6 +3977,53 @@
     .login-divider      { font-size: 8px; }
     .login-btn          { font-size: 12px; padding: 11px 14px; letter-spacing: 0.14em; }
     .login-error        { font-size: 11px; }
+  }
+
+  /* ====== SMARTPHONE portrait (< 600px): layout card centrata ====== */
+  @media (max-width: 599px) and (max-aspect-ratio: 4/3) {
+    /* Scena: sfondo cover che riempie tutto lo schermo */
+    .login-scene {
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center 30%;
+    }
+    /* Vignetta scura per leggibilità */
+    .login-scene::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 3, 1, 0.62);
+      z-index: 0;
+    }
+    /* Card centrata assoluta */
+    .login-form-area {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(88vw, 340px);
+      height: auto;
+      min-height: 0;
+      padding: 1.6rem 1.4rem 1.4rem;
+      gap: 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(201,165,92,0.35);
+      box-shadow:
+        0 0 0 1px rgba(201,165,92,0.12),
+        0 8px 40px rgba(0,0,0,0.85);
+      z-index: 1;
+      overflow: visible;
+    }
+    /* Tipografia mobile */
+    .login-field-label  { font-size: 10px; letter-spacing: 0.14em; }
+    .login-input-wrap   { padding: 10px 12px; border-radius: 3px; }
+    .login-input-wrap input { font-size: 16px; } /* 16px evita zoom automatico su iOS */
+    .login-input-wrap svg.login-input-ico { width: 15px; height: 15px; margin-right: 7px; }
+    .login-divider      { font-size: 8px; gap: 8px; margin: 2px 0; }
+    .login-btn          { font-size: 13px; padding: 13px 14px; letter-spacing: 0.1em; margin-top: 4px; }
+    .login-error        { font-size: 10px; }
+    .login-heading      { font-size: 14px !important; letter-spacing: 0.1em !important; }
   }
 
   /* ============================================================
@@ -5320,7 +5349,7 @@
     <div class="login-form-area">
       <!-- Login con username/password -->
       <div id="login-cred-area" style="display:flex;flex-direction:column;align-items:center;gap:1.25rem;width:100%;">
-        <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Accedi al Compendium</div>
+        <div class="login-heading" style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;line-height:1.4;">Accedi al Compendium</div>
         <div class="login-divider">◆ ◇ ◆</div>
         <div class="login-field" style="width:100%;">
           <label class="login-field-label" for="login-username-input">Username</label>
@@ -5342,7 +5371,7 @@
       </div>
       <!-- Form creazione account (nascosto di default) -->
       <div id="create-account-area" style="display:none;flex-direction:column;align-items:center;gap:1rem;width:100%;">
-        <div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;">Crea Account</div>
+        <div class="login-heading" style="font-family:Cinzel,serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#c9a55c;text-align:center;line-height:1.4;">Crea Account</div>
         <div class="login-divider">◆ ◇ ◆</div>
         <div class="login-field" style="width:100%;">
           <label class="login-field-label">Username</label>
