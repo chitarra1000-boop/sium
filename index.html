@@ -552,11 +552,20 @@
     box-shadow: 0 2px 12px rgba(0,0,0,0.6);
   }
   @media (max-width: 900px) {
-    .sidebar { position: fixed; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 40; }
+    .sidebar { position: fixed; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 1200; }
     .sidebar.open { transform: translateX(0); }
     .sidebar-toggle { display: inline-flex; }
     .main-content { padding-top: 4rem; }
+    .sidebar-backdrop {
+      display: block;
+      position: fixed; inset: 0;
+      z-index: 1199;
+      background: rgba(0,0,0,0.52);
+      animation: fadeInBackdrop 0.2s ease;
+    }
   }
+  @keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
+  .sidebar-backdrop { display: none; }
 
   .filigree-divider {
     height: 24px;
@@ -3966,41 +3975,66 @@
   /* ====== TABLET portrait (600px–900px) ====== */
   @media (max-aspect-ratio: 4/3) and (min-width: 600px) {
     .login-scene {
-      width:  130vw;
-      height: calc(130vw * 507 / 1024);
-    }
-    .login-form-area { padding: 16px 20px; gap: 10px; }
-    .login-field-label  { font-size: 11px; }
-    .login-input-wrap   { padding: 7px 10px; }
-    .login-input-wrap input { font-size: 14px; }
-    .login-input-wrap svg.login-input-ico { width: 15px; height: 15px; margin-right: 8px; }
-    .login-divider      { font-size: 8px; }
-    .login-btn          { font-size: 12px; padding: 11px 14px; letter-spacing: 0.14em; }
-    .login-error        { font-size: 11px; }
-  }
-
-  /* ====== SMARTPHONE portrait (< 600px): layout card centrata ====== */
-  @media (max-width: 599px) and (max-aspect-ratio: 4/3) {
-    /* Scena: sfondo cover che riempie tutto lo schermo */
-    .login-scene {
       width: 100vw;
       height: 100vh;
+      background-image: url('img/login_tablet.jpg');
       background-size: cover;
-      background-position: center 30%;
+      background-position: center 40%;
     }
-    /* Vignetta scura per leggibilità */
     .login-scene::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(5, 3, 1, 0.62);
+      background: rgba(5, 3, 1, 0.55);
       z-index: 0;
     }
-    /* Card centrata assoluta */
     .login-form-area {
+      position: fixed;
+      left: 50vw;
+      top: 50vh;
+      transform: translate(-50%, -50%);
+      width: min(80vw, 400px);
+      height: auto;
+      min-height: 0;
+      padding: 2rem 1.8rem 1.6rem;
+      gap: 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(201,165,92,0.4);
+      box-shadow: 0 0 0 1px rgba(201,165,92,0.12), 0 12px 50px rgba(0,0,0,0.9);
+      z-index: 1;
+      overflow: visible;
+    }
+    .login-field-label  { font-size: 11px; }
+    .login-input-wrap   { padding: 9px 12px; }
+    .login-input-wrap input { font-size: 16px; }
+    .login-input-wrap svg.login-input-ico { width: 15px; height: 15px; margin-right: 8px; }
+    .login-divider      { font-size: 8px; }
+    .login-btn          { font-size: 13px; padding: 13px 14px; letter-spacing: 0.12em; }
+    .login-error        { font-size: 11px; }
+    .login-heading      { font-size: 15px !important; letter-spacing: 0.12em !important; }
+  }
+
+  /* ====== SMARTPHONE portrait (< 600px): card centrata su sfondo dark ====== */
+  @media (max-width: 599px) and (max-aspect-ratio: 4/3) {
+    .login-scene {
+      width: 100vw;
+      height: 100vh;
+      background-image: url('img/login_mobile.jpg');
+      background-size: cover;
+      background-position: center 20%;
+    }
+    .login-scene::before {
+      content: '';
       position: absolute;
-      left: 50%;
-      top: 50%;
+      inset: 0;
+      background: rgba(4, 2, 1, 0.58);
+      z-index: 0;
+    }
+    /* Card centrata con position:fixed — relativa al viewport, non alla scena */
+    .login-form-area {
+      position: fixed;
+      left: 50vw;
+      top: 50vh;
       transform: translate(-50%, -50%);
       width: min(88vw, 340px);
       height: auto;
@@ -4008,17 +4042,16 @@
       padding: 1.6rem 1.4rem 1.4rem;
       gap: 10px;
       border-radius: 6px;
-      border: 1px solid rgba(201,165,92,0.35);
+      border: 1px solid rgba(201,165,92,0.38);
       box-shadow:
         0 0 0 1px rgba(201,165,92,0.12),
-        0 8px 40px rgba(0,0,0,0.85);
+        0 8px 40px rgba(0,0,0,0.9);
       z-index: 1;
       overflow: visible;
     }
-    /* Tipografia mobile */
     .login-field-label  { font-size: 10px; letter-spacing: 0.14em; }
     .login-input-wrap   { padding: 10px 12px; border-radius: 3px; }
-    .login-input-wrap input { font-size: 16px; } /* 16px evita zoom automatico su iOS */
+    .login-input-wrap input { font-size: 16px; }
     .login-input-wrap svg.login-input-ico { width: 15px; height: 15px; margin-right: 7px; }
     .login-divider      { font-size: 8px; gap: 8px; margin: 2px 0; }
     .login-btn          { font-size: 13px; padding: 13px 14px; letter-spacing: 0.1em; margin-top: 4px; }
@@ -8313,6 +8346,14 @@ function render() {
   shell.appendChild(mt);
 
   shell.appendChild(renderSidebar());
+
+  /* Backdrop per chiudere la sidebar cliccando fuori (solo mobile) */
+  if (state.sidebarOpen) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'sidebar-backdrop';
+    backdrop.onclick = function() { state.sidebarOpen = false; render(); };
+    shell.appendChild(backdrop);
+  }
 
   /* Wrapper contenuto — split quando regia attiva */
   var contentWrap = document.createElement('div');
@@ -20590,9 +20631,12 @@ function refreshMappaFlags() {
                 '</svg></div>',
           iconSize: [36, 40], iconAnchor: [18, 38]
         });
-        var ghostMarker = L.marker([f.lat, f.lng], {icon: ghostIcon});
+        var ghostMarker = L.marker([f.lat, f.lng], {icon: ghostIcon, interactive: true, bubblingMouseEvents: false});
         (function(fid_) {
-          ghostMarker.on('click', function() { _openSecondaryMapView(fid_); });
+          ghostMarker.on('click touchend', function(e) {
+            if (e.type === 'touchend' && e.originalEvent) e.originalEvent.preventDefault();
+            _openSecondaryMapView(fid_);
+          });
         })(fid);
         ghostMarker.addTo(_flagLayer);
         _flagMarkers[fid] = ghostMarker;
