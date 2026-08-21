@@ -5064,6 +5064,217 @@
     padding: 0.3rem 0.7rem; display: inline-block; margin-bottom: 0.5rem;
   }
 
+  /* ================================================================
+     RESPONSIVE — tablet ≤900px e mobile ≤600px
+     Desktop (>900px) non viene toccato da nessuna regola qui sotto.
+     ================================================================ */
+
+  /* --- Regia Sonora: bottom sheet su mobile invece di nasconderla --- */
+  @media (max-width: 900px) {
+    .content-wrap.regia-split .regia-panel {
+      display: flex !important;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      width: 100% !important;
+      height: 45vh;
+      flex: none !important;
+      z-index: 120;
+      border-top: 2px solid var(--border-gold);
+      border-left: none;
+      box-shadow: 0 -6px 32px rgba(0,0,0,0.7);
+      overflow-y: auto;
+    }
+    .content-wrap.regia-split .main-content {
+      padding-bottom: 45vh;
+    }
+  }
+
+  /* --- Mappa: info panel full-width da sinistra su mobile --- */
+  @media (max-width: 900px) {
+    .mappa-info-panel {
+      width: 100% !important;
+      right: auto; left: 0;
+      top: auto; bottom: 0;
+      height: 60vh;
+      border-left: none;
+      border-top: 2px solid var(--border-gold);
+      transform: translateY(100%);
+    }
+    .mappa-info-panel.open { transform: translateY(0); }
+    .mappa-wrap { height: calc(100vh - 170px); min-height: 300px; }
+    .mappa-layer-bar { bottom: 0.4rem; max-width: 95vw; flex-wrap: wrap; gap: 0.3rem; }
+    .mappa-overlay-panel {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 50vh;
+      top: auto; bottom: 0;
+      border-left: none;
+      border-top: 2px solid var(--border-gold);
+    }
+  }
+
+  /* --- Storia: NPC panel nascosto su mobile (tab dedicato) --- */
+  @media (max-width: 900px) {
+    .storia-npc-panel { display: none !important; }
+    .storia-editor { padding: 1.25rem 1rem; font-size: 15px; }
+    .storia-toolbar { padding: 0.35rem 0.5rem; gap: 0.2rem; overflow-x: auto; }
+    .storia-fmt-btn { padding: 0.2rem 0.35rem; min-width: 24px; }
+  }
+
+  /* --- Modali e overlay generici --- */
+  @media (max-width: 900px) {
+    .modal-backdrop { align-items: flex-end; padding: 0; }
+    .modal-backdrop > div,
+    .modal-backdrop > .panel-glass {
+      width: 100% !important;
+      max-width: 100% !important;
+      border-radius: 12px 12px 0 0;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    /* Modali centrate che non usano modal-backdrop */
+    [style*="position:fixed"][style*="z-index:"] > [style*="max-width:700px"],
+    [style*="position:fixed"][style*="z-index:"] > [style*="max-width:600px"],
+    [style*="position:fixed"][style*="z-index:"] > [style*="max-width:500px"] {
+      max-width: 96vw !important;
+      width: 96vw !important;
+    }
+  }
+
+  /* --- Archivio Idee: shelf sopra, editor sotto --- */
+  @media (max-width: 900px) {
+    .archivio-body-mobile {
+      flex-direction: column !important;
+      height: auto !important;
+      min-height: calc(100vh - 132px);
+    }
+    .archivio-body-mobile > div:first-child {
+      /* shelf: larghezza 100%, altezza fissa */
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 160px !important;
+      min-height: 0 !important;
+      border-right: none !important;
+      border-bottom: 2px solid #5a3a1a;
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+    }
+    .archivio-body-mobile > div:first-child > div:nth-child(2) {
+      /* booksWrap: orizzontale */
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      padding: 0.5rem 0.75rem !important;
+    }
+    .archivio-body-mobile > div:last-child {
+      /* editor panel: occupa il resto */
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+  }
+
+  /* --- Griglia libri --- */
+  @media (max-width: 480px) {
+    .libro-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
+  /* --- Header titoli --- */
+  @media (max-width: 600px) {
+    .header-title { font-size: clamp(1.2rem, 5vw, 1.8rem) !important; }
+    .container-main { padding: 0 0.75rem; }
+    .header-eyebrow { font-size: 9px; }
+  }
+
+  /* --- Card weapon grid --- */
+  @media (max-width: 540px) {
+    .weapon-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* --- Bestiario / NPC cards --- */
+  @media (max-width: 600px) {
+    .bestie-grid, .npc-grid { grid-template-columns: 1fr !important; }
+    .npc-top-panel { grid-template-columns: 1fr !important; }
+  }
+
+  /* --- Iniziativa --- */
+  @media (max-width: 700px) {
+    .initiative-layout { grid-template-columns: 1fr !important; }
+    .init-combatant { padding: 0.6rem 0.75rem; }
+  }
+
+  /* --- Emporio tabs --- */
+  @media (max-width: 600px) {
+    .emporio-tabs { flex-wrap: wrap; gap: 0.3rem; }
+    .emporio-tab { padding: 0.4rem 0.6rem; font-size: 10px; }
+  }
+
+  /* --- Scheda PG --- */
+  @media (max-width: 600px) {
+    .scheda-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* --- Statistiche & Caos --- */
+  @media (max-width: 600px) {
+    .caos-wrap { padding: 0 0.5rem; }
+    .caos-grid, .stat-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+
+  /* --- Generatore NPC --- */
+  @media (max-width: 600px) {
+    .generatore-wrap { padding: 0 0.5rem; }
+  }
+
+  /* --- Main content padding top (hamburger sovrapposto) --- */
+  @media (max-width: 900px) {
+    .main-content { padding-top: 3.5rem !important; }
+  }
+
+  /* --- Sidebar-toggle: posizionamento sicuro --- */
+  @media (max-width: 900px) {
+    .sidebar-toggle { top: 0.6rem; left: 0.6rem; width: 40px; height: 40px; }
+  }
+
+  /* --- Pannello incantesimi modal --- */
+  @media (max-width: 700px) {
+    .incantesimo-modal-panel {
+      max-width: 96vw !important;
+      width: 96vw !important;
+    }
+  }
+
+  /* --- Worldbuilding (pannelli affiancati) --- */
+  @media (max-width: 900px) {
+    .wb-layout { flex-direction: column !important; }
+    .wb-sidebar { width: 100% !important; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border-soft); }
+  }
+
+  /* --- Tabella iniziativa: scroll orizzontale --- */
+  @media (max-width: 600px) {
+    .init-table-wrap { overflow-x: auto; }
+  }
+
+  /* --- Touch: tap target minimo 44px per pulsanti importanti --- */
+  @media (max-width: 900px) {
+    .nav-item { min-height: 44px; }
+    .mappa-btn { min-height: 40px; padding: 0.5rem 0.85rem; }
+    button, .btn, [class*="btn-"] {
+      min-height: 36px;
+    }
+  }
+
+  /* --- Overlay settings/login su mobile --- */
+  @media (max-width: 600px) {
+    #settings-overlay > div,
+    #login-overlay > div {
+      width: 96vw !important;
+      max-width: 96vw !important;
+      margin: auto;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -5993,6 +6204,55 @@ function _attachMappaListener() {
           }
           if (state.section === 'mappa') renderMain();
         }
+      });
+    });
+    return;
+  }
+
+  /* PG: query diretta a Firebase per trovare il DM principale,
+     indipendente dal timing di _remoteUsers */
+  if (isPG()) {
+    _db.ref('users').once('value', function(usersSnap) {
+      var users = usersSnap.val() || {};
+      var adminKey = null;
+      Object.keys(users).some(function(k) {
+        if (users[k] && users[k].role === 'DM') { adminKey = k; return true; }
+      });
+      var pgMapPath = adminKey ? 'users/' + adminKey + '/mappa' : 'state/mappa';
+      if (_mappaListenerRef) { _mappaListenerRef.off(); _mappaListenerRef = null; }
+      _mappaListenerRef = _db.ref(pgMapPath);
+      _mappaListenerRef.on('value', function(snap) {
+        var v = snap.val();
+        if (v) {
+          if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
+          else if (!v.maps) state.mappaList = state.mappaList || {};
+          if (typeof v.activeMapId === 'string') {
+            state.mappaActiveId = v.activeMapId;
+            var activeMap = state.mappaList[state.mappaActiveId];
+            if (activeMap) {
+              var newUrl = activeMap.url || '';
+              var urlChanged = newUrl !== state.mappaUrl;
+              state.mappaUrl = newUrl;
+              state.mappaFlags = activeMap.flags || {};
+              if (state.section === 'mappa' && urlChanged) {
+                var md = document.getElementById('leaflet-map');
+                var ip = document.querySelector('.mappa-info-panel');
+                if (md) {
+                  if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
+                  if (state.mappaUrl) initLeafletMap(md, ip);
+                  else md.innerHTML = '<div class="mappa-no-img"><div class="mappa-no-img-title">Mappa non ancora disponibile</div><div class="mappa-no-img-sub">Il Dungeon Master non ha ancora caricato la mappa del mondo.</div></div>';
+                }
+              } else if (state.section === 'mappa') {
+                refreshMappaFlags();
+              }
+            }
+          } else if (typeof v.url === 'string') {
+            state.mappaUrl = v.url;
+            if (v.flags && typeof v.flags === 'object') state.mappaFlags = v.flags;
+            if (state.section === 'mappa') refreshMappaFlags();
+          }
+        }
+        if (state.mappaActiveId) _attachWorldbuildingListener(state.mappaActiveId);
       });
     });
     return;
@@ -22889,6 +23149,7 @@ function renderArchivio() {
   /* Body = shelf (left) + editor (right) */
   var body = document.createElement('div');
   body.style.cssText = 'display:flex;flex:1;height:calc(100vh - 132px);overflow:hidden;';
+  body.className = 'archivio-body-mobile';
   wrap.appendChild(body);
 
   /* ---- SHELF ---- */
