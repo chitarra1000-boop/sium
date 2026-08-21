@@ -539,16 +539,17 @@
   .sidebar-toggle {
     display: none;
     position: fixed;
-    top: 1rem; left: 1rem;
-    z-index: 50;
+    top: 0.65rem; right: 0.75rem;
+    z-index: 9999;
     width: 44px; height: 44px;
-    border-radius: 4px;
+    border-radius: 6px;
     background: var(--bg-panel);
     border: 1px solid var(--border-gold);
     color: var(--gold-bright);
     cursor: pointer;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.6);
   }
   @media (max-width: 900px) {
     .sidebar { position: fixed; transform: translateX(-100%); transition: transform 0.3s ease; z-index: 40; }
@@ -5181,6 +5182,39 @@
     .libro-grid { grid-template-columns: repeat(2, 1fr) !important; }
   }
 
+  /* --- Barra selezione mappa PG --- */
+  .pg-mappa-selector {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-gold);
+    order: -1;
+  }
+  .pg-mappa-selector-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+    white-space: nowrap;
+    color: var(--gold-bright);
+  }
+  .pg-mappa-pill {
+    padding: 0.3rem 0.85rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-gold);
+    background: transparent;
+    color: var(--gold-bright);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .pg-mappa-pill:hover { background: rgba(200,150,50,0.15); }
+  .pg-mappa-pill.active { background: var(--gold-bright); color: #1a0e00; font-weight: 600; }
+
   /* --- Header titoli --- */
   @media (max-width: 600px) {
     .header-title { font-size: clamp(1.2rem, 5vw, 1.8rem) !important; }
@@ -5232,9 +5266,9 @@
     .main-content { padding-top: 3.5rem !important; }
   }
 
-  /* --- Sidebar-toggle: posizionamento sicuro --- */
+  /* --- Sidebar-toggle: sempre top-right su mobile --- */
   @media (max-width: 900px) {
-    .sidebar-toggle { top: 0.6rem; left: 0.6rem; width: 40px; height: 40px; }
+    .sidebar-toggle { top: 0.65rem; right: 0.75rem; left: auto; width: 44px; height: 44px; }
   }
 
   /* --- Pannello incantesimi modal --- */
@@ -6209,16 +6243,10 @@ function _attachMappaListener() {
     return;
   }
 
-  /* PG: query diretta a Firebase per trovare il DM principale,
-     indipendente dal timing di _remoteUsers */
+  /* PG: usa _mappaViewAsUser se già scelto, altrimenti trova il DM principale */
   if (isPG()) {
-    _db.ref('users').once('value', function(usersSnap) {
-      var users = usersSnap.val() || {};
-      var adminKey = null;
-      Object.keys(users).some(function(k) {
-        if (users[k] && users[k].role === 'DM') { adminKey = k; return true; }
-      });
-      var pgMapPath = adminKey ? 'users/' + adminKey + '/mappa' : 'state/mappa';
+    var _pgDoAttach = function(dmKey) {
+      var pgMapPath = dmKey ? 'users/' + dmKey + '/mappa' : 'state/mappa';
       if (_mappaListenerRef) { _mappaListenerRef.off(); _mappaListenerRef = null; }
       _mappaListenerRef = _db.ref(pgMapPath);
       _mappaListenerRef.on('value', function(snap) {
@@ -6234,16 +6262,16 @@ function _attachMappaListener() {
               var urlChanged = newUrl !== state.mappaUrl;
               state.mappaUrl = newUrl;
               state.mappaFlags = activeMap.flags || {};
-              if (state.section === 'mappa' && urlChanged) {
+              if (state.section === 'mappa') {
                 var md = document.getElementById('leaflet-map');
                 var ip = document.querySelector('.mappa-info-panel');
-                if (md) {
+                if (md && urlChanged) {
                   if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
                   if (state.mappaUrl) initLeafletMap(md, ip);
-                  else md.innerHTML = '<div class="mappa-no-img"><div class="mappa-no-img-title">Mappa non ancora disponibile</div><div class="mappa-no-img-sub">Il Dungeon Master non ha ancora caricato la mappa del mondo.</div></div>';
+                  else md.innerHTML = '<div class="mappa-no-img"><div class="mappa-no-img-title">Nessuna mappa caricata da questo DM</div></div>';
+                } else if (!urlChanged) {
+                  refreshMappaFlags();
                 }
-              } else if (state.section === 'mappa') {
-                refreshMappaFlags();
               }
             }
           } else if (typeof v.url === 'string') {
@@ -6254,7 +6282,20 @@ function _attachMappaListener() {
         }
         if (state.mappaActiveId) _attachWorldbuildingListener(state.mappaActiveId);
       });
-    });
+    };
+    if (_mappaViewAsUser) {
+      _pgDoAttach(_mappaViewAsUser);
+    } else {
+      _db.ref('users').once('value', function(usersSnap) {
+        var users = usersSnap.val() || {};
+        var adminKey = null;
+        Object.keys(users).some(function(k) {
+          if (users[k] && users[k].role === 'DM') { adminKey = k; return true; }
+        });
+        if (adminKey) _mappaViewAsUser = adminKey;
+        _pgDoAttach(adminKey);
+      });
+    }
     return;
   }
 
@@ -21592,18 +21633,64 @@ function renderMappa() {
 
   mappaWrap.appendChild(mapContainer);
   mappaWrap.appendChild(infoPanel);
+
+  /* ---- BARRA SELEZIONE DM (solo PG) ---- */
+  if (isPG()) {
+    var pgSelectorBar = document.createElement('div');
+    pgSelectorBar.className = 'pg-mappa-selector';
+    pgSelectorBar.innerHTML = '<span class="pg-mappa-selector-label">Mappa di:</span>';
+    wrap.appendChild(pgSelectorBar);
+
+    var _buildPgPills = function(users) {
+      var existing = pgSelectorBar.querySelectorAll('.pg-mappa-pill');
+      existing.forEach(function(p){ p.remove(); });
+      var hasDms = false;
+      Object.keys(users).forEach(function(k) {
+        var u = users[k];
+        if (!u || (u.role !== 'DM' && !u.dmPriv)) return;
+        hasDms = true;
+        var pill = document.createElement('button');
+        pill.className = 'pg-mappa-pill' + (_mappaViewAsUser === k ? ' active' : '');
+        pill.textContent = k;
+        pill.onclick = function() {
+          if (_mappaViewAsUser === k) return;
+          _mappaViewAsUser = k;
+          state.mappaUrl = '';
+          state.mappaList = {};
+          state.mappaActiveId = null;
+          pgSelectorBar.querySelectorAll('.pg-mappa-pill').forEach(function(p){ p.classList.remove('active'); });
+          pill.classList.add('active');
+          if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
+          mapDiv.innerHTML = '<div class="mappa-no-img" style="opacity:0.6;"><div class="mappa-no-img-title" style="font-size:13px;">Caricamento mappa di ' + k + '...</div></div>';
+          _attachMappaListener();
+        };
+        pgSelectorBar.appendChild(pill);
+      });
+      if (!hasDms) pgSelectorBar.style.display = 'none';
+    };
+    if (_remoteUsers && Object.keys(_remoteUsers).length > 0) {
+      _buildPgPills(_remoteUsers);
+    } else {
+      _db.ref('users').once('value', function(snap) { _buildPgPills(snap.val() || {}); });
+    }
+  }
+
   wrap.appendChild(mappaWrap);
 
   // Inizializza Leaflet dopo che il DOM è stato aggiunto
   if (isPG()) {
-    // PG: mostra subito "caricamento" mentre Firebase risponde con la mappa del DM
-    mapDiv.innerHTML = '<div class="mappa-no-img" style="opacity:0.6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg><div class="mappa-no-img-title" style="font-size:13px;">Caricamento mappa...</div></div>';
-    // Dopo 4 secondi, se la mappa non è arrivata, mostra messaggio definitivo
     setTimeout(function() {
-      if (!state.mappaUrl && document.getElementById('leaflet-map') === mapDiv) {
-        mapDiv.innerHTML = '<div class="mappa-no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg><div class="mappa-no-img-title">Mappa non ancora disponibile</div><div class="mappa-no-img-sub">Il Dungeon Master non ha ancora caricato la mappa del mondo.</div></div>';
+      if (state.mappaUrl) {
+        initLeafletMap(mapDiv, infoPanel);
+      } else {
+        mapDiv.innerHTML = '<div class="mappa-no-img" style="opacity:0.6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg><div class="mappa-no-img-title" style="font-size:13px;">Caricamento mappa...</div></div>';
+        setTimeout(function() {
+          if (!state.mappaUrl && document.getElementById('leaflet-map') === mapDiv) {
+            mapDiv.innerHTML = '<div class="mappa-no-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg><div class="mappa-no-img-title">Mappa non ancora disponibile</div><div class="mappa-no-img-sub">Il Dungeon Master non ha ancora caricato la mappa del mondo.</div></div>';
+          }
+        }, 4000);
       }
-    }, 4000);
+    }, 80);
   } else {
     setTimeout(function() {
       if (state.mappaUrl) {
