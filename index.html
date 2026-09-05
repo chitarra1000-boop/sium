@@ -6601,6 +6601,12 @@ function tentaLogin() {
     }
     render();
     renderUserBadge();
+    /* Autosave periodico ogni 2 minuti come rete di sicurezza */
+    if (!window._armiAutosaveInterval) {
+      window._armiAutosaveInterval = setInterval(function() {
+        if (_db && state.armi && state.armi.length > 0 && !_localWrite.armi) fbSaveArmi();
+      }, 120000);
+    }
     return true;
   }
 
@@ -9886,7 +9892,7 @@ function renderEmporio() {
   var rightHead = document.createElement('div');
   rightHead.className = 'flex flex-wrap items-center gap-2';
   var btnSave = document.createElement('button');
-  btnSave.className = 'btn-gold';
+  btnSave.className = 'btn-dark';
   btnSave.innerHTML = ICON.save + ' Salva su Chiavetta';
   btnSave.onclick = saveArmi;
   rightHead.appendChild(btnSave);
@@ -9913,14 +9919,20 @@ function renderEmporio() {
   top.appendChild(rightHead);
 
   hc.appendChild(top);
-  var fd = document.createElement('div');
-  fd.className = 'filigree-divider mt-7';
-  hc.appendChild(fd);
-
-  var notice = document.createElement('div');
-  notice.className = 'notice mt-5';
-  notice.innerHTML = '<strong style="color:var(--gold);font-style:normal;">\u26A0 Promemoria del Mercante: </strong>i dati esistono solo finch&eacute; la pagina &egrave; aperta. Prima di chiudere il browser, premi <em>"Salva su Chiavetta"</em> per scaricare il file. Riapri con <em>"Carica da Chiavetta"</em>.';
-  hc.appendChild(notice);
+  if (!state._emporioNoticeDismissed) {
+    var notice = document.createElement('div');
+    notice.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.75rem;margin-top:0.75rem;background:rgba(201,165,92,0.08);border:1px solid rgba(201,165,92,0.25);border-radius:4px;padding:0.55rem 0.9rem;font-size:13px;font-style:italic;color:var(--text-muted);';
+    var noticeSpan = document.createElement('span');
+    noticeSpan.innerHTML = '☁ <strong style="color:var(--gold);font-style:normal;">Salvataggio automatico attivo</strong> — i dati vengono sincronizzati su Firebase ad ogni modifica. Usa <em>Salva su Chiavetta</em> per un backup locale.';
+    notice.appendChild(noticeSpan);
+    var noticeX = document.createElement('button');
+    noticeX.style.cssText = 'background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:18px;line-height:1;padding:0 0.2rem;flex-shrink:0;';
+    noticeX.textContent = '×';
+    noticeX.title = 'Chiudi';
+    noticeX.onclick = function() { state._emporioNoticeDismissed = true; notice.remove(); };
+    notice.appendChild(noticeX);
+    hc.appendChild(notice);
+  }
   header.appendChild(hc);
   wrap.appendChild(header);
 
