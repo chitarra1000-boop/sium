@@ -7924,6 +7924,7 @@ var state = {
   filtroValuta: '',
   filtroRarita: '',
   search: '',
+  emporioShowHomebrew: false,
   showForm: false,
   editingId: null,
   emporioTab: 'normale',
@@ -8344,8 +8345,10 @@ function getFilteredArmi() {
     if (state.filtroRarita && w.rarita !== state.filtroRarita) return false;
     if (state.search) {
       var s = state.search.toLowerCase();
-      if (w.nome.toLowerCase().indexOf(s) < 0 && w.descrizione.toLowerCase().indexOf(s) < 0) return false;
+      if (w.nome.toLowerCase().indexOf(s) < 0 && (w.descrizione||'').toLowerCase().indexOf(s) < 0) return false;
     }
+    /* Filtro ufficiale/homebrew: srd_o_ = ufficiale, w_ = homebrew */
+    if (!state.emporioShowHomebrew && (w.id||'').startsWith('w_')) return false;
     return true;
   });
 }
@@ -10009,6 +10012,23 @@ function renderEmporio() {
     return f || v;
   }));
   row.appendChild(makeSelectFilter('Rarit\u00E0', state.filtroRarita, [''].concat(RARITA), function(v){ state.filtroRarita=v; updateResults(); }, '— Tutte le rarit\u00E0 —'));
+
+  /* Checkbox homebrew */
+  var hbWrap = document.createElement('div');
+  hbWrap.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding-bottom:0.2rem;';
+  var hbChk = document.createElement('input');
+  hbChk.type = 'checkbox';
+  hbChk.id = 'emporio-homebrew-chk';
+  hbChk.checked = !!state.emporioShowHomebrew;
+  hbChk.style.cssText = 'width:15px;height:15px;cursor:pointer;accent-color:var(--gold);';
+  hbChk.onchange = function() { state.emporioShowHomebrew = this.checked; updateResults(); };
+  var hbLbl = document.createElement('label');
+  hbLbl.htmlFor = 'emporio-homebrew-chk';
+  hbLbl.style.cssText = 'font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold-dim);cursor:pointer;white-space:nowrap;user-select:none;';
+  hbLbl.textContent = 'Mostra Homebrew';
+  hbWrap.appendChild(hbChk);
+  hbWrap.appendChild(hbLbl);
+  row.appendChild(hbWrap);
 
   var addBtnW = document.createElement('div');
   var addBtn = document.createElement('button');
@@ -11887,6 +11907,7 @@ function renderActiveFilters(container) {
   }
   if (state.filtroRarita) active.push({label: state.filtroRarita, clear: function(){ state.filtroRarita=''; }});
   if (state.search) active.push({label: '"' + state.search + '"', clear: function(){ state.search=''; }});
+  if (state.emporioShowHomebrew) active.push({label: 'Homebrew incluso', clear: function(){ state.emporioShowHomebrew=false; var c=document.getElementById('emporio-homebrew-chk'); if(c) c.checked=false; }});
 
   if (active.length === 0) return;
 
