@@ -12,7 +12,7 @@
   {
     "descrizione": "Mentre indossi questa cappa, puoi usare un'azione per pronunciare la sua parola di comando, trasformandola in un paio di ali da pipistrello o da uccello che spuntano dalla tua schiena per 1 ora o finché non ripeti la parola di comando con un'azione. Le ali ti forniscono velocità di volo 18 metri. Quando scompaiono, non potrai più usarle per 1d12 ore.",
     "id": "srd_o_200",
-    "immagine": "https://dungeonedraghi.it/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2020/03/anello-di-invisibilità.jpeg.webp",
+    "immagine": "",
     "nome": "Ali del Volo",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -42,7 +42,7 @@
   {
     "descrizione": "Questa bottiglia di ferro ha un tappo di ottone. Puoi usare un'azione per pronunciare la parola di comando dell'ampolla, prendendo come bersaglio una creatura visibile entro 18 metri da te. Se il bersaglio è nativo di un piano di esistenza diverso da quello in cui ti trovi, deve superare un tiro salvezza di Saggezza con CD 17 o venir intrappolato nell'ampolla. Se il bersaglio è già stato intrappolato nell'ampolla, riceve vantaggio al tiro salvezza. Una volta intrappolata, la creatura rimarrà nell'ampolla finché non sarà liberata. L'ampolla può contenere solo una creatura alla volta. Una creatura intrappolata nell'ampolla non ha bisogno di respirare, mangiare o dormire e non invecchia. Puoi usare un'azione per rimuovere il tappo dell'ampolla e liberare la creatura che contiene. La creatura ",
     "id": "srd_o_201",
-    "immagine": "https://dungeonedraghi.it/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2020/03/bacchetta-di-individuazione-dei-nemici.jpg.webp",
+    "immagine": "",
     "nome": "Ampolla di Ferro",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -52,7 +52,7 @@
   {
     "descrizione": "Mentre indossi questo amuleto sei celato alla magia di divinazione. Non puoi essere preso come bersaglio da queste magie o percepito tramite sensori magici di scrutamento.",
     "id": "srd_o_202",
-    "immagine": "https://dungeonedraghi.it/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2020/03/bastone-dei-tuoni-e-fulmini.jpeg.webp",
+    "immagine": "",
     "nome": "Amuleto Anti-Individuazione e Localizzazione",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -112,7 +112,7 @@
   {
     "descrizione": "Questo anello immagazzina gli incantesimi lanciati su di esso, conservandoli fino a che chi vi è in sintonia non ne faccia uso. L'anello può accumulare fino a 5 livelli di incantesimi alla volta. Qualsiasi creatura può lanciare un incantesimo dal 1° al 5° livello sull'anello, toccandolo mentre lancia l'incantesimo. L'incantesimo non ha effetto, oltre quello di essere immagazzinato nell'anello. Se l'anello non può contenere l'incantesimo, lo slot incantesimo viene speso senza effetti. Il livello dello slot usato per lanciare l'incantesimo determina la quantità di spazio che occupa. Mentre indossi questo anello, puoi lanciare gli incantesimi che contiene. L'incantesimo usa il livello dello slot, la CD del tiro salvezza dell'incantesimo, il bonus per colpire dell'incantesimo e la caratteristi",
     "id": "srd_o_203",
-    "immagine": "https://dungeonedraghi.it/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2020/03/pozione-di-chiaroveggenza.jpg.webp",
+    "immagine": "",
     "nome": "Anello Accumula Incantesimi",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -162,7 +162,7 @@
   {
     "descrizione": "Questo anello è collegato al Piano Elementale del Fuoco. Mentre lo indossi, hai vantaggio ai tiri per colpire contro gli elementali del Piano Elementale del Fuoco, ed essi hanno svantaggio ai tiri per colpire effettuati contro di te. Puoi spendere 2 cariche dell'anello per lanciare dominare mostri su di un elementale del fuoco. Inoltre, hai resistenza ai danni da fuoco. Puoi parlare e comprendere l'Ignan. Se aiuti a uccidere un elementale del fuoco mentre sei in sintonia con l'anello, ottieni accesso alle seguenti proprietà aggiuntive: Hai immunità ai danni da fuoco. Puoi lanciare tramite l'anello i seguenti incantesimi, spendendo il numero di cariche richieste: mani brucianti (1 carica), muro di fuoco (3 cariche) o palla di fuoco (2 cariche). L'anello ha 5 cariche. Recupera 1d4 + 1 carich",
     "id": "srd_o_204",
-    "immagine": "https://dungeonedraghi.it/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2020/03/ammazzagiganti.jpeg.webp",
+    "immagine": "",
     "nome": "Anello del Comando degli Elementali del Fuoco",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -172,7 +172,7 @@
   {
     "descrizione": "Questo anello è collegato al Piano Elementale dell'Acqua. Mentre lo indossi, hai vantaggio ai tiri per colpire contro gli elementali del Piano Elementale dell'Acqua, ed essi hanno svantaggio ai tiri per colpire effettuati contro di te. Puoi spendere 2 cariche dell'anello per lanciare dominare mostri su di un elementale dell'acqua. Inoltre, puoi stare in piedi e camminare sulle superfici liquide come se fossero terreno solido. Puoi parlare e comprendere l'Aquan. Se aiuti a uccidere un elementale dell'acqua mentre sei in sintonia con l'anello, ottieni accesso alle seguenti proprietà aggiuntive: Puoi respirare sott'acqua e hai velocità di nuovo pari alla tua velocità di passeggio. Puoi lanciare tramite l'anello i seguenti incantesimi, spendendo il numero di cariche richieste: creare o distrug",
     "id": "srd_o_205",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/comando-dell-aria.jpeg",
+    "immagine": "",
     "nome": "Anello del Comando degli Elementali dell'Acqua",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -182,7 +182,7 @@
   {
     "descrizione": "Questo anello è collegato al Piano Elementale dell'Aria. Mentre lo indossi, hai vantaggio ai tiri per colpire contro gli elementali del Piano Elementale dell'Aria, ed essi hanno svantaggio ai tiri per colpire effettuati contro di te. Puoi spendere 2 cariche dell'anello per lanciare dominare mostri su di un elementale dell'aria. Inoltre, quando cadi, scendi di 18 metri per round e non subisci danni dalla caduta. Puoi parlare e comprendere l'Auran. Se aiuti a uccidere un elementale dell'aria mentre sei in sintonia con l'anello, ottieni accesso alle seguenti proprietà aggiuntive: Hai resistenza ai danni da fulmine. Hai velocità di volo pari alla tua velocità di passeggio e puoi fluttuare. Puoi lanciare tramite l'anello i seguenti incantesimi, spendendo il numero di cariche richieste: catena d",
     "id": "srd_o_206",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/anello-del-comando-degli-elementali-della-terra.png",
+    "immagine": "",
     "nome": "Anello del Comando degli Elementali dell'Aria",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -192,7 +192,7 @@
   {
     "descrizione": "Questo anello è collegato al Piano Elementale della Terra. Mentre lo indossi, hai vantaggio ai tiri per colpire contro gli elementali del Piano Elementale della Terra, ed essi hanno svantaggio ai tiri per colpire effettuati contro di te. Puoi spendere 2 cariche dell'anello per lanciare dominare mostri su di un elementale della terra. Inoltre, puoi muoverti su terreno difficile composto da macerie, pietre o terra come se fosse terreno normale. Puoi parlare e comprendere il Terran. Se aiuti a uccidere un elementale della terra mentre sei in sintonia con l'anello, ottieni accesso alle seguenti proprietà aggiuntive: Hai resistenza ai danni da acido. Puoi muoverti attraverso la terra o la roccia solida come se fossero terreno difficile. Se vi termini il tuo turno, vieni proiettato fuori nello s",
     "id": "srd_o_207",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/woocommerce-placeholder-1000x1000.png",
+    "immagine": "",
     "nome": "Anello del Comando degli Elementali della Terra",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -212,7 +212,7 @@
   {
     "descrizione": "Mentre indossi questo anello, hai velocità di nuoto 12 metri.",
     "id": "srd_o_208",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/anello-della-caduta-morbida.jpeg",
+    "immagine": "",
     "nome": "Anello del Nuotare",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -422,7 +422,7 @@
   {
     "descrizione": "Mentre indossi questo anello, puoi usare un'azione per spendere 1 delle sue cariche per lanciare tramite esso uno dei seguenti incantesimi: amicizia con gli animali (CD del tiro salvezza 13), parlare con gli animali, paura (CD del tiro salvezza 13, prende come bersaglio solo bestie che hanno Intelligenza 3 o meno). Questo anello ha 3 cariche, e recupera 1d3 cariche spese ogni giorno all'alba.",
     "id": "srd_o_211",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/anello-di-influenza-sugli-animali.jpeg",
+    "immagine": "",
     "nome": "Anello di Influenza sugli Animali",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -452,7 +452,7 @@
   {
     "descrizione": "Mentre indossi questo anello, sei immune alla magia che permette alle altre creature di leggere i tuoi pensieri, determinare se stai mentendo, conoscere il tuo allineamento, o apprendere che tipo di creatura sei. Le creature possono comunicare telepaticamente con te solo se glielo concedi. Puoi usare un'azione per far diventare invisibile l'anello fino a che un'altra azione non lo renderà di nuovo visibile, finché non lo rimuovi o muori. Se muori mentre indossi questo anello, la tua anima vi viene catturata, a meno che non ospiti già un'altra anima. Puoi decidere di rimanere nell'anello o raggiungere la vita ultraterrena. Finché la tua anima resta nell'anello, puoi comunicare telepaticamente con qualsiasi creatura lo indossi. Chi lo indossa non può impedire questa forma di comunicazione te",
     "id": "srd_o_212",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/anello-di-scudo-mentale.jpeg",
+    "immagine": "",
     "nome": "Anello di Scudo Mentale",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -462,7 +462,7 @@
   {
     "descrizione": "Mentre indossi quest'anello, hai vantaggio ai tiri salvezza contro qualsiasi incantesimo che prende come bersaglio solo te e non un'area di effetto. Inoltre, se ottieni 20 sul tiro salvezza e l'incantesimo è di 7° livello o più basso, l'incantesimo non ha effetto su di te e invece prende come bersaglio l'incantatore, utilizzando il livello dello slot, la CD del tiro salvezza dell'incantesimo, il bonus per colpire e la caratteristica da incantatore dell'incantatore originale.",
     "id": "srd_o_213",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/anello-rifletti-incantesimo.jpeg",
+    "immagine": "",
     "nome": "Anello Rifletti Incantesimo",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -472,7 +472,7 @@
   {
     "descrizione": "Quest'oggetto appare come un barile di ferro sigillato di taglia Grande e del peso di 250 chili. Il barile nasconde un fermo, che può essere trovato superando una prova di Intelligenza ( Indagare ) con CD 20. Rimuover e il fermo apre uno scomparto a una delle estremità dell'apparato, che permette a due creature di taglia Media o inferiore di entrarvi dentro. All'estremità opposta sono disposte dieci leve, ciascuna in posizione neutrale, in grado d i muoversi verso l'alto o il basso. Quando vengono impiegate determinate leve, l'appar ato si trasforma e assomiglia a un'aragosta gigante. L'apparato è un oggetto Grande con le seguenti statistiche. Classe Armatura 20 Punti Ferita 200 Velocità 9 m, nuoto 9 m (o 0 m entrambi se le gambe e la coda non vengono estese) Immunità ai Danni psichico, ve",
     "id": "srd_o_214",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/arco-del-giuramento.jpeg",
+    "immagine": "",
     "nome": "Apparato di Kwalish",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -512,7 +512,7 @@
   {
     "descrizione": "Quando incocchi una freccia con questo arco, essa sussurra in Elfico \"Rapida sconfitta ai miei nemici!\". Quando usi quest'arma per effettuare un attacco a distanza puoi, come parola di comando, dire \"Rapida morte a te che mi hai recato torto!\" Il bersaglio del tuo attacco diventa il tuo nemico giurato fino alla sua morte o all'alba del settimo giorno successivo. Puoi avere solo un nemico giurato alla volta. Quando il tuo nemico giurato muore, potrai sceglierne uno nuovo dopo la prossima alba. Quando effettui un tiro per colpire a distanza con quest'arma contro il tuo nemico giurato, hai vantaggio sul tiro. Inoltre, il bersaglio non riceve alcun beneficio dalla copertura che non sia una copertura totale, e non soffri svantaggio a causa della gittata lunga. Se l'attacco colpisce, il tuo nemi",
     "id": "srd_o_215",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/arma-spietata.jpeg",
+    "immagine": "",
     "nome": "Arco del Giuramento",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -592,7 +592,7 @@
   {
     "descrizione": "Hai un bonus ai tiri per colpire e ai tiri di danno effettuati con quest'arma. Il bonus è determinato dalla rarità dell'arma. Alcune armi magiche (in particolare le spade) possiedono delle ulteriori proprietà, come l'emettere luce.",
     "id": "srd_o_216",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Arma +1, +2, o +3",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -652,7 +652,7 @@
   {
     "descrizione": "Il personaggio che indossa questa armatura (leggera, media o pesante) ottiene un bonus di +1 alla CA.",
     "id": "w_1778433652861",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-1-2-3.jpg",
+    "immagine": "",
     "nome": "Armatura +1",
     "prezzo": 80,
     "rarita": "Raro",
@@ -662,7 +662,7 @@
   {
     "descrizione": "Mentre indossi questa armatura ricevi un bonus alla tua Classe Armatura. Il bonus è determinato dalla rarità dell'armatura.",
     "id": "srd_o_217",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-adamantina-1000x1000.png",
+    "immagine": "",
     "nome": "Armatura +1, +2, +3",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -672,7 +672,7 @@
   {
     "descrizione": "Il personaggio che indossa questa armatura ottiene un bonus di +2 alla CA.",
     "id": "w_1778433652862",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-1-2-3.jpg",
+    "immagine": "",
     "nome": "Armatura +2",
     "prezzo": 600,
     "rarita": "Molto raro",
@@ -682,7 +682,7 @@
   {
     "descrizione": "+3 alla CA. Qualsiasi tipo di armatura.",
     "id": "srd_o_082",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-1-2-3.jpg",
+    "immagine": "",
     "nome": "Armatura +3",
     "prezzo": 24000,
     "rarita": "Leggendario",
@@ -702,7 +702,7 @@
   {
     "descrizione": "Mentre la indossi, ottieni un bonus di +1 alla CA, e puoi comprendere e parlare l'Abissale. Inoltre, le manopole artigliate dell'armatura trasformano i colpi disarmati effettuati con le tue mani in armi magiche che infliggono danni taglienti, con un bonus di +1 ai tiri per colpire e ai tiri di danno e il d8 come dado di danno. Maledizione Mentre la indossi, con un'azione puoi pronunciare la sua parola di comando per ottenere l'effetto dell'incantesimo forma eterea che dura 10 minuti o finché non rimuovi l'armatura o usi un'azione per pronunciare di nuovo la parola di comando. Questa proprietà dell'armatura non può essere usata di nuovo fino alla prossima alba.",
     "id": "srd_o_218",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-completa-nanica.jpeg",
+    "immagine": "",
     "nome": "Armatura Completa della Forma Eterea",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -712,7 +712,7 @@
   {
     "descrizione": "Mentre la indossi, ottieni un bonus di +2 alla CA. Inoltre, se un effetto ti muove sul terreno contro la tua volontà, puoi usare la tua reazione per ridurre di 3 metri la distanza di cui sei mosso.",
     "id": "srd_o_219",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-dell-invurnerabilità.jpeg",
+    "immagine": "",
     "nome": "Armatura Completa Nanica",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -782,7 +782,7 @@
   {
     "descrizione": "Mentre la indossi, hai resistenza a uno dei seguenti tipi di danno: contundente, perforante o tagliente. Il GM sceglie il tipo. Maledizione L'armatura è maledetta, cosa che viene rivelata solo quando le viene lanciato sopra l'incantesimo identificare o vi entri in sintonia. Entrare in sintonia con l'armatura ti maledice fino a quando non sarai bersaglio dell'incantesimo rimuovi maledizione o simili magie: rimuovere l'armatura non pone fine alla maledizione. Mentre sei maledetto, hai vulnerabilità a due dei tre tipi di danno associati con l'armatura (che non siano quello a cui hai resistenza).",
     "id": "srd_o_220",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-di-cuoio-borchiato-incantata.png",
+    "immagine": "",
     "nome": "Armatura della Vulnerabilità",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -802,7 +802,7 @@
   {
     "descrizione": "I colpi critici contro di te diventano colpi normali. Cotta di maglia, scaglie o piastre.",
     "id": "srd_o_083",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-adamantina-1000x1000.png",
+    "immagine": "",
     "nome": "Armatura di Adamantio",
     "prezzo": 500,
     "rarita": "Non comune",
@@ -812,7 +812,7 @@
   {
     "descrizione": "Mentre la indossi, ottieni un bonus di +1 alla CA. Puoi anche usare un'azione bonus per pronunciare la parola di comando dell'armatura e far sì che l'armatura assuma l'aspetto di un comune abito o qualche altro tipo di armatura. Decidi tu l'aspetto, compreso il colore, lo stile e gli accessori, ma l'armatura mantiene il suo normale ingombro e peso. L'aspetto illusorio dura finché non usi di nuovo questa proprietà o ti togli l'armatura.",
     "id": "srd_o_221",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bacchetta-dei-dardi-incantati.jpeg",
+    "immagine": "",
     "nome": "Armatura di Cuoio Borchiato Incantata",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -832,7 +832,7 @@
   {
     "descrizione": "Non impone svantaggio ai TS DES furtività. Puoi dormirci senza penalità.",
     "id": "srd_o_085",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/armatura-in-mithral.jpg",
+    "immagine": "",
     "nome": "Armatura di Mithral",
     "prezzo": 400,
     "rarita": "Non comune",
@@ -1222,7 +1222,7 @@
   {
     "descrizione": "Questo oggetto sembra una scatola di legno che misura 30 centimetri di lunghezza, 15 centimetri di larghezza e 15 centimetri di profondità. Pesa 2 chili e galleggia. Può essere aperta per porvi oggetti all' interno. Quest'oggetto possiede tre parole di comando, ciascuna delle quali richiede un'azione per essere pronunciata. Una parola di comando fa sì che la scatola si dispieghi in una barca lunga 3 metri, larga 1,2 metri e profonda 50 centimetri. La barca ha un paio di remi, un'ancora, un albero e una vela. La barca può contenere fino a quattro creature di taglia Media. La seconda parola di comando fa sì che la scatola si dispieghi in una nave lunga 7,2 metri, larga 2,5 metri e profonda 2 metri. La nave ha un ponte, file di voga, cinque serie di remi, un remo direzionale, un'ancora, una c",
     "id": "srd_o_223",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/barca-pieghevole.jpeg",
+    "immagine": "",
     "nome": "Barca Pieghevole",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1262,7 +1262,7 @@
   {
     "descrizione": "Il bastone può essere impugnato come un bastone da combattimento magico che conferisce un bonus di +2 ai tiri per colpire e danno effettuati con esso. Inoltre ha le seguenti proprietà. Quando viene usata una di queste proprietà, non se ne potrà più far uso fino all'alba successiva. Fulmine Quando colpisci con un attacco in mischia usando il bastone, puoi far sì che il bersaglio subisca 2d6 danni da fulmine aggiuntivi. Tuono Quando colpisci con un attacco in mischia usando il bastone, puoi far sì che il bastone emetta il suono di un tuono, udibile fino a 90 metri di distanza. Il bersaglio colpito deve superare un tiro salvezza di Costituzione con CD 17 o restare stordito fino al termine del tuo prossimo turno. Colpo del Fulmine Puoi usare un'azione per far sì che una fulmine balzi dalla pun",
     "id": "srd_o_224",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bastone-dei-tuoni-e-fulmini.jpeg",
+    "immagine": "",
     "nome": "Bastone dei Tuoni e Fulmini",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -1282,7 +1282,7 @@
   {
     "descrizione": "Il bastone può essere impugnato come un bastone da combattimento magico. Se colpisci, infligge danni come un normale bastone da combattimento, e puoi spendere 1 carica per infliggere 2d10 danni necrotici aggiuntivi al bersaglio. Inoltre, il bersaglio deve superare un tiro salvezza di Costituzione con CD 15 o avere svantaggio per 1 ora a qualsiasi prova di caratteristica o tiro salvezza che richieda Forza o Costituzione. Questo bastone ha 3 cariche e recupera 1d3 cariche spese ogni mattina all'alba.",
     "id": "srd_o_225",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bastone-del-potere.jpeg",
+    "immagine": "",
     "nome": "Bastone del Deperimento",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1422,7 +1422,7 @@
   {
     "descrizione": "+3 a colpire e danni. 10 cariche: 1-3 per +1d6 forza extra per carica al prossimo colpo. Ricarica 2d6+4/alba.",
     "id": "srd_o_109",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bastone-del-colpo-possente.jpg",
+    "immagine": "",
     "nome": "Bastone dell'Impatto",
     "prezzo": 6000,
     "rarita": "Molto raro",
@@ -1482,7 +1482,7 @@
   {
     "descrizione": "All'interno di questa borsa si trovano 3d4 fagioli secchi. La borsa pesa 250 grammi più 125 grammi per ogni fagiolo che contiene. Se riversi il contenuto della borsa sul terreno, i fagioli esplodono in un raggio di 3 metri. Ogni creatura nell'area, te compreso, deve effettuare un tiro salvezza di Destrezza con CD 15, subendo 5d4 danni da fuoco se lo fallisce, o la metà di questi danni se lo supera. Il fuoco incendia gli oggetti infiammabili nell'area che non siano indossati o trasportati. Se rimuovi il fagiolo dalla borsa, lo pianti nel terreno o la sabbia, e lo innaffi, il fagiolo produrrà un effetto 1 minuto dopo, a partire dal punto del terreno in cui è stato piantato. Il GM sceglie l'effetto o lo determina casualmente. d100 Effetto 01 Spuntano 5d4 funghi. Se una creatura mangia un fung",
     "id": "srd_o_228",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/borsa-dei-trucchi.jpeg",
+    "immagine": "",
     "nome": "Borsa dei Fagioli Magici",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1492,7 +1492,7 @@
   {
     "descrizione": "Questa borsa dall'aspetto normale appare vuota. Allungare la mano all'interno della borsa, tuttavia, rivela la presenza di un piccolo oggetto peloso. La borsa pesa 250 grammi. Puoi usare un'azione per estrarre l'oggetto peloso dalla borsa e scagliarlo fino a 6 metri di distanza. Quando l'oggetto atterra, si trasforma in una creatura determinata dal lancio di un d8 e consultando la tabella che corrisponde al colore della borsa. Vedi l'elenco dei mostri per le statistiche della creatura. La creatura svanisce all'alba successiva o quando viene ridotta a 0 punti ferita. La creatura è amichevole verso di te e i tuoi compagni, e agisce durante il tuo turno. Puoi usare un'azione bonus per ordinare alla creatura di muoversi e quale azione debba effettuare durante il suo prossimo turno, o darle ord",
     "id": "srd_o_229",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bottiglia-del-fumo-perenne.jpeg",
+    "immagine": "",
     "nome": "Borsa dei Trucchi",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -1512,7 +1512,7 @@
   {
     "descrizione": "La borsa appare come una borsa conservante. Se la borsa viene rivolta le sue proprietà smettono di funzionare. La creatura extradimensionale attaccata alla borsa può percepire qualsiasi cosa vi venga posto all'interno. La materia animale o vegetale posta interamente dentro la borsa viene divorata ed è persa per sempre. Quando una parte di una creatura vivente viene posta nella borsa, c'è una probabilità del 50% che la creatura venga trascinata dentro la borsa. Una creatura all'interno della borsa può usare un'azione per cercare di fuggirne superando una prova di Forza con CD 15. Un'altra creatura può usare un'azione per afferrare la creatura all'interno della borsa e tirarla fuori, superando una prova di Forza con CD 20 (e sempre che non venga a sua volta trascinata dentro la borsa). Quals",
     "id": "srd_o_230",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/bracciali-dell'arciere.jpeg",
+    "immagine": "",
     "nome": "Borsa Divorante",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -1542,7 +1542,7 @@
   {
     "descrizione": "Dalla bocca di questa bottiglia di ottone fuoriesce continuamente del fumo, trattenuto dal suo tappo di piombo. La bottiglia pesa 500 grammi. Quando usi un'azione per rimuovere il tappo, una nube di denso fumo si sparge in un raggio di 18 metri intorno alla bottiglia. L'area della nube è oscurata pesantemente. Per ciascun minuto in cui la bottiglia resta aperta e all'interno della nube, il raggio aumenta di 3 metri finché non raggiunge il raggio massimo di 36 metri. La nube persiste fino a quando la bottiglia resta aperta. Chiudere la bottiglia richiede che tu pronunci la sua parola di comando con un'azione. Una volta chiusa la bottiglia, la nube si disperde dopo 10 minuti. Un vento moderato (dai 15 ai 30 km/h) può disperdere il fumo in 1 minuto, e un vento forte (più di 30 km/h) può dispe",
     "id": "srd_o_231",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/braciere-del-comando-degli-elementali-del-fuoco.jpeg",
+    "immagine": "",
     "nome": "Bottiglia del Fumo Perenne",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -1562,7 +1562,7 @@
   {
     "descrizione": "Mentre indossi questi bracciali, hai competenza con l'arco lungo e l'arco corto, e ottieni un bonus di +2 ai tiri di danno degli attacchi a distanza effettuati con queste armi.",
     "id": "srd_o_232",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/campana-dell-apertura.jpeg",
+    "immagine": "",
     "nome": "Bracciali dell'Arciere",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -1572,7 +1572,7 @@
   {
     "descrizione": "Mentre indossi questi bracciali, hai un bonus di +2 alla tua CA se non indossi nessuna armatura e non usi nessuno scudo.",
     "id": "srd_o_233",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/candela-dell-invocazione.jpeg",
+    "immagine": "",
     "nome": "Bracciali della Difesa",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1592,7 +1592,7 @@
   {
     "descrizione": "Mentre il fuoco arde all'interno di questo braciere di ottone, puoi usare un'azione per pronunciare la parola di comando del braciere ed evocare un elementale del fuoco, come se avessi lanciato l'incantesimo evoca elementali. Il braciere non può di nuovo essere usato a questo modo, fino alla prossima alba. Il braciere pesa 2,5 chili.",
     "id": "srd_o_234",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/cappello-del-camuffamento.png",
+    "immagine": "",
     "nome": "Braciere del Comando degli Elementali del Fuoco",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1602,7 +1602,7 @@
   {
     "descrizione": "Foglio di seta nera: apre spazio extradimensionale (1,8m×3m). Dal di dentro: buio, senza aria.",
     "id": "srd_o_147",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/buco-portatile.jpg",
+    "immagine": "",
     "nome": "Buca Portatile",
     "prezzo": 8000,
     "rarita": "Raro",
@@ -1612,7 +1612,7 @@
   {
     "descrizione": "Questo elegante tessuto nero, soffice come la seta, si piega fino alle dimensioni di un fazzoletto. Si dispiega in uno strato circolare di 1,8 metri di diametro. Puoi usare un'azione per dispiegare un buco portatile e piazzarlo sopra o contro una superficie solida, sulla quale il buco portatile crea un foro extradimensionale profondo 3 metri. Lo spazio cilindrico all'interno del foro si trova su di un piano diverso, e quindi non può essere usato per aprire dei passaggi. Qualsiasi creatura all'interno di un buco portatile aperto può uscirne fuori arrampicandosi fuori di esso. Puoi usare un'azione per chiudere un buco portatile prendendo i margini del tessuto e ripiegandolo. Piegare il tessuto chiude il buco, e qualsiasi creatura od oggetto al suo interno rimane nello spazio extradimensional",
     "id": "srd_o_235",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Buco Portatile",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1672,7 +1672,7 @@
   {
     "descrizione": "Lancia Travestimento a volontà. Richiede sintonia.",
     "id": "srd_o_148",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/cappello-del-camuffamento.png",
+    "immagine": "",
     "nome": "Cappello del Travestimento",
     "prezzo": 1800,
     "rarita": "Non comune",
@@ -1692,7 +1692,7 @@
   {
     "descrizione": "Quest'ampolla tappata emette un suono di liquido quando viene smossa, come se contenesse acqua. La brocca pesa 1 chilo. Puoi usare un'azione per rimuovere il tappo e pronunciare una delle tre parole di comando, e a quel punto un ammontare di acqua fresca o acqua salata (a tua scelta) si riverserà fuori dell'ampolla, fino all'inizio del tuo prossimo turno. Scegli una delle opzioni seguenti: \"Ruscello\" produce 4 litri d'acqua. \"Fontana\" produce 20 litri d'acqua. \"Geyser\" produce 150 litri d'acqua che vengono proiettati da un geyser lungo 9 metri e largo 30 centimetri. Con un'azione bonus, mentre impugni la brocca, puoi prendere come bersaglio del geyser una creatura visibile entro 9 metri da te. Il bersaglio deve superare un tiro salvezza di Forza con CD 13 o subire 1d4 danni contundenti e c",
     "id": "srd_o_239",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/caraffa-dell-acqua-eterna.png",
+    "immagine": "",
     "nome": "Caraffa dell'Acqua Eterna",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -1822,7 +1822,7 @@
   {
     "descrizione": "Mentre indossi questa cinta, ottieni i seguenti benefici: Il tuo punteggio di Costituzione aumenta di 2, fino a un massimo di 20. Hai vantaggio alle prove di Carisma (Persuasione) effettuate per interagire con i nani. Inoltre, mentre sei in sintonia con la cinta, hai il 50% di probabilità ogni giorno all'alba di vederti spuntare una folta barba, se può crescerti, oppure di vedere la tua ancora più folta, se già la hai. Se non sei un nano, ottieni i seguenti benefici aggiuntivi quando indossi questa cinta: Hai vantaggio ai tiri salvezza contro veleno e hai resistenza ai danni da veleno. Hai scurovisione con una gittata di 18 metri. Puoi parlare, leggere e scrivere in Nanico.",
     "id": "srd_o_240",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/colla-meravigliosa.jpeg",
+    "immagine": "",
     "nome": "Cintura Nanica",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1832,7 +1832,7 @@
   {
     "descrizione": "Questa sostanza bianco lattea e viscosa può formare un legame adesivo permanente tra qualsiasi due oggetti. Deve essere contenuto in una giara o ampolla che è stata ricoperta all'interno di olio di scivolosità. Quando viene trovata, il suo contenitore ne tiene 1d6 + 1 per 30 grammi. 30 grammi di colla possono coprire una superficie quadrata di 30 centimetri di lato. La colla ci mette 1 minuto per fissarsi. Una volta fissata la colla, il legame creato può essere spezzato solo dal solvente universale o l'olio della forma eterea, o tramite l'incantesimo desiderio.",
     "id": "srd_o_241",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/collana-delle-palle-di-fuoco-1.jpeg",
+    "immagine": "",
     "nome": "Colla Meravigliosa",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -1842,7 +1842,7 @@
   {
     "descrizione": "Questa collana possiede 1d4 + 2 sfere magiche fatte di acquamarina, perla nera o topazio. Possiede anche diverse sfere non magiche. Se una sfera magica venisse rimossa dalla collana, quella sfera perderebbe la sua magia. Esistono sei tipi di sfere magiche. Il GM decide il tipo di ciascuna sfera facente parte della collana. Una collana può avere più di una sfera dello stesso tipo. Per usarla, devi indossare la collana. Ogni sfera contiene un incantesimo che puoi lanciare con un'azione bonus (usando la tua CD del tiro salvezza degli incantesimi se richiede un tiro salvezza). Una volta che l'incantesimo di una sfera magica è stato lanciato, non potrai usare di nuovo quella sfera fino all'alba successiva. d20 Perla di… Incantesimo 1-6 Benedizione Benedizione 7-12 Guarigione Cura ferite (2° liv",
     "id": "srd_o_242",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/corazza-di-scaglie-di-drago.jpeg",
+    "immagine": "",
     "nome": "Collana del Rosario",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -1912,7 +1912,7 @@
   {
     "descrizione": "L'armatura di scaglie di drago è fatta con le scaglie di una specie di drago. Mentre la indossi, ottieni un bonus di +1 alla CA, hai vantaggio ai tiri salvezza contro la Presenza Spaventosa e le armi a soffio dei draghi, e hai resistenza a un tipo di danno determinato dalla specie di drago che ha fornito le scaglie (Argento/freddo, Bianco/freddo, Blu/fulmine, Bronzo/fulmine, Nero/acido, Oro/fuoco, Ottone/fuoco, Rame/acido, Rosso/fuoco, Verde/veleno). Inoltre, con un'azione puoi focalizzare i tuoi sensi per determinare magicamente la distanza e la direzione in cui si trovi il drago più vicino entro 45 chilometri che sia della stessa specie dell'armatura. Quest'azione speciale non può essere più usata fino alla prossima alba.",
     "id": "srd_o_243",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/corno-della-distruzione.jpeg",
+    "immagine": "",
     "nome": "Corazza di Scaglie di Drago",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -1922,7 +1922,7 @@
   {
     "descrizione": "Corda magica 18 m. Obbedisce a comandi verbali: si ancora, si arrotola. Porta 900 kg.",
     "id": "srd_o_153",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/corda-per-scalare-1000x1000.jpg",
+    "immagine": "",
     "nome": "Corda dell'Arrampicata",
     "prezzo": 2000,
     "rarita": "Non comune",
@@ -1932,7 +1932,7 @@
   {
     "descrizione": "Questa corda è lunga 9 metri e pesa 1,5 chili. Se tieni un'estremità della corda e usi un'azione per pronunciare la sua parola di comando, l'altra estremità scatterà in avanti per impigliare una creatura visibile entro 6 metri da te. Il bersaglio deve superare un tiro salvezza di Destrezza con CD 15 o restare intralciato. Puoi rilasciare la creatura usando un'azione bonus per pronunciare una seconda parola di comando. Un bersaglio intralciato dalla corda può usare un'azione per effettuare una prova di Forza o Destrezza con CD 15 (a scelta del bersaglio). Se la supera, la creatura non è più intralciata dalla corda. La corda ha CA 20 e 20 punti ferita. Recupera 1 punto ferita ogni 5 minuti finché ha almeno 1 punto ferita. se la corda scende a 0 punti ferita, è distrutta.",
     "id": "srd_o_244",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Corda Intralciante",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2062,7 +2062,7 @@
   {
     "descrizione": "Questo cubo di 7,5 centimetri di spigolo irradia una palpabile energia magica. Le sei facce del cubo sono ciascuna collegata a un diverso piano di esistenza, uno dei quali è il Piano Materiale. Le altre facce sono collegate a piani determinati dal GM. Puoi usare un'azione per premere una faccia del cubo per lanciare tramite esso l'incantesimo portale, aprendo un passaggio verso il piano collegato a quella faccia. In alternativa, se usi un'azione per premere una faccia due volte, puoi lanciare l'incantesimo spostamento planare (CD del tiro salvezza 17) tramite il cubo e trasportarne i bersagli al piano collegato a quella faccia. Il cubo ha 3 cariche. Ogni uso del cubo spende 1 carica. Il cubo recupera 1d3 cariche spese ogni giorno all'alba.",
     "id": "srd_o_248",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/cubo-dei-portali.jpeg",
+    "immagine": "",
     "nome": "Cubo dei Portali",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -2072,7 +2072,7 @@
   {
     "descrizione": "Questo cubo ha 2,5 centimetri di spigolo. Ogni faccia ha un marchio unico che può essere premuto. Il cubo inizia con 36 cariche, e recupera 1d20 cariche spese ogni giorno all'alba. Puoi usare un'azione per premere una delle facce del cubo, spendendo un numero di cariche basate sulla faccia del cubo, come mostrato sulla tabella Facce del Cubo di Forza. Ogni faccia ha un effetto diverso. Se al cubo non rimangono più cariche, non succede nulla. Altrimenti, si erge una barriera di forza invisibile, che forma un cubo di 4,5 metri di spigolo. La barriera è centrata su di te, si muove con te, e dura per 1 minuto, fino a che non usi un'azione per premere la sesta faccia del cubo, o il cubo esaurisce le cariche. Puoi cambiare l'effetto della barriera premendo una faccia diversa del cubo e spendendo",
     "id": "srd_o_249",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/cubo-di-forza.jpeg",
+    "immagine": "",
     "nome": "Cubo di Forza",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2142,7 +2142,7 @@
   {
     "descrizione": "Mentre indossi questo cerchietto, puoi usare un'azione per lanciare tramite esso l'incantesimo raggio rovente. Quando effettui gli attacchi dell'incantesimo, puoi farlo con bonus di attacco +5. Il cerchietto non potrà essere usato di nuovo a questo modo fino alla prossima alba.",
     "id": "srd_o_250",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/diadema-incandescente.jpeg",
+    "immagine": "",
     "nome": "Diadema Incandescente",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2152,7 +2152,7 @@
   {
     "descrizione": "Ottieni un bonus di +3 ai tiri per colpire e danno effettuati con quest'arma magica. La prima volta che attacchi con questa spada durante un tuo turno, puoi trasferire parte o tutto il suo bonus alla tua Classe Armatura, invece di usare il bonus sugli attacchi di questo tur no. Il bonus così modificato rimane efficace fino all'inizio del tuo prossimo turno, ma dovrai impugnare la spada per ottenere il bonus alla CA da parte sua.",
     "id": "srd_o_251",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/difensiva.jpeg",
+    "immagine": "",
     "nome": "Difensiva",
     "prezzo": 300,
     "rarita": "Leggendaria",
@@ -2252,7 +2252,7 @@
   {
     "descrizione": "Questo elmo luminoso è incastonato con 1d10 diamanti, 2d10 rubini, 3d10 opali di fuoco e 4d10 opali. Qualsiasi gemma estratta dall'elmo si riduce in polvere. Quando tutte le gemme sono rimosse o distrutte, l'elmo perde la sua magia. Mentre lo indossi ottieni i seguenti benefici: Puoi usare un'azione per lanciare uno dei seguenti incantesimi (CD del tiro salvezza 18), usando una delle gemme dell'elmo del tipo specificato come componente: luce diurna (opale), muro di fuoco (rubino), palla di fuoco (opale di fuoco) o spruzzo prismatico (diamante). Quando l'incantesimo viene lanciato la gemma è distrutta e scompare dall'elmo. Finché possiede almeno un diamante, l'elmo emette luce fioca in un raggio di 9 metri quando almeno un non morto si trova entro quest'area. Qualsiasi non morto che inizi i",
     "id": "srd_o_253",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/elmo-della-luminosità.jpeg",
+    "immagine": "",
     "nome": "Elmo della Luminosità",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -2402,7 +2402,7 @@
   {
     "descrizione": "Questa sfera di ferro arrugginita misura 7,5 centimetri di diametro e pesa 500 grammi. Puoi usare un'azione per pronunciare una parola di comando e scagliare la sfera contro una creatura visibile di taglia Enorme o inferiore entro 18 metri da te. La sfera si muove nell'aria, aprendosi in un reticolato di fasce metalliche. Effettua un tiro per colpire a distanza con un bonus di attacco pari al tuo modificatore di Destrezza più il tuo bonus di competenza. Se colpisci, il bersaglio è intralciato fino a quando non effettuerai un'azione bonus per pronunciare una parola di comando e liberarlo. Farlo, o mancare l'attacco, fa sì che le fasce si contraggano e ritornino a essere una sfera. Una creatura, compresa quella intralciata, può usare un'azione per effettuare una prova di Forza con CD 20 per ",
     "id": "srd_o_254",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/fascia-dell-intelletto.jpeg",
+    "immagine": "",
     "nome": "Fasce Metalliche di Bilarro",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2422,7 +2422,7 @@
   {
     "descrizione": "Mentre indossi questa spilla, hai resistenza ai danni da forza, e hai immunità al danno generato dall'incantesimo dardo incantato.",
     "id": "srd_o_255",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Fermaglio dello Scudo",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2442,7 +2442,7 @@
   {
     "descrizione": "Resterai affascinato per 1 ora dalla prima creatura che vedrai entro 10 minuti da quando avrai bevuto questo filtro. Se la creatura è di una specie o genere da cui sei normalmente attratto, finché sei affascinato la considererai il tuo unico e grande amore.",
     "id": "srd_o_256",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/filtro-d-amore-1000x1000.png",
+    "immagine": "",
     "nome": "Filtro d'Amore",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2452,7 +2452,7 @@
   {
     "descrizione": "Devi essere competente con gli strumenti a fiato per usare questo piffero. Mentre sei in sintonia con questo piffero, i ratti normali e i ratti giganti sono indifferenti nei tuoi confronti e non ti attaccheranno a meno che non li minacci o li danneggi. Se con un'azione suoni il piffero, puoi usare un'azione bonus per spendere da 1 a 3 cariche, richiamando uno sciame di ratti per ogni carica spesa, purché ci siano abbastanza ratti entro 750 metri da te da richiamare in questa maniera (a discrezione del GM). Se non ci sono abbastanza ratti da formare uno sciame, la carica è sprecata. Gli sciami richiamati si muovono verso la musica tramite la rotta più breve possibile, ma non sono in alcun altro modo sotto il tuo controllo. Il piffero ha 3 cariche e recupera 1d3 cariche spese ogni giorno all",
     "id": "srd_o_257",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/flauto-incantatore.jpeg",
+    "immagine": "",
     "nome": "Flauto dei Topi",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2462,7 +2462,7 @@
   {
     "descrizione": "Devi essere competente con gli strumenti a fiato per usare questo piffero. Puoi usare un'azione per suonarlo e spendere 1 carica per creare un suono incantevole e spettrale. Ogni creatura entro 9 metri da te e che ti oda suonare deve superare un tiro salvezza di Saggezza con CD 15 o restare spaventata da te per 1 minuto. Se lo desideri, tutte le creature nell'area che non ti siano ostili possono superare automaticamente il loro tiro salvezza. Una creatura che fallisca il tiro salvezza può ripeterlo alla fine del suo turno, terminando l'effetto su di sé in caso lo superi. Una creatura che superi il tiro salvezza è immune all'effetto di questo piffero per 24 ore. Il piffero ha 3 cariche e recupera 1d3 cariche spese ogni giorno all'alba.",
     "id": "srd_o_258",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/fortezza-istantanea-di-daern.jpeg",
+    "immagine": "",
     "nome": "Flauto Incantatore",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2472,7 +2472,7 @@
   {
     "descrizione": "Puoi usare un'azione per porre questo cubo di metallo di 2,5 centimetri di spigolo sul terreno e pronunciarne la parola di comando. Il cubo cresce rapidamente fino a diventare una fortezza che resterà fino a quando userai un'azione per pronunciare la parola di comando che la congeda, la quale funziona solo quando la fortezza è vuota. La fortezza è una torre quadrata, 6 metri per lato e alta 9 metri, con feritoie su tutti i lati e spalti in cima. Il suo interno è diviso in due piani, con una scala che corre lungo una parete a congiungerli. La scala termina con una botola che si apre sul tetto. Quando viene attivata, la torre presenta una piccola porta sul lato rivolto verso di te. La porta si apre solo al tuo comando, che puoi pronunciare con un'azione bonus. È immune all'incantesimo scassi",
     "id": "srd_o_259",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/freccia-assassina.jpeg",
+    "immagine": "",
     "nome": "Fortezza Istantanea di Daern",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2492,7 +2492,7 @@
   {
     "descrizione": "Se una creatura appartenente al tipo, razza o gruppo a cui la freccia dell'uccisione è associata subisce danni dalla freccia, la creatura deve effettuare un tiro salvezza di Costituzione con CD 17, subendo 6d10 danni perforanti aggiuntivi se lo fallisce, o la metà di questi danni se lo riesce. Una volta che la freccia dell'uccisione ha inflitto danni aggiuntivi alla creatura, diventa una freccia non magica.",
     "id": "srd_o_260",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/gemma-della-visione.jpeg",
+    "immagine": "",
     "nome": "Freccia Assassina",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -2512,7 +2512,7 @@
   {
     "descrizione": "Questo prisma ha 50 cariche. Mentre lo impugni, puoi usare un'azione per pronunciare una delle tre parole di comando per provocare uno dei seguenti effetti: La prima parola di comando fa sì che la gemma produca una luce intensa nel raggio di 9 metri e luce fioca per ulteriori 9 metri. L'effetto non consuma cariche. Dura finché non userai un'azione bonus per ripetere la parola di comando o finché non impiegherai un'altra funzione della gemma. La seconda parola di comando spende 1 carica e fa sì che la gemma proietti una fascio di luce luminoso contro una creatura visibile entro 18 metri da te. La creatura deve superare un tiro salvezza di Costituzione con CD 15 o restare accecata per 1 minuto. La creatura può ripetere il tiro salvezza al termine di ciascun suo turno, terminando l'effetto su",
     "id": "srd_o_261",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/gemma-elementale.jpeg",
+    "immagine": "",
     "nome": "Gemma della Luminosità",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2522,7 +2522,7 @@
   {
     "descrizione": "Con un'azione, puoi pronunciare la parola di comando della gemma e spendere 1 carica. Per i successivi 10 minuti, quando guardi attraverso la gemma possiedi la visione del vero fino a 36 metri di distanza. La gemma ha 3 cariche, e recupera 1d3 cariche spese ogni giorno all'alba.",
     "id": "srd_o_262",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/giavellotto-del-fulmine.jpeg",
+    "immagine": "",
     "nome": "Gemma della Visione",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2532,7 +2532,7 @@
   {
     "descrizione": "Questa gemma contiene una scintilla di energia elementale. Quando usi un'azione per infrangere la gemma, questa evoca un elementale come se tu avessi lanciato l'incantesimo evoca elementali, e la magia della gemma svanisce. Il tipo di gemma determina l'elementale evocato dall'incantesimo. Gemma Elementale Evocato Corindone rosso Elementale del fuoco Diamante giallo Elementale della terra Smeraldo Elementale dell' acqua Zaffiro blu Elementale dell' aria",
     "id": "srd_o_263",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/guanti-del-potere-orchesco.jpeg",
+    "immagine": "",
     "nome": "Gemma Elementale",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2602,7 +2602,7 @@
   {
     "descrizione": "Nuoto 9 m e arrampicata 9 m. Puoi scalare superfici verticali e capovolte senza prove.",
     "id": "srd_o_156",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/guanti-del-nuotare-e-scalare.jpg",
+    "immagine": "",
     "nome": "Guanti del Nuoto e dell'Arrampicata",
     "prezzo": 2000,
     "rarita": "Non comune",
@@ -2642,7 +2642,7 @@
   {
     "descrizione": "Reazione: quando sei colpito da un proiettile, riduci i danni di 1d10+modificatore DES.",
     "id": "srd_o_158",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/guanti-catturaproiettili.jpg",
+    "immagine": "",
     "nome": "Guanti per Bloccare i Proiettili",
     "prezzo": 1500,
     "rarita": "Non comune",
@@ -2662,7 +2662,7 @@
   {
     "descrizione": "Mentre l'incenso brucia all'interno di questo incensiere, puoi usare un'azione per pronunciare la parola di comando del braciere ed evocare un elementale dell'aria, come se avessi lanciato l'incantesimo evoca elementali. L'incensiere non può di nuovo essere usato a questo modo fino alla prossima alba. Questo incensiere largo 15 centimetri e alto 30 centimetri assomiglia a un calice dalla copertura decorata. Pesa 0,5 chili.",
     "id": "srd_o_267",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/incensiere-del-controllo-degli-elementali-dell-aria.jpeg",
+    "immagine": "",
     "nome": "Incensiere del Controllo degli Elementali dell'Aria",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2732,7 +2732,7 @@
   {
     "descrizione": "Ottieni un bonus di +1 ai tiri per colpire e danno effettuati con quest'arma magica. Finché hai addosso la spada ricevi anche un bonus di +1 ai tiri salvezza. Fortuna Se hai addosso la spada, puoi affidarti alla sua fortuna (non richiede un'azione) per ripetere un tiro per colpire, prova di caratteristica o tiro salvezza il cui risultato non ti soddisfa. Sei obbligato a usare il secondo risultato del dado. Questa proprietà non può essere usata di nuovo fino alla prossima alba. Desiderio Mentre la impugni, puoi usare un 'azione per spendere 1 carica e lanciare tramite essa l'incantesimo desiderio. Questa proprietà non può essere usata di nuovo fino alla prossima alba. La spada ha 1d4 1 cariche, e perde questa proprietà se finisce le cariche.",
     "id": "srd_o_268",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/lama-della-fortuna.jpeg",
+    "immagine": "",
     "nome": "Lama della Fortuna",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -2872,7 +2872,7 @@
   {
     "descrizione": "Mentre indossi queste lenti di cristallo davanti agli occhi, hai vantaggio alle prove di Saggezza (Percezione) basate sulla vista. In condizioni di visibilità limpida, puoi distinguere i dettagli anche di creature e oggetti molto distanti delle dimensioni di 50 centimetri.",
     "id": "srd_o_269",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/lenti-dell-aquila.jpeg",
+    "immagine": "",
     "nome": "Lenti dell'Aquila",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2882,7 +2882,7 @@
   {
     "descrizione": "Mentre indossi queste lenti di cristallo davanti agli occhi, puoi vedere molto meglio del normale fino a una distanza di 30 centimetri. Hai vantaggio alle prove di Intelligenza (Indagare) basate sulla vista mentre perlustri un'area o studi un oggetto a distanza.",
     "id": "srd_o_270",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/lenti-dello-charme.jpeg",
+    "immagine": "",
     "nome": "Lenti della Visione Dettagliata",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2892,7 +2892,7 @@
   {
     "descrizione": "Mentre indossi queste lenti di cristallo davanti agli occhi, puoi spendere 1 carica con un'azione per lanciare l'incantesimo charme su persone (CD del tiro salvezza 13) su di un umanoide entro 9 metri da te, purché tu e il bersaglio vi possiate vedere. Le lenti hanno 3 cariche e recuperano tutte quelle spese ogni giorno all'alba.",
     "id": "srd_o_271",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/lingua-di-fiamme.jpeg",
+    "immagine": "",
     "nome": "Lenti dello Charme",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -2912,7 +2912,7 @@
   {
     "descrizione": "Puoi usare un'azione bonus per pronunciare la parola di comando di questa spada magica, facendo sì che dalla sua lama eruttino fiamme. Queste fiamme irradiano luce intensa in un raggio di 12 metri e luce fioca per ulteriori 12 metri. Mentre la spada è in fiamme, infligge 2d6 danni da fuoco aggiuntivi a qualsiasi bersaglio colpisca. Le fiamme durano fino a che non usi un'azione bonus per pronunciare di nuovo la parola di comando o finché non lasci cadere o rinfoderi l'arma.",
     "id": "srd_o_272",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/manette-dimensionali.jpeg",
+    "immagine": "",
     "nome": "Lingua di Fiamme",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2962,7 +2962,7 @@
   {
     "descrizione": "Puoi usare un'azione per piazzare queste manette su di una creatura inabile. Le manette si adattano a qualsiasi creatura da taglia Piccola a Grande. Oltre a servire da comuni manette, i ceppi impediscono a una creatura legata con essi dall'usare qualsiasi metodo di movimento extradimensionale, compreso il teletrasporto o il viaggio verso piani diversi dell'esistenza. Tuttavia non impediscono a una creatura di attraversare un portale interdimensionale. Tu e qualsiasi creatura da te indicata quando fai uso dei ceppi potete usare un'azione per rimuoverli. Una volta ogni 30 giorni, la creatura legata può effettuare una prova di Forza (Atletica) con CD 30. Se la supera, la creatura si libera e distrugge i ceppi.",
     "id": "srd_o_273",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Manette Dimensionali",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -2982,7 +2982,7 @@
   {
     "descrizione": "Vantaggio Furtività. In oscurità: vola 9 m. 3 cariche: diventa pipistrello gigante per 1 ora. Ricarica 1d3/alba.",
     "id": "srd_o_160",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mantello-del-pipistrello.jpg",
+    "immagine": "",
     "nome": "Mantello del Pipistrello",
     "prezzo": 6000,
     "rarita": "Raro",
@@ -3012,7 +3012,7 @@
   {
     "descrizione": "Scalata 9 m, ragnatela 1/giorno, resistenza veleno, scurovisione 12 m, furtività su ragnatele. Richiede sintonia.",
     "id": "srd_o_162",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mantello-dell-aracnide.jpg",
+    "immagine": "",
     "nome": "Mantello dell'Aracnide",
     "prezzo": 20000,
     "rarita": "Molto raro",
@@ -3052,7 +3052,7 @@
   {
     "descrizione": "Mentre indossi questa cappa, hai vantaggio ai tiri salvezza contro incantesimi.",
     "id": "srd_o_274",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mantello-distorcente.jpeg",
+    "immagine": "",
     "nome": "Mantello della Resistenza agli Incantesimi",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -3092,7 +3092,7 @@
   {
     "descrizione": "Mentre indossi questa cappa, essa proietta un'illusione che ti fa apparire come se stessi in un punto vicino alla tua reale posizione, facendo sì che tutte le creature abbiano svantaggio ai tiri per colpire contro di te. Se subisci danni, la proprietà cessa di funzionare fino all'inizio del tuo prossimo turno. Questa proprietà è soppressa mentre sei inabile, intralciato o altrimenti impossibilitato a muoverti.",
     "id": "srd_o_275",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/manuale-dei-golem.jpeg",
+    "immagine": "",
     "nome": "Mantello Distorcente",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -3102,7 +3102,7 @@
   {
     "descrizione": "Questo tomo contiene le informazioni e incantamenti necessari a costruire un tipo particolare di golem. Il GM sceglie il tipo di golem che è possibile costruire o lo determina casualmente. Per decifrare e usare il manuale, devi essere un incantatore con almeno due slot incantesimo di 5° livello. Una creatura che non possa usare il manuale dei golem e provi a leggerlo, subisce 6d6 danni psichici. d20 Golem Tempo Costo 1-5 Argilla 30 giorni 65.000 mo 6-17 Carne 60 giorni 50.000 mo 18 Ferro 120 giorni 100.000 mo 19-20 Pietra 90 giorni 80.000 mo Per creare un golem, devi trascorrere il tempo sopra indicato, lavorando senza interruzione con il manuale a disposizione e riposando per non più di 8 ore al giorno. Devi anche pagare il costo specificato per acquistare i materiali necessari. Una volta",
     "id": "srd_o_276",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/manuale-della-velocità-di-azione.jpeg",
+    "immagine": "",
     "nome": "Manuale dei Golem",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -3112,7 +3112,7 @@
   {
     "descrizione": "Questo libro descrive esercizi atletici, e le sue parole sono soffuse di magia. Se trascorri 48 ore in un periodo di 6 giorni o meno a studiare i contenuti del libro e praticarne le indicazioni, il tuo punteggio di Forza aumenta di 2, e così fa il tuo punteggio massimo per quella caratteristica. Poi il manuale perde la sua magia, per recuperarla dopo un secolo.",
     "id": "srd_o_277",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/martello-dei-fulmini.jpeg",
+    "immagine": "",
     "nome": "Manuale dell'Esercizio Fisico",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -3122,7 +3122,7 @@
   {
     "descrizione": "Questo libro contiene suggerimenti salutari e alimentari, e le sue parole sono soffuse di magia. Se trascorri 48 ore in un periodo di 6 giorni o meno a studiare i contenuti del libro e praticarne le indicazioni, il tuo punteggio di Costituzione aumenta di 2, e così fa il tuo punteggio massimo per quella caratteristica. Poi il manuale perde la sua magia, per recuperarla dopo un secolo.",
     "id": "srd_o_278",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mazza-del-terrore.jpeg",
+    "immagine": "",
     "nome": "Manuale della Salute",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -3132,7 +3132,7 @@
   {
     "descrizione": "Questo libro contiene esercizi di coordinazione ed equilibrio, e le sue parole sono soffuse di magia. Se trascorri 48 ore in un periodo di 6 giorni o meno a studiare i contenuti del libro e praticarne le indicazioni, il tuo punteggio di Destrezza aumenta di 2, e così fa il tuo punteggio massimo per quella caratteristica. Poi il manuale perde la sua magia, per recuperarla dopo un secolo.",
     "id": "srd_o_279",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mazza-della-distruzione.jpeg",
+    "immagine": "",
     "nome": "Manuale della Velocità di Azione",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -3172,7 +3172,7 @@
   {
     "descrizione": "Ottieni un bonus di +1 ai tiri per colpire e di danno effettuati con quest'arma magica. Anatema dei Giganti (richiede sintonia). Devi indossare una Cintura della Forza dei Giganti (qualsiasi varietà) e i Guanti del Potere Orchesco per sintonizzarti con quest'arma. La sintonia termina se rimuovi uno qualsiasi di questi oggetti. Mentre sei in sintonia con quest'arma e la impugni, il tuo punteggio di Forza aumenta di 4 e può eccedere 20, ma non 30. Quando ottieni 20 sul tiro per colpire effettuato con quest'arma contro un gigante, il gigante deve superare un tiro salvezza di Costituzione con CD 17 o morire. Mentre sei in sintonia con esso, puoi spendere 1 carica ed effettuare un attacco con arma a distanza con il martello, scagliandolo come se avesse la proprietà da lancio con un gittata norm",
     "id": "srd_o_280",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/mazza-della-punizione.jpeg",
+    "immagine": "",
     "nome": "Martello dei Fulmini",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -3342,7 +3342,7 @@
   {
     "descrizione": "Questa scatola contiene un set di carte di pergamena. Un mazzo completo contiene 34 carte, ognuna raffigurante una creatura diversa. Le creature rappresentate vengono lasciate alla discrezionalità del GM. Di solito i mazzi trovati in giro sono privi di 1d20 – 1 carte. La magia del mazzo funziona solo se le carte vengono pescate a caso (potete usare un mazzo di normali carte da gioco modificato per simulare il mazzo delle illusioni). Puoi usare un'azione per pescare una carta dal mazzo e scagliarla in un punto sul terreno a 9 metri da te. L'illusione di una o più creature si forma sopra la carta lanciata e rimane finché non viene dissolta. La creatura illusoria sembra reale, della taglia appropriata, e si comporta come fosse una vera creatura, eccetto che non può recare danni. Finché resti ",
     "id": "srd_o_283",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/medaglione-dei-pensieri.jpeg",
+    "immagine": "",
     "nome": "Mazzo delle Illusioni",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3352,7 +3352,7 @@
   {
     "descrizione": "Di solito lo si trova in un borsello o una scatola, che contiene delle carte fatte d'avorio o vello. La maggior parte di questi mazzi (il 75%) ha solo tredici carte, mentre i restanti mazzi ne hanno ventidue. Prima di pescare una carta, devi dichiarare quante carte intendi pescare e poi pescarle casualmente (puoi usare un mazzo di carte da gioco modificato per simulare il mazzo delle meraviglie). Qualsiasi carta pescata in eccesso di questo numero non ha effetto. Altrimenti, appena peschi una carta dal mazzo, la sua magia ha effetto. Devi pescare ciascuna carta entro 1 ora dalla pescata precedente. Se non peschi il numero scelto di carte, il numero di carte rimanenti uscirà fuori dal mazzo spontaneamente.",
     "id": "srd_o_284",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/occhiali-della-notte.jpeg",
+    "immagine": "",
     "nome": "Mazzo delle Meraviglie",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -3372,7 +3372,7 @@
   {
     "descrizione": "Hai un bonus ai tiri per colpire e ai tiri di danno effettuati con questo pezzo di munizione magica. Il bonus è determinato dalla rarità. Una volta che colpisce un bersaglio, la munizione perde la sua magia.",
     "id": "srd_o_285",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Munizione +1, +2, o +3",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3412,7 +3412,7 @@
   {
     "descrizione": "Il bastone concede un bonus di +1 al d20 durante la notte e permette di vedere in oscurità per 30 minuti una volta al giorno.",
     "id": "srd_o_1781796509874_8446",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/occhio-della-notte.jpg",
+    "immagine": "",
     "nome": "Occhio della notte",
     "prezzo": 36,
     "rarita": "Non comune",
@@ -3512,7 +3512,7 @@
   {
     "descrizione": "Come azione bonus 1/giorno: recupera un slot incantesimo speso di 3° livello o inferiore. Richiede sintonia da incantatore.",
     "id": "srd_o_169",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/perla-del-potere.jpg",
+    "immagine": "",
     "nome": "Perla del Potere",
     "prezzo": 6000,
     "rarita": "Non comune",
@@ -3552,7 +3552,7 @@
   {
     "descrizione": "Se la pietra tocca terra, puoi usare un'azione per pronunciare la parola di comando ed evocare un elementale della terra. La pietra pesa 2,5 chili.",
     "id": "srd_o_291",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pietra-del-controllo-degli-elementali-della-terra.jpeg",
+    "immagine": "",
     "nome": "Pietra del Controllo degli Elementali della Terra",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -3562,7 +3562,7 @@
   {
     "descrizione": "Finché la pietra è con te, ottieni un bonus di +1 alle prove di caratteristica e ai tiri salvezza.",
     "id": "srd_o_292",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pietra-della-buona-fortuna-pietrafortuna.jpeg",
+    "immagine": "",
     "nome": "Pietra della Buona Fortuna",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3572,7 +3572,7 @@
   {
     "descrizione": "Quando usi un'azione per lanciare una di queste pietre in aria, la pietra inizia a orbitare intorno alla tua testa e ti conferisce un beneficio. Un'altra creatura può usare un'azione per afferrare la pietra superando un tiro per colpire contro CA 24 o una prova di Destrezza con CD 24.",
     "id": "srd_o_293",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pietra-di-ioun.png",
+    "immagine": "",
     "nome": "Pietra di Ioun",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -3592,7 +3592,7 @@
   {
     "descrizione": "Questi pigmenti ti permettono di creare oggetti tridimensionali dipingendoli a due dimensioni. Ogni vasetto è sufficiente a coprire 90 m2. Quando completi il dipinto, l'oggetto dipinto diventa un oggetto reale non magico.",
     "id": "srd_o_294",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pigmenti-meravigliosi-di-nolzur.jpeg",
+    "immagine": "",
     "nome": "Pigmenti Meravigliosi di Nolzur",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -3602,7 +3602,7 @@
   {
     "descrizione": "Questo minuscolo oggetto assomiglia a una piuma. Esistono diversi tipi di piume arcane, ciascuno dotato di un singolo effetto monouso (Albero, Ancora, Barca cigno, Frusta, Uccello, Ventaglio).",
     "id": "srd_o_295",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/polvere-della-sparizione.jpeg",
+    "immagine": "",
     "nome": "Piuma di Quaal",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -3612,7 +3612,7 @@
   {
     "descrizione": "Polvere che conferisce invisibilità alla creatura che la utilizza.",
     "id": "srd_o_296",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/polvere-dello-starnuto-e-del-soffocamento.jpeg",
+    "immagine": "",
     "nome": "Polvere della Sparizione",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3622,7 +3622,7 @@
   {
     "descrizione": "Quando usi un'azione per lanciare una manciata di polvere in aria, tutte le creature che respirano entro 9 metri devono superare un tiro salvezza di Costituzione con CD 15 o smettere di respirare e iniziare a starnutire. Una creatura afflitta è inabile e soffoca.",
     "id": "srd_o_297",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-del-respirare-sott-acqua-1000x1000.png",
+    "immagine": "",
     "nome": "Polvere dello Starnuto e del Soffocamento",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3632,7 +3632,7 @@
   {
     "descrizione": "La polvere trasforma un cubo d'acqua di 4,5 metri di spigolo in una pallina. Un elementale d'acqua esposto alla polvere deve superare un tiro salvezza di Costituzione con CD 13 o subire 10d6 danni necrotici.",
     "id": "srd_o_298",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-gassosa.png",
+    "immagine": "",
     "nome": "Polvere Prosciugante",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3642,7 +3642,7 @@
   {
     "descrizione": "Dopo aver bevuto questa pozione, puoi respirare sott'acqua per 1 ora.",
     "id": "srd_o_299",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Pozione del Respirare Sott'Acqua",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3662,7 +3662,7 @@
   {
     "descrizione": "Causa 3d6 danni da veleno e avvelenamento 24 ore (TS COS CD 19 per metà e nessun avvelenamento).",
     "id": "srd_o_023",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-velenosa-1000x1000.png",
+    "immagine": "",
     "nome": "Pozione del Veleno",
     "prezzo": 100,
     "rarita": "Comune",
@@ -3672,7 +3672,7 @@
   {
     "descrizione": "Per 1 ora: velocità volo 18 m e puoi librarsi. Se termina mentre sei in aria, cadi.",
     "id": "srd_o_005",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-volare.png",
+    "immagine": "",
     "nome": "Pozione del Volo",
     "prezzo": 500,
     "rarita": "Molto raro",
@@ -3682,7 +3682,7 @@
   {
     "descrizione": "Per 1 ora: lancia Amicizia con gli Animali (CD 13) a volontà.",
     "id": "srd_o_025",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-amicizia-con-gli-animali.jpg",
+    "immagine": "",
     "nome": "Pozione dell'Amicizia con gli Animali",
     "prezzo": 100,
     "rarita": "Non comune",
@@ -3692,7 +3692,7 @@
   {
     "descrizione": "Per 1 ora: velocità di arrampicata pari a quella a terra, vantaggio in Atletica per arrampicarti.",
     "id": "srd_o_018",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-scalare.jpg",
+    "immagine": "",
     "nome": "Pozione dell'Arrampicata",
     "prezzo": 75,
     "rarita": "Comune",
@@ -3702,7 +3702,7 @@
   {
     "descrizione": "Per 1 ora: 10 PF temporanei e sei sotto Benedizione senza concentrazione.",
     "id": "srd_o_019",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-eroismo.jpg",
+    "immagine": "",
     "nome": "Pozione dell'Eroismo",
     "prezzo": 180,
     "rarita": "Raro",
@@ -3712,7 +3712,7 @@
   {
     "descrizione": "Per 1 ora: invisibile. Termina se attacchi o lanci un incantesimo.",
     "id": "srd_o_020",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-invisibilità.jpg",
+    "immagine": "",
     "nome": "Pozione dell'Invisibilità",
     "prezzo": 180,
     "rarita": "Molto raro",
@@ -3732,7 +3732,7 @@
   {
     "descrizione": "Berla per lanciare Chiaroveggenza senza concentrazione. Liquido turchese con occhio fluttuante.",
     "id": "srd_o_024",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-chiaroveggenza.jpg",
+    "immagine": "",
     "nome": "Pozione della Chiaroveggenza",
     "prezzo": 960,
     "rarita": "Raro",
@@ -3742,7 +3742,7 @@
   {
     "descrizione": "Come Ingrandisci/Riduci (solo Ingrandisci) per 1d4 ore senza concentrazione.",
     "id": "srd_o_014",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-crescita.png",
+    "immagine": "",
     "nome": "Pozione della Crescita",
     "prezzo": 150,
     "rarita": "Non comune",
@@ -3752,7 +3752,7 @@
   {
     "descrizione": "Come Ingrandisci/Riduci (solo Riduci) per 1d4 ore senza concentrazione.",
     "id": "srd_o_015",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-diminuzione.png",
+    "immagine": "",
     "nome": "Pozione della Diminuzione",
     "prezzo": 270,
     "rarita": "Raro",
@@ -3772,7 +3772,7 @@
   {
     "descrizione": "Come Forma Gassosa senza concentrazione per 1 ora. Liquido grigiastro fumoso.",
     "id": "srd_o_007",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-gassosa.png",
+    "immagine": "",
     "nome": "Pozione della Forma Gassosa",
     "prezzo": 300,
     "rarita": "Raro",
@@ -3782,7 +3782,7 @@
   {
     "descrizione": "Per 1 ora: Forza diventa 25 (nessun effetto se già superiore).",
     "id": "srd_o_010",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-dei-giganti.jpg",
+    "immagine": "",
     "nome": "Pozione della Forza del Gigante del Fuoco",
     "prezzo": 750,
     "rarita": "Raro",
@@ -3792,7 +3792,7 @@
   {
     "descrizione": "Per 1 ora: Forza diventa 21 (nessun effetto se già superiore).",
     "id": "srd_o_008",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-dei-giganti.jpg",
+    "immagine": "",
     "nome": "Pozione della Forza del Gigante della Collina",
     "prezzo": 200,
     "rarita": "Non comune",
@@ -3802,7 +3802,7 @@
   {
     "descrizione": "Per 1 ora: Forza diventa 23 (nessun effetto se già superiore).",
     "id": "srd_o_009",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-dei-giganti.jpg",
+    "immagine": "",
     "nome": "Pozione della Forza del Gigante della Pietra",
     "prezzo": 500,
     "rarita": "Raro",
@@ -3812,7 +3812,7 @@
   {
     "descrizione": "Per 1 ora: Forza diventa 29. Liquido azzurro con lampi interni.",
     "id": "srd_o_012",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-dei-giganti.jpg",
+    "immagine": "",
     "nome": "Pozione della Forza del Gigante della Tempesta",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -3822,7 +3822,7 @@
   {
     "descrizione": "Per 1 ora: Forza diventa 27 (nessun effetto se già superiore).",
     "id": "srd_o_011",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-della-forma-dei-giganti.jpg",
+    "immagine": "",
     "nome": "Pozione della Forza del Gigante delle Nuvole",
     "prezzo": 1500,
     "rarita": "Molto raro",
@@ -3832,7 +3832,7 @@
   {
     "descrizione": "Per 1 minuto: puoi lanciare Individua i Pensieri (CD 13) senza concentrazione.",
     "id": "srd_o_022",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-lettura-della-mente.png",
+    "immagine": "",
     "nome": "Pozione della Lettura della Mente",
     "prezzo": 180,
     "rarita": "Raro",
@@ -3852,7 +3852,7 @@
   {
     "descrizione": "Per 1 ora: resistenza a un tipo di danno (acido, freddo, fuoco, fulmine, necrotico, ecc.).",
     "id": "srd_o_013",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-resistenza.png",
+    "immagine": "",
     "nome": "Pozione della Resistenza",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -3862,7 +3862,7 @@
   {
     "descrizione": "Per 1 minuto sei sotto Affretta senza concentrazione. Liquido giallo che vorteggia.",
     "id": "srd_o_006",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-velocità.jpg",
+    "immagine": "",
     "nome": "Pozione della Velocità",
     "prezzo": 400,
     "rarita": "Molto raro",
@@ -3882,7 +3882,7 @@
   {
     "descrizione": "Berla come azione: recupera 2d4+2 PF. Liquido rosso brillante dal sapore di lampone.",
     "id": "srd_o_001",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Cura",
     "prezzo": 50,
     "rarita": "Comune",
@@ -3892,7 +3892,7 @@
   {
     "descrizione": "Berla come azione: recupera 8d4+8 PF. Liquido rosso con striature dorate.",
     "id": "srd_o_003",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Cura Eccellente",
     "prezzo": 450,
     "rarita": "Raro",
@@ -3902,7 +3902,7 @@
   {
     "descrizione": "Berla come azione: recupera 4d4+4 PF.",
     "id": "srd_o_002",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Cura Superiore",
     "prezzo": 150,
     "rarita": "Non comune",
@@ -3912,7 +3912,7 @@
   {
     "descrizione": "Berla come azione: recupera 10d4+20 PF.",
     "id": "srd_o_004",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Cura Suprema",
     "prezzo": 1350,
     "rarita": "Molto raro",
@@ -3942,7 +3942,7 @@
   {
     "descrizione": "Bevendo la pozione, il personaggio recupera 4d4+4 punti ferita. Il liquido rosso emette una flebile luce.",
     "id": "w_1778433652838",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Guarigione Maggiore",
     "prezzo": 150,
     "rarita": "Non comune",
@@ -3952,7 +3952,7 @@
   {
     "descrizione": "Bevendo la pozione, il personaggio recupera 8d4+8 punti ferita. Il liquido rosso pulsa con una luce calda.",
     "id": "w_1778433652839",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Guarigione Superiore",
     "prezzo": 500,
     "rarita": "Raro",
@@ -3962,7 +3962,7 @@
   {
     "descrizione": "Bevendo la pozione, il personaggio recupera 10d4+20 punti ferita. Il liquido rosso emette luce intensa.",
     "id": "w_1778433652840",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-guarigione.png",
+    "immagine": "",
     "nome": "Pozione di Guarigione Suprema",
     "prezzo": 1350,
     "rarita": "Molto raro",
@@ -4012,7 +4012,7 @@
   {
     "descrizione": "Per 1 ora: respira sott'acqua. Non perdi la capacità di respirare aria.",
     "id": "srd_o_027",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/03/pozione-di-respirare-sott-acqua.jpg",
+    "immagine": "",
     "nome": "Pozione per Respirare Sott'Acqua",
     "prezzo": 180,
     "rarita": "Non comune",
@@ -4022,7 +4022,7 @@
   {
     "descrizione": "Questo tessuto nero si dispiega in un foglio circolare di 1,8 metri che crea un portale bidirezionale verso un altro mondo o piano di esistenza.",
     "id": "srd_o_301",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/pugnale-avvelenato.jpeg",
+    "immagine": "",
     "nome": "Pozzo dei Mondi",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -4042,7 +4042,7 @@
   {
     "descrizione": "Hai un bonus di +1 ai tiri per colpire e danno. Una volta al giorno il veleno nero ricopre la lama: quando colpisci, il bersaglio deve superare un tiro salvezza di Costituzione con CD 15 o diventare avvelenato e subire 2d10 danni da veleno.",
     "id": "srd_o_302",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/sacro-vendicatore.jpeg",
+    "immagine": "",
     "nome": "Pugnale Avvelenato",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -4112,7 +4112,7 @@
   {
     "descrizione": "Ottieni un bonus di +3 ai tiri per colpire e danno. Quando colpisci un immondo o non morto, subisce 2d10 danni radianti aggiuntivi. Crea un'aura di 3 metri che conferisce vantaggio ai tiri salvezza contro incantesimi.",
     "id": "srd_o_303",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scarabeo-di-protezione.jpeg",
+    "immagine": "",
     "nome": "Sacro Vendicatore",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -4152,7 +4152,7 @@
   {
     "descrizione": "+2 a colpire e danni. Attacco aggiuntivo come azione bonus ogni turno. Richiede sintonia.",
     "id": "srd_o_064",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scimitarra-della-velocità.jpg",
+    "immagine": "",
     "nome": "Scimitarra della Velocità",
     "prezzo": 6000,
     "rarita": "Molto raro",
@@ -4172,7 +4172,7 @@
   {
     "descrizione": "Quando il personaggio impugna questo scudo, ottiene un bonus di +1 alla CA cumulativo al normale bonus dello scudo.",
     "id": "w_1778433652865",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scudo-1-2-3-1000x1000.jpg",
+    "immagine": "",
     "nome": "Scudo +1",
     "prezzo": 50,
     "rarita": "Non comune",
@@ -4182,7 +4182,7 @@
   {
     "descrizione": "Mentre impugni questo scudo, hai un bonus alla CA determinato dalla rarità dello scudo, in aggiunta al normale bonus dello scudo.",
     "id": "srd_o_304",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scudo-attiraproiettili.jpeg",
+    "immagine": "",
     "nome": "Scudo +1, +2, +3",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -4192,7 +4192,7 @@
   {
     "descrizione": "Quando il personaggio impugna questo scudo, ottiene un bonus di +2 alla CA cumulativo al normale bonus dello scudo.",
     "id": "w_1778433652866",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scudo-1-2-3-1000x1000.jpg",
+    "immagine": "",
     "nome": "Scudo +2",
     "prezzo": 90,
     "rarita": "Raro",
@@ -4202,7 +4202,7 @@
   {
     "descrizione": "+3 alla CA in aggiunta al normale bonus dello scudo. Totale +5 CA.",
     "id": "srd_o_093",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/scudo-1-2-3-1000x1000.jpg",
+    "immagine": "",
     "nome": "Scudo +3",
     "prezzo": 6000,
     "rarita": "Molto raro",
@@ -4212,7 +4212,7 @@
   {
     "descrizione": "Con un'azione bonus puoi far animare lo scudo che fluttuerà nell'aria nel tuo spazio per proteggerti, lasciandoti libera la mano.",
     "id": "srd_o_305",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/sfera-annientatrice.png",
+    "immagine": "",
     "nome": "Scudo Animato",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -4222,7 +4222,7 @@
   {
     "descrizione": "Mentre impugni questo scudo, hai vantaggio ai tiri salvezza contro incantesimi e gli attacchi con incantesimo hanno svantaggio contro di te.",
     "id": "srd_o_306",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Scudo Anti-Incantesimi",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -4282,7 +4282,7 @@
   {
     "descrizione": "Sfera fluttuante di puro vuoto. Distrugge qualsiasi cosa attraversi (CD COS 19). Controllabile con TS INT.",
     "id": "srd_o_173",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/sfera-annientatrice.png",
+    "immagine": "",
     "nome": "Sfera dell'Annientamento",
     "prezzo": 200000,
     "rarita": "Leggendario",
@@ -4292,7 +4292,7 @@
   {
     "descrizione": "Lancia Scrutare (CD 17) come azione. Richiede sintonia da incantatore.",
     "id": "srd_o_172",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/sfera-di-cristallo.jpg",
+    "immagine": "",
     "nome": "Sfera di Cristallo",
     "prezzo": 50000,
     "rarita": "Molto raro",
@@ -4332,7 +4332,7 @@
   {
     "descrizione": "Questo liquido bianco dissolve istantaneamente 1.000 cm2 di qualsiasi adesivo con cui entra in contatto, compresa la colla suprema.",
     "id": "srd_o_310",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/spada-danzante.jpeg",
+    "immagine": "",
     "nome": "Solvente Universale",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -4342,7 +4342,7 @@
   {
     "descrizione": "Quando attacchi un oggetto e colpisci, massimizza i dadi di danno. Con 20 al tiro per colpire contro creature, il bersaglio subisce 14 danni taglienti aggiuntivi. Con un secondo 20, recidi un arto.",
     "id": "srd_o_311",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/spada-del-furto-vitale.jpeg",
+    "immagine": "",
     "nome": "Spada Affilata",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -4382,7 +4382,7 @@
   {
     "descrizione": "Quando attacchi una creatura e ottieni 20 al tiro per colpire, subisce 10 danni necrotici aggiuntivi e tu guadagni 10 punti ferita temporanei.",
     "id": "srd_o_312",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/stivali-della-levitazione-1000x1000.png",
+    "immagine": "",
     "nome": "Spada del Furto Vitale",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -4452,7 +4452,7 @@
   {
     "descrizione": "+1 a colpire e danni. I danni causati non possono essere recuperati con riposo. Richiede sintonia.",
     "id": "srd_o_068",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/spada-del-ferimento-1000x1000.jpg",
+    "immagine": "",
     "nome": "Spada delle Ferite",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -4682,7 +4682,7 @@
   {
     "descrizione": "1/giorno: lancia Levitazione su te stesso (azione, fino a 10 min). Richiede sintonia.",
     "id": "srd_o_180",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/stivali-della-levitazione-1000x1000.png",
+    "immagine": "",
     "nome": "Stivali di Levitazione",
     "prezzo": 4000,
     "rarita": "Raro",
@@ -4702,7 +4702,7 @@
   {
     "descrizione": "La tua velocità diventa 9 metri e non viene ridotta da ingombro o armatura pesante. Salti tre volte la distanza normale.",
     "id": "srd_o_316",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/talismano-del-male-estremo.jpeg",
+    "immagine": "",
     "nome": "Stivali Molleggiati",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -4742,7 +4742,7 @@
   {
     "descrizione": "Mentre indossi questo pendente sei immune alla condizione avvelenato e hai immunità ai danni da veleno.",
     "id": "srd_o_317",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/talismano-della-rimarginazione.jpeg",
+    "immagine": "",
     "nome": "Talismano Anti-Veleno",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -4752,7 +4752,7 @@
   {
     "descrizione": "Un chierico o paladino buono ottiene +2 ai tiri per colpire con incantesimi. Può aprire fenditure infuocate sotto creature malvagie o distruggere oggetti malvagi spendendo cariche.",
     "id": "srd_o_318",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/talismano-della-sfera.jpeg",
+    "immagine": "",
     "nome": "Talismano del Bene Puro",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -4762,7 +4762,7 @@
   {
     "descrizione": "Un chierico o paladino malvagio ottiene +2 ai tiri per colpire con incantesimi. Può aprire fenditure infuocate sotto creature buone spendendo cariche.",
     "id": "srd_o_319",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tomo-del-comando-e-dell-influenza.jpeg",
+    "immagine": "",
     "nome": "Talismano del Male Estremo",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -4772,7 +4772,7 @@
   {
     "descrizione": "Mentre indossi questo pendente, ti stabilizzi all'inizio del turno se sei morente. Raddoppi i punti ferita recuperati quando tiri i Dadi Vita.",
     "id": "srd_o_320",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tomo-del-nitido-pensiero.jpeg",
+    "immagine": "",
     "nome": "Talismano della Rimarginazione",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -4782,7 +4782,7 @@
   {
     "descrizione": "Sei immune a contrarre malattie. Se già infetto, gli effetti sono sospesi finché indossi il pendente.",
     "id": "srd_o_321",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Talismano della Salute",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -4802,7 +4802,7 @@
   {
     "descrizione": "Vola a 18 m (piccolo, 1 pers.), 12 m (medio, 4 pers.) o 9 m (grande, 6 pers.). Parola di comando.",
     "id": "srd_o_181",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tappetto-volante.jpg",
+    "immagine": "",
     "nome": "Tappeto Volante",
     "prezzo": 8000,
     "rarita": "Molto raro",
@@ -4832,7 +4832,7 @@
   {
     "descrizione": "Dopo 48 ore di studio in 6 giorni, il tuo punteggio di Saggezza aumenta di 2 (massimo +20). Poi il libro perde la sua magia per un secolo.",
     "id": "srd_o_325",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tomo-della-comprensione.jpeg",
+    "immagine": "",
     "nome": "Tomo della Comprensione",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -4932,7 +4932,7 @@
   {
     "descrizione": "Vedi in tutte le direzioni, hai vantaggio alla Percezione visiva, scurovisione 36 metri, e puoi vedere creature invisibili e nel Piano Etereo entro 36 metri.",
     "id": "srd_o_326",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tunica-degli-occhi.jpeg",
+    "immagine": "",
     "nome": "Tunica degli Occhi",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -4942,7 +4942,7 @@
   {
     "descrizione": "Stacca le toppe per creare oggetti reali: aste, corde, lanterne, pugnali, sacchi, specchi, e fino a 4d4 oggetti aggiuntivi casuali.",
     "id": "srd_o_327",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tunica-degli-oggetti-utili.jpeg",
+    "immagine": "",
     "nome": "Tunica degli Oggetti Utili",
     "prezzo": 300,
     "rarita": "Non comune",
@@ -4952,7 +4952,7 @@
   {
     "descrizione": "Spendi 1 carica: la tunica produce colori abbaglianti. Le creature hanno svantaggio ai tiri per colpire contro di te e chi ti vede nella luce intensa deve superare un TS di Saggezza CD 15 o restare stordito.",
     "id": "srd_o_328",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/tunica-delle-stelle.jpeg",
+    "immagine": "",
     "nome": "Tunica dei Colori Scintillanti",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -4962,7 +4962,7 @@
   {
     "descrizione": "+1 ai tiri salvezza. Le sei stelle frontali permettono di lanciare dardo incantato a 5° livello. Puoi entrare nel Piano Astrale con un'azione.",
     "id": "srd_o_329",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/verga-dell-assorbimento.jpeg",
+    "immagine": "",
     "nome": "Tunica delle Stelle",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -5092,7 +5092,7 @@
   {
     "descrizione": "Mazza magica +3 con sei pulsanti che la trasformano in diverse armi. Ha anche proprietà aggiuntive di guarigione, resurrezione e altre capacità divine.",
     "id": "srd_o_334",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/verga-della-sovranità.jpeg",
+    "immagine": "",
     "nome": "Verga della Potenza Divina",
     "prezzo": 50000,
     "rarita": "Leggendario",
@@ -5102,7 +5102,7 @@
   {
     "descrizione": "Trasporta te e fino a 199 creature in un paradiso extraplanare. Per ogni ora trascorsa, i visitatori recuperano PF come da 1 Dado Vita.",
     "id": "srd_o_335",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/verga-inamovibile.jpeg",
+    "immagine": "",
     "nome": "Verga della Sicurezza",
     "prezzo": 15000,
     "rarita": "Molto raro",
@@ -5112,7 +5112,7 @@
   {
     "descrizione": "Ogni creatura visibile entro 36 metri deve superare un TS di Saggezza CD 15 o restare affascinata da te per 8 ore, considerandoti un capo fidato.",
     "id": "srd_o_336",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/2020/04/zainetto-pratico-di-heward.jpeg",
+    "immagine": "",
     "nome": "Verga della Sovranità",
     "prezzo": 3000,
     "rarita": "Raro",
@@ -5122,7 +5122,7 @@
   {
     "descrizione": "Premi il pulsante per fissare la verga magicamente sul posto, anche contro la gravità. Regge fino a 4.000 chili. Una prova di Forza CD 30 la sposta di 3 metri.",
     "id": "srd_o_337",
-    "immagine": "https://dungeonedraghi.it/wp-content/uploads/logo.png",
+    "immagine": "",
     "nome": "Verga Inamovibile",
     "prezzo": 300,
     "rarita": "Non comune",
