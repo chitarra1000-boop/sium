@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it" data-theme="dark">
 <head>
 <meta charset="UTF-8" />
@@ -8339,18 +8339,49 @@ var ICON = {
 };
 
 function getFilteredArmi() {
-  return state.armi.filter(function(w) {
+  var filtered = state.armi.filter(function(w) {
     if (state.filtroTipo && w.tipo !== state.filtroTipo) return false;
     if (state.filtroValuta && w.valuta !== state.filtroValuta) return false;
     if (state.filtroRarita && w.rarita !== state.filtroRarita) return false;
+    if (!state.emporioShowHomebrew && (w.id||'').startsWith('w_')) return false;
+
     if (state.search) {
       var s = state.search.toLowerCase();
-      if (w.nome.toLowerCase().indexOf(s) < 0 && (w.descrizione||'').toLowerCase().indexOf(s) < 0) return false;
+      var n = (w.nome||'').toLowerCase();
+      var d = (w.descrizione||'').toLowerCase();
+      if (n.indexOf(s) < 0 && d.indexOf(s) < 0) return false;
     }
-    /* Filtro ufficiale/homebrew: srd_o_ = ufficiale, w_ = homebrew */
-    if (!state.emporioShowHomebrew && (w.id||'').startsWith('w_')) return false;
     return true;
   });
+
+  filtered.sort(function(a, b) {
+    var nA = (a.nome||'').toLowerCase();
+    var nB = (b.nome||'').toLowerCase();
+
+    if (state.search) {
+      var s = state.search.toLowerCase();
+      var exactA = (nA === s);
+      var exactB = (nB === s);
+      if (exactA && !exactB) return -1;
+      if (!exactA && exactB) return 1;
+
+      var startA = nA.indexOf(s) === 0;
+      var startB = nB.indexOf(s) === 0;
+      if (startA && !startB) return -1;
+      if (!startA && startB) return 1;
+
+      var nameMatchA = nA.indexOf(s) >= 0;
+      var nameMatchB = nB.indexOf(s) >= 0;
+      if (nameMatchA && !nameMatchB) return -1;
+      if (!nameMatchA && nameMatchB) return 1;
+    }
+
+    if (nA < nB) return -1;
+    if (nA > nB) return 1;
+    return 0;
+  });
+
+  return filtered;
 }
 
 
@@ -12073,6 +12104,7 @@ function loadArmi() {
             immagine: w.immagine || ''
           };
         });
+        fbSaveArmi();
         notify('Caricate ' + state.armi.length + ' armi.');
         renderMain();
       } catch (err) { notify('Errore: ' + err.message, 'err'); }
