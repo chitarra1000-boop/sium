@@ -5795,9 +5795,8 @@ function setupRealtimeListeners() {
   _db.ref('state/armi').on('value', function(snap) {
     if (_localWrite.armi) return;
     var v = snap.val();
-    var existing = (v && Array.isArray(v)) ? v : SAMPLE_DATA.slice();
-    var nomi = {};
-    existing.forEach(function(x){ nomi[(x.nome||'').toLowerCase()] = 1; });
+    var existing = (v && Array.isArray(v)) ? v : (typeof SRD_OGGETTI !== 'undefined' ? SRD_OGGETTI.slice() : []);
+    
     // Aggiorna immagini SRD esistenti che hanno immagine vuota
     var srdById = {};
     (typeof SRD_OGGETTI !== 'undefined' ? SRD_OGGETTI : []).forEach(function(x){ if(x.id) srdById[x.id]=x; });
@@ -5809,16 +5808,12 @@ function setupRealtimeListeners() {
       }
       return x;
     });
-    var _armiDel = state.armiDeleted || [];
-    var toAdd = (typeof SRD_OGGETTI !== 'undefined' ? SRD_OGGETTI : []).filter(function(x){ return !nomi[(x.nome||'').toLowerCase()] && _armiDel.indexOf(x.id) < 0; });
-    if (toAdd.length || imgChanged) {
-      var merged = existing.concat(toAdd).sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||'','it'); });
+
+    if (imgChanged) {
       _localWrite.armi = true;
-      _db.ref('state/armi').set(merged, function(){ _localWrite.armi = false; });
-      state.armi = merged;
-    } else {
-      state.armi = existing;
+      _db.ref('state/armi').set(existing, function(){ _localWrite.armi = false; });
     }
+    state.armi = existing;
     if (state.section === 'emporio') updateResults();
   });
 
@@ -12010,6 +12005,7 @@ function updateResults() {
 function renderWeaponCard(w) {
   var card = document.createElement('article');
   card.className = 'weapon-card';
+  card.style.cursor = 'pointer';
   card.onclick = function() { openDetailModal('arma', w); };
 
   var img = document.createElement('div');
@@ -12049,7 +12045,7 @@ function renderWeaponCard(w) {
 
   var foot = document.createElement('div');
   foot.className = 'flex items-center justify-between pt-3 border-t';
-  var priceDiv = w.prezzo !== undefined && w.valuta ? '<div class="coin coin-' + w.valuta + '"><span class="coin-icon">' + w.valuta.toUpperCase() + '</span><span>' + w.prezzo + ' ' + w.valuta + '</span></div>' : '<div></div>';
+  var priceDiv = '<div></div>';
   if (isAdmin()) {
     foot.innerHTML = priceDiv +
       '<div class="flex gap-1"><button class="btn-dark edit-btn" title="Modifica" style="padding:0.4rem 0.65rem;">' + ICON.edit + '</button>' +
@@ -15552,13 +15548,7 @@ function openDetailModal(type, data) {
   }
 
   if (type === 'arma') {
-    if (data.prezzo !== undefined) {
-      var priceDiv=document.createElement('div');
-      priceDiv.className='coin coin-'+(data.valuta||'mo');
-      priceDiv.style.cssText='margin-bottom:1rem;';
-      priceDiv.innerHTML='<span class="coin-icon">'+(data.valuta||'mo').toUpperCase()+'</span><span>'+(data.prezzo||0)+' '+(data.valuta||'mo')+'</span>';
-      rightCol.appendChild(priceDiv);
-    }
+    // Price removed as requested
     if (data.descrizione) {
       var descDiv=document.createElement('div');
       descDiv.style.cssText='font-family:\'EB Garamond\',serif;font-size:16px;line-height:1.7;color:var(--text-main);';
