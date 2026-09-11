@@ -12045,7 +12045,7 @@ function renderWeaponCard(w) {
   body.innerHTML =
     '<div class="type-chip mb-2">' + escapeHtml(w.tipo) + sintoniaTag + '</div>' +
     '<h3 class="font-display font-bold text-lg mb-2" style="color:var(--gold-bright);line-height:1.25;margin:0 0 0.5rem;">' + escapeHtml(w.nome) + '</h3>' +
-    '<p style="font-size:14px;line-height:1.55;color:var(--text-main);flex:1;margin:0 0 1rem;">' + (w.descrizione ? nl2br(escapeHtml(w.descrizione)) : '<em style="color:var(--text-muted)">Nessuna descrizione.</em>') + '</p>';
+    '<p style="font-size:14px;line-height:1.55;color:var(--text-main);flex:1;margin:0 0 1rem;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;">' + (w.descrizione ? nl2br(escapeHtml(w.descrizione)) : '<em style="color:var(--text-muted)">Nessuna descrizione.</em>') + '</p>';
 
   var foot = document.createElement('div');
   foot.className = 'flex items-center justify-between pt-3 border-t';
