@@ -12049,7 +12049,7 @@ function renderWeaponCard(w) {
 
   var foot = document.createElement('div');
   foot.className = 'flex items-center justify-between pt-3 border-t';
-  var priceDiv = '<div class="coin coin-' + w.valuta + '"><span class="coin-icon">' + w.valuta.toUpperCase() + '</span><span>' + w.prezzo + ' ' + w.valuta + '</span></div>';
+  var priceDiv = w.prezzo !== undefined && w.valuta ? '<div class="coin coin-' + w.valuta + '"><span class="coin-icon">' + w.valuta.toUpperCase() + '</span><span>' + w.prezzo + ' ' + w.valuta + '</span></div>' : '<div></div>';
   if (isAdmin()) {
     foot.innerHTML = priceDiv +
       '<div class="flex gap-1"><button class="btn-dark edit-btn" title="Modifica" style="padding:0.4rem 0.65rem;">' + ICON.edit + '</button>' +
@@ -12136,7 +12136,6 @@ function renderWeaponForm() {
     descrizione: editing ? editing.descrizione : '',
     tipo: editing ? editing.tipo : TIPI[0],
     rarita: editing ? editing.rarita : RARITA[0],
-    valuta: editing ? editing.valuta : 'mo',
     immagine: editing ? editing.immagine : '',
     sintonia: editing ? !!editing.sintonia : false
   };
@@ -12213,12 +12212,6 @@ function renderWeaponForm() {
   row1.appendChild(addField('Rarit\u00E0', 'select', 'rarita', {options: RARITA.map(function(r){return {value:r,label:r};})}));
   body.appendChild(row1);
 
-  var row2 = document.createElement('div');
-  row2.className = 'form-row-3';
-  row2.appendChild(addField('Valuta', 'select', 'valuta', {options: VALUTE.map(function(v){return {value:v.code,label:v.label+' ('+v.code+')'};})}));
-  row2.appendChild(addField('Prezzo', 'number', 'prezzo', {placeholder:'0'}));
-  body.appendChild(row2);
-
   body.appendChild(addField('URL Immagine', 'text', 'immagine', {placeholder:'img/spada-alba.png', hint:'Usa un percorso relativo come <code>img/nomearma.png</code>.'}));
   body.appendChild(addField('Richiede Sintonia', 'checkbox', 'sintonia'));
   var actions = document.createElement('div');
@@ -12244,7 +12237,6 @@ function renderWeaponForm() {
 
   function submitForm() {
     if (!form.nome.trim()) { alert('Il nome è obbligatorio.'); return; }
-    form.prezzo = Number(form.prezzo) || 0;
     if (editing) {
       state.armi = state.armi.map(function(w) {
         if (w.id !== state.editingId) return w;
