@@ -10065,7 +10065,7 @@ function renderEmporio() {
   var addBtn = document.createElement('button');
   addBtn.className = 'btn-gold';
   addBtn.innerHTML = ICON.plus + ' Nuova Arma';
-  addBtn.onclick = function() { state.editingId = null; state.showForm = true; render(); };
+  addBtn.onclick = function() { state.editingId = null; state.showForm = true; document.body.appendChild(renderWeaponForm()); };
   addBtnW.appendChild(addBtn);
   if (isAdmin()) row.appendChild(addBtnW);
 
@@ -11991,7 +11991,7 @@ function updateResults() {
     if (state.armi.length === 0) {
       grid.innerHTML = '<div class="empty-state panel-glass"><div class="rune">\u2694</div><h2>Il compendio &egrave; vuoto</h2><p>Aggiungi la prima arma al tuo database.</p><button class="btn-gold" id="empty-add">' + ICON.plus + ' Aggiungi prima arma</button></div>';
       var ea = document.getElementById('empty-add');
-      if (ea) ea.onclick = function() { state.editingId = null; state.showForm = true; render(); };
+      if (ea) ea.onclick = function() { state.editingId = null; state.showForm = true; document.body.appendChild(renderWeaponForm()); };
     } else {
       grid.innerHTML = '<div class="empty-state panel-glass"><div class="rune">\u2694</div><h2>Nessun oggetto trovato</h2><p>I filtri attivi non corrispondono ad alcun elemento.</p><button class="btn-gold" id="empty-clear">Ripulisci i filtri</button></div>';
       var ec = document.getElementById('empty-clear');
@@ -12041,8 +12041,9 @@ function renderWeaponCard(w) {
 
   var body = document.createElement('div');
   body.className = 'card-body';
+  var sintoniaTag = w.sintonia ? ' <span style="font-size:11px;color:#c97f7f;font-weight:bold;margin-left:8px;">(Richiede sintonia)</span>' : '';
   body.innerHTML =
-    '<div class="type-chip mb-2">' + escapeHtml(w.tipo) + '</div>' +
+    '<div class="type-chip mb-2">' + escapeHtml(w.tipo) + sintoniaTag + '</div>' +
     '<h3 class="font-display font-bold text-lg mb-2" style="color:var(--gold-bright);line-height:1.25;margin:0 0 0.5rem;">' + escapeHtml(w.nome) + '</h3>' +
     '<p style="font-size:14px;line-height:1.55;color:var(--text-main);flex:1;margin:0 0 1rem;">' + (w.descrizione ? nl2br(escapeHtml(w.descrizione)) : '<em style="color:var(--text-muted)">Nessuna descrizione.</em>') + '</p>';
 
@@ -12053,14 +12054,14 @@ function renderWeaponCard(w) {
     foot.innerHTML = priceDiv +
       '<div class="flex gap-1"><button class="btn-dark edit-btn" title="Modifica" style="padding:0.4rem 0.65rem;">' + ICON.edit + '</button>' +
       '<button class="btn-blood del-btn" title="Elimina" style="padding:0.4rem 0.65rem;">' + ICON.trash + '</button></div>';
-    foot.querySelector('.edit-btn').onclick = function(e) { e.stopPropagation(); state.editingId = w.id; state.showForm = true; render(); };
+    foot.querySelector('.edit-btn').onclick = function(e) { e.stopPropagation(); state.editingId = w.id; state.showForm = true; document.body.appendChild(renderWeaponForm()); };
     foot.querySelector('.del-btn').onclick = function(e) {
       e.stopPropagation();
       if (confirm('Eliminare questa arma dal database?')) {
         state.armi = state.armi.filter(function(x){ return x.id !== w.id; });
         fbSaveArmi();
         notify('Arma eliminata.');
-        renderMain();
+        updateResults();
       }
     };
   } else {
@@ -12136,8 +12137,8 @@ function renderWeaponForm() {
     tipo: editing ? editing.tipo : TIPI[0],
     rarita: editing ? editing.rarita : RARITA[0],
     valuta: editing ? editing.valuta : 'mo',
-    prezzo: editing ? editing.prezzo : 0,
-    immagine: editing ? editing.immagine : ''
+    immagine: editing ? editing.immagine : '',
+    sintonia: editing ? !!editing.sintonia : false
   };
 
   var back = document.createElement('div');
@@ -12183,10 +12184,16 @@ function renderWeaponForm() {
       if (type === 'number') { inp.min = '0'; inp.step = '1'; }
     }
     inp.className = 'field';
-    inp.value = form[key];
+    if (type === 'checkbox') {
+      inp.checked = !!form[key];
+      inp.onchange = function() { form[key] = this.checked; };
+      inp.style.width = 'auto';
+    } else {
+      inp.value = form[key];
+      inp.oninput = function() { form[key] = this.value; };
+      inp.onchange = function() { form[key] = this.value; };
+    }
     if (opts.placeholder) inp.placeholder = opts.placeholder;
-    inp.oninput = function() { form[key] = this.value; };
-    inp.onchange = function() { form[key] = this.value; };
     d.appendChild(inp);
     if (opts.hint) {
       var h = document.createElement('p');
@@ -12213,7 +12220,7 @@ function renderWeaponForm() {
   body.appendChild(row2);
 
   body.appendChild(addField('URL Immagine', 'text', 'immagine', {placeholder:'img/spada-alba.png', hint:'Usa un percorso relativo come <code>img/nomearma.png</code>.'}));
-
+  body.appendChild(addField('Richiede Sintonia', 'checkbox', 'sintonia'));
   var actions = document.createElement('div');
   actions.className = 'flex gap-3 pt-3';
   actions.style.cssText = 'flex-wrap:wrap-reverse;';
@@ -12264,7 +12271,7 @@ function closeForm() {
   state.editingId = null;
   var m = document.getElementById('modal-root');
   if (m) m.remove();
-  renderMain();
+  if (state.section === 'emporio') updateResults(); else renderMain();
 }
 
 /* INIZIATIVA */
