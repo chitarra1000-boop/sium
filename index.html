@@ -21698,27 +21698,41 @@ function renderMappa() {
         var file = e.target.files[0]; if (!file) return;
         var reader = new FileReader();
         reader.onload = function(ev) {
-          var dataUrl = ev.target.result;
-          state.mappaUrl = dataUrl;
-          // Salva nella mappa attiva
-          var mid = state.mappaActiveId;
-          if (!mid) {
-            mid = 'm_' + Date.now();
-            state.mappaList[mid] = { nome: 'Mappa 1', url: dataUrl, flags: {} };
-            state.mappaActiveId = mid;
-            _db && _db.ref(_mappaBasePath() + '/maps/' + mid).set({ nome: 'Mappa 1', url: dataUrl, flags: {} });
-            _db && _db.ref(_mappaBasePath() + '/activeMapId').set(mid);
-            _refreshMappaSelectorOptions(mapSelector);
-            mapSelector.value = mid;
-          } else {
-            if (!state.mappaList[mid]) state.mappaList[mid] = { nome: 'Mappa', flags: {} };
-            state.mappaList[mid].url = dataUrl;
-            _db && _db.ref(_mappaBasePath() + '/maps/' + mid + '/url').set(dataUrl);
-          }
-          if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
-          initLeafletMap(mapDiv, infoPanel);
-          addMapBtn.innerHTML = '✎ Cambia Immagine';
-          _updateMappaMoveFlag(dmControls, mapDiv);
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var maxDim = 2500;
+            var ratio = Math.min(maxDim / Math.max(img.width, img.height), 1);
+            canvas.width = Math.round(img.width * ratio);
+            canvas.height = Math.round(img.height * ratio);
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            state.mappaUrl = dataUrl;
+            // Salva nella mappa attiva
+            var mid = state.mappaActiveId;
+            if (!mid) {
+              mid = 'm_' + Date.now();
+              state.mappaList[mid] = { nome: 'Mappa 1', url: dataUrl, flags: {} };
+              state.mappaActiveId = mid;
+              _db && _db.ref(_mappaBasePath() + '/maps/' + mid).set({ nome: 'Mappa 1', url: dataUrl, flags: {} });
+              _db && _db.ref(_mappaBasePath() + '/activeMapId').set(mid);
+              _refreshMappaSelectorOptions(mapSelector);
+              mapSelector.value = mid;
+            } else {
+              if (!state.mappaList[mid]) state.mappaList[mid] = { nome: 'Mappa', flags: {} };
+              state.mappaList[mid].url = dataUrl;
+              _db && _db.ref(_mappaBasePath() + '/maps/' + mid + '/url').set(dataUrl);
+            }
+            if (_leafletMap) { _leafletMap.remove(); _leafletMap = null; }
+            initLeafletMap(mapDiv, infoPanel);
+            addMapBtn.innerHTML = '✎ Cambia Immagine';
+            _updateMappaMoveFlag(dmControls, mapDiv);
+          };
+          img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
       };
