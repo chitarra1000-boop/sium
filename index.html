@@ -9479,7 +9479,7 @@ function renderLavagna(){
   }
   function processFile(file){var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var mxW=1200,sc=Math.min(1,mxW/i.width);var cv=document.createElement('canvas');cv.width=Math.round(i.width*sc);cv.height=Math.round(i.height*sc);cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);addImg(cv.toDataURL('image/jpeg',0.88));};i.src=ev.target.result;};r.readAsDataURL(file);}
   ulInp.addEventListener('change',function(e){Array.from(e.target.files).forEach(processFile);e.target.value='';});
-  function onPaste(e){if(state.section!=='lavagna')return;var items=e.clipboardData&&e.clipboardData.items;if(!items)return;for(var i=0;i<items.length;i++){if(items[i].type.indexOf('image')!==-1){processFile(items[i].getAsFile());break;}}}
+  function onPaste(e){if(!state.lavagnaOpen || (state.section!=='scheda' && state.section!=='schedepg'))return;var items=e.clipboardData&&e.clipboardData.items;if(!items)return;for(var i=0;i<items.length;i++){if(items[i].type.indexOf('image')!==-1){processFile(items[i].getAsFile());break;}}}
   document.addEventListener('paste',onPaste);
   _sectionCleanup=function(){document.removeEventListener('paste',onPaste);};
   lavRef.once('value',function(snap){var d=snap.val()||{};var keys=Object.keys(d).sort();if(keys.length)ph.style.display='none';keys.forEach(function(id){var e={id:id,url:d[id].url};_imgs.push(e);renderCard(e);});});
