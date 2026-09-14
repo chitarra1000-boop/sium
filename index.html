@@ -17125,149 +17125,218 @@ function renderScheda() {
 
   /* ==================== PAGINA 3 ==================== */
   var pg3=makePage(); pg3.style.minHeight='1100px';
-  var pg3=makePage(); pg3.style.minHeight='1100px';
   if (isOP) {
     /* HEADER PAGE 3 - ONE PIECE */
     var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;background:#faf3e3;text-align:center;padding:5px;';
     var hdrTitle=document.createElement('h2'); hdrTitle.style.cssText='margin:0;font-family:\'Cinzel\',serif;font-size:16px;color:#4a1010;letter-spacing:1px;'; hdrTitle.textContent='ABILITÀ SPECIALI & POTERI';
     hdr3.appendChild(hdrTitle); pg3.appendChild(hdr3);
     
-    var opGrid=document.createElement('div'); opGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;';
+    var opFull=document.createElement('div'); opFull.style.cssText='display:flex;flex-direction:column;gap:12px;';
     
-    /* COL 1: DEVIL FRUIT */
-    var col1=document.createElement('div'); col1.style.cssText='display:flex;flex-direction:column;gap:8px;';
-    var dfBox=document.createElement('div'); dfBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;';
-    var dfTop=document.createElement('div'); dfTop.style.cssText='display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #555;padding-bottom:4px;margin-bottom:4px;';
-    var dfTitle=document.createElement('div'); dfTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; dfTitle.textContent='Frutto del Diavolo';
+    /* SEZIONE 1: DEVIL FRUIT */
+    var dfBox=document.createElement('div'); dfBox.style.cssText='border:1.5px solid #aaa;border-radius:3px;padding:8px;background:#fff;';
+    var dfTop=document.createElement('div'); dfTop.style.cssText='display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #555;padding-bottom:4px;margin-bottom:8px;';
+    var dfTitle=document.createElement('div'); dfTitle.style.cssText='font-size:12px;font-weight:bold;color:#111;text-transform:uppercase;'; dfTitle.textContent='Frutto del Diavolo';
+    var dfToggleLbl=document.createElement('label'); dfToggleLbl.style.cssText='font-size:10px;font-weight:bold;display:flex;align-items:center;gap:4px;cursor:pointer;';
     var dfToggle=document.createElement('input'); dfToggle.type='checkbox'; dfToggle.checked=!!s.hasDF; dfToggle.onchange=function(){s.hasDF=this.checked;ss();renderMain();};
-    dfTop.appendChild(dfTitle); dfTop.appendChild(dfToggle); dfBox.appendChild(dfTop);
+    dfToggleLbl.appendChild(dfToggle); dfToggleLbl.appendChild(document.createTextNode('Possiede un Frutto?'));
+    dfTop.appendChild(dfTitle); dfTop.appendChild(dfToggleLbl); dfBox.appendChild(dfTop);
     
     if (s.hasDF) {
-      var dfGrid=document.createElement('div'); dfGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;';
+      // Row 1: Name, Type, Mastery
+      var dfRow1=document.createElement('div'); dfRow1.style.cssText='display:grid;grid-template-columns:2fr 2fr 1fr;gap:6px;margin-bottom:6px;';
+      var dfNameB=document.createElement('div'); dfNameB.style.cssText='border:1px solid #ccc;padding:2px 4px;';
+      var dfNameI=document.createElement('input'); dfNameI.type='text'; dfNameI.value=s.dfName||''; dfNameI.style.cssText='width:100%;border:none;outline:none;font-size:11px;background:transparent;font-weight:bold;'; dfNameI.oninput=function(){s.dfName=this.value;ss();};
+      dfNameB.appendChild(dfNameI); dfNameB.appendChild(cellLbl('Nome del Frutto')); dfRow1.appendChild(dfNameB);
       
-      var dfNameB=document.createElement('div'); dfNameB.style.cssText='border:1px solid #ccc;padding:2px;';
-      var dfNameI=document.createElement('input'); dfNameI.type='text'; dfNameI.value=s.dfName||''; dfNameI.style.cssText='width:100%;border:none;outline:none;font-size:9px;background:transparent;font-weight:bold;'; dfNameI.oninput=function(){s.dfName=this.value;ss();};
-      dfNameB.appendChild(dfNameI); dfNameB.appendChild(cellLbl('Nome del Frutto')); dfGrid.appendChild(dfNameB);
-      
-      var dfTypeB=document.createElement('div'); dfTypeB.style.cssText='border:1px solid #ccc;padding:2px;';
-      var dfTypeS=document.createElement('select'); dfTypeS.style.cssText='width:100%;border:none;outline:none;font-size:9px;background:transparent;';
-      ['','Paramisha','Rogia','Zoan','Zoan Mitologico','Zoan Antico'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;dfTypeS.appendChild(op);});
+      var dfTypeB=document.createElement('div'); dfTypeB.style.cssText='border:1px solid #ccc;padding:2px 4px;';
+      var dfTypeS=document.createElement('select'); dfTypeS.style.cssText='width:100%;border:none;outline:none;font-size:11px;background:transparent;font-weight:bold;';
+      ['','Paramisha','Rogia','Zoan Comune','Zoan Mitologico','Zoan Antico'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;dfTypeS.appendChild(op);});
       dfTypeS.value=s.dfType||''; dfTypeS.onchange=function(){s.dfType=this.value;ss();renderMain();};
-      dfTypeB.appendChild(dfTypeS); dfTypeB.appendChild(cellLbl('Tipo di Frutto')); dfGrid.appendChild(dfTypeB);
-      dfBox.appendChild(dfGrid);
+      dfTypeB.appendChild(dfTypeS); dfTypeB.appendChild(cellLbl('Tipo di Frutto')); dfRow1.appendChild(dfTypeB);
+      
+      var dfMastB=document.createElement('div'); dfMastB.style.cssText='border:1px solid #ccc;padding:2px 4px;';
+      var dfMastI=document.createElement('input'); dfMastI.type='text'; dfMastI.value=s.dfMastery||''; dfMastI.style.cssText='width:100%;border:none;outline:none;font-size:11px;text-align:center;font-weight:bold;background:transparent;'; dfMastI.oninput=function(){s.dfMastery=this.value;ss();};
+      dfMastB.appendChild(dfMastI); dfMastB.appendChild(cellLbl('Livello Maestria')); dfRow1.appendChild(dfMastB);
+      dfBox.appendChild(dfRow1);
+
+      // Row 2: CD & Attack Bonus
+      var dfRow2=document.createElement('div'); dfRow2.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;';
+      var dfCdB=document.createElement('div'); dfCdB.style.cssText='border:1px solid #ccc;padding:4px;background:#f9f9f9;';
+      var dfCdI=document.createElement('input'); dfCdI.type='text'; dfCdI.value=s.dfDC||''; dfCdI.style.cssText='width:100%;border:none;outline:none;font-size:14px;text-align:center;font-weight:bold;background:transparent;'; dfCdI.oninput=function(){s.dfDC=this.value;ss();};
+      dfCdB.appendChild(dfCdI); dfCdB.appendChild(cellLbl('CD Salvezza Frutto')); dfRow2.appendChild(dfCdB);
+      
+      var dfAtkB=document.createElement('div'); dfAtkB.style.cssText='border:1px solid #ccc;padding:4px;background:#f9f9f9;';
+      var dfAtkI=document.createElement('input'); dfAtkI.type='text'; dfAtkI.value=s.dfAtkBonus||''; dfAtkI.style.cssText='width:100%;border:none;outline:none;font-size:14px;text-align:center;font-weight:bold;background:transparent;'; dfAtkI.oninput=function(){s.dfAtkBonus=this.value;ss();};
+      dfAtkB.appendChild(dfAtkI); dfAtkB.appendChild(cellLbl('Bonus Attacco Frutto')); dfRow2.appendChild(dfAtkB);
+      dfBox.appendChild(dfRow2);
       
       if(s.dfType && s.dfType.includes('Zoan')) {
-        var dfZoanB=document.createElement('div'); dfZoanB.style.cssText='border:1px solid #ccc;padding:2px;margin-bottom:4px;';
-        var dfZoanI=document.createElement('textarea'); dfZoanI.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:9px;background:transparent;resize:none;'; dfZoanI.value=s.dfZoan||''; dfZoanI.oninput=function(){s.dfZoan=this.value;ss();};
-        dfZoanB.appendChild(dfZoanI); dfZoanB.appendChild(cellLbl('Forme Zoan')); dfBox.appendChild(dfZoanB);
+        var dfZoanB=document.createElement('div'); dfZoanB.style.cssText='border:1px solid #ccc;padding:4px;margin-bottom:6px;';
+        var dfZoanI=document.createElement('textarea'); dfZoanI.style.cssText='width:100%;min-height:50px;border:none;outline:none;font-size:10px;background:transparent;resize:vertical;'; dfZoanI.value=s.dfZoan||''; dfZoanI.oninput=function(){s.dfZoan=this.value;ss();};
+        dfZoanB.appendChild(dfZoanI); dfZoanB.appendChild(cellLbl('Forma Animale & Forma Ibrida (Tratti, CA extra, Taglia)')); dfBox.appendChild(dfZoanB);
       }
       
-      var dfMGrid=document.createElement('div'); dfMGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;';
-      var dfAtkB=document.createElement('div'); dfAtkB.style.cssText='border:1px solid #ccc;padding:2px;';
-      var dfAtkI=document.createElement('input'); dfAtkI.type='text'; dfAtkI.value=s.dfAtk||''; dfAtkI.style.cssText='width:100%;border:none;outline:none;font-size:10px;text-align:center;font-weight:bold;background:transparent;'; dfAtkI.oninput=function(){s.dfAtk=this.value;ss();};
-      dfAtkB.appendChild(dfAtkI); dfAtkB.appendChild(cellLbl('CD / Bonus Attacco')); dfMGrid.appendChild(dfAtkB);
-      
-      var dfMastB=document.createElement('div'); dfMastB.style.cssText='border:1px solid #ccc;padding:2px;';
-      var dfMastI=document.createElement('input'); dfMastI.type='text'; dfMastI.value=s.dfMastery||''; dfMastI.style.cssText='width:100%;border:none;outline:none;font-size:10px;text-align:center;font-weight:bold;background:transparent;'; dfMastI.oninput=function(){s.dfMastery=this.value;ss();};
-      dfMastB.appendChild(dfMastI); dfMastB.appendChild(cellLbl('Maestria Frutto')); dfMGrid.appendChild(dfMastB);
-      dfBox.appendChild(dfMGrid);
-      
-      var dfAwB=document.createElement('div'); dfAwB.style.cssText='border:1px solid #ccc;padding:4px;margin-bottom:4px;background:#f9f9f9;';
-      var dfAwT=document.createElement('div'); dfAwT.style.cssText='display:flex;align-items:center;gap:4px;';
+      var dfAwB=document.createElement('div'); dfAwB.style.cssText='border:1px solid #ccc;padding:6px;margin-bottom:6px;background:#fdf9f9;';
+      var dfAwT=document.createElement('label'); dfAwT.style.cssText='display:flex;align-items:center;gap:4px;cursor:pointer;margin-bottom:4px;';
       var dfAwChk=document.createElement('input'); dfAwChk.type='checkbox'; dfAwChk.checked=!!s.dfAwakened; dfAwChk.onchange=function(){s.dfAwakened=this.checked;ss();renderMain();};
-      var dfAwL=document.createElement('span'); dfAwL.style.cssText='font-size:9px;font-weight:bold;'; dfAwL.textContent='Risveglio (Awakening)';
+      var dfAwL=document.createElement('span'); dfAwL.style.cssText='font-size:11px;font-weight:bold;color:#833;text-transform:uppercase;'; dfAwL.textContent='Risveglio (Awakening)';
       dfAwT.appendChild(dfAwChk); dfAwT.appendChild(dfAwL); dfAwB.appendChild(dfAwT);
       if(s.dfAwakened) {
-        var dfAwI=document.createElement('textarea'); dfAwI.style.cssText='width:100%;height:30px;border:1px solid #eee;outline:none;font-size:9px;background:transparent;resize:none;margin-top:4px;'; dfAwI.value=s.dfAwDesc||''; dfAwI.oninput=function(){s.dfAwDesc=this.value;ss();};
+        var dfAwI=document.createElement('textarea'); dfAwI.style.cssText='width:100%;min-height:60px;border:1px solid #eee;outline:none;font-size:10px;background:#fff;resize:vertical;padding:4px;box-sizing:border-box;'; dfAwI.placeholder='Descrizione & Meccaniche del Risveglio...'; dfAwI.value=s.dfAwDesc||''; dfAwI.oninput=function(){s.dfAwDesc=this.value;ss();};
         dfAwB.appendChild(dfAwI);
       }
       dfBox.appendChild(dfAwB);
       
-      var dfWk=document.createElement('div'); dfWk.style.cssText='font-size:8px;color:#a33;font-weight:bold;margin-bottom:6px;text-align:center;'; dfWk.textContent='DEBOLEZZE: Acqua Marina, Agalmatolite (Indebolimento e blocco poteri)';
+      var dfWk=document.createElement('div'); dfWk.style.cssText='font-size:9px;color:#a33;font-weight:bold;margin-bottom:10px;text-align:center;background:#fff0f0;padding:4px;border:1px dashed #a33;'; dfWk.textContent='DEBOLEZZE: Acqua Marina, Agalmatolite (Indebolimento e blocco poteri)';
       dfBox.appendChild(dfWk);
       
-      var dfTech=document.createElement('div'); dfTech.style.cssText='border-top:1px solid #aaa;padding-top:4px;';
-      dfTech.appendChild(secTitle('Tecniche del Frutto'));
-      var dfTechTa=document.createElement('textarea'); dfTechTa.style.cssText='width:100%;height:200px;border:1px solid #ccc;outline:none;font-size:9px;background:transparent;resize:none;margin-top:4px;'; dfTechTa.value=s.dfTechs||''; dfTechTa.oninput=function(){s.dfTechs=this.value;ss();};
-      dfTech.appendChild(dfTechTa); dfBox.appendChild(dfTech);
+      // Dynamic Techniques Repeater
+      var dfTech=document.createElement('div'); dfTech.style.cssText='border-top:2px solid #aaa;padding-top:8px;';
+      var dfTechH=document.createElement('div'); dfTechH.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;';
+      var dfTechTitle=document.createElement('div'); dfTechTitle.style.cssText='font-size:11px;font-weight:bold;text-transform:uppercase;color:#111;'; dfTechTitle.textContent='Tecniche del Frutto';
+      var dfTechBtn=document.createElement('button'); dfTechBtn.textContent='+ Nuova Tecnica'; dfTechBtn.style.cssText='font-size:9px;padding:2px 6px;cursor:pointer;background:#444;color:#fff;border:none;border-radius:2px;';
+      dfTechBtn.onclick=function(){
+        if(!s.opTechs) s.opTechs=[];
+        s.opTechs.push({name:'',cost:'',action:'',dmg:'',desc:''});
+        ss(); renderMain();
+      };
+      dfTechH.appendChild(dfTechTitle); dfTechH.appendChild(dfTechBtn); dfTech.appendChild(dfTechH);
+      
+      var techsList=document.createElement('div'); techsList.style.cssText='display:flex;flex-direction:column;gap:6px;';
+      if(s.opTechs && s.opTechs.length>0){
+        s.opTechs.forEach(function(t, i){
+          var tCard=document.createElement('div'); tCard.style.cssText='border:1px solid #ccc;border-left:3px solid #666;background:#fdfdfd;padding:6px;position:relative;';
+          var tDel=document.createElement('div'); tDel.textContent='✕'; tDel.style.cssText='position:absolute;top:4px;right:4px;color:#999;cursor:pointer;font-size:10px;font-weight:bold;';
+          tDel.onclick=function(){ s.opTechs.splice(i,1); ss(); renderMain(); };
+          tCard.appendChild(tDel);
+          
+          var tr1=document.createElement('div'); tr1.style.cssText='display:grid;grid-template-columns:3fr 1fr 2fr;gap:4px;margin-bottom:4px;padding-right:16px;';
+          var ciN=document.createElement('input'); ciN.type='text'; ciN.placeholder='Nome Tecnica'; ciN.value=t.name||''; ciN.style.cssText='border:none;border-bottom:1px solid #bbb;outline:none;font-size:11px;font-weight:bold;background:transparent;width:100%;'; ciN.oninput=function(){s.opTechs[i].name=this.value;ss();}; tr1.appendChild(ciN);
+          var ciC=document.createElement('input'); ciC.type='text'; ciC.placeholder='Costo Stamina'; ciC.value=t.cost||''; ciC.style.cssText='border:none;border-bottom:1px solid #bbb;outline:none;font-size:10px;background:transparent;width:100%;text-align:center;'; ciC.oninput=function(){s.opTechs[i].cost=this.value;ss();}; tr1.appendChild(ciC);
+          var ciA=document.createElement('input'); ciA.type='text'; ciA.placeholder='Azione / Bonus / Reazione'; ciA.value=t.action||''; ciA.style.cssText='border:none;border-bottom:1px solid #bbb;outline:none;font-size:10px;background:transparent;width:100%;'; ciA.oninput=function(){s.opTechs[i].action=this.value;ss();}; tr1.appendChild(ciA);
+          tCard.appendChild(tr1);
+          
+          var ciD=document.createElement('input'); ciD.type='text'; ciD.placeholder='Danno / Effetto e Gittata'; ciD.value=t.dmg||''; ciD.style.cssText='border:none;border-bottom:1px solid #bbb;outline:none;font-size:10px;background:transparent;width:100%;margin-bottom:4px;box-sizing:border-box;'; ciD.oninput=function(){s.opTechs[i].dmg=this.value;ss();}; tCard.appendChild(ciD);
+          
+          var ciDesc=document.createElement('textarea'); ciDesc.placeholder='Descrizione / Tiro Salvezza...'; ciDesc.style.cssText='border:1px solid #eee;outline:none;font-size:9px;background:#fff;width:100%;min-height:35px;resize:vertical;box-sizing:border-box;padding:3px;'; ciDesc.value=t.desc||''; ciDesc.oninput=function(){s.opTechs[i].desc=this.value;ss();}; tCard.appendChild(ciDesc);
+          
+          techsList.appendChild(tCard);
+        });
+      } else {
+        var noT=document.createElement('div'); noT.style.cssText='font-size:9px;color:#888;font-style:italic;text-align:center;padding:10px;'; noT.textContent='Nessuna tecnica aggiunta.'; techsList.appendChild(noT);
+      }
+      dfTech.appendChild(techsList); dfBox.appendChild(dfTech);
     }
-    col1.appendChild(dfBox);
+    opFull.appendChild(dfBox);
     
-    /* COL 2: HAKI & TRAITS */
-    var col2=document.createElement('div'); col2.style.cssText='display:flex;flex-direction:column;gap:8px;';
+    /* SEZIONE 2: HAKI */
+    var hkBox=document.createElement('div'); hkBox.style.cssText='border:1.5px solid #aaa;border-radius:3px;padding:8px;background:#fff;';
+    var hkTop=document.createElement('div'); hkTop.style.cssText='display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #111;padding-bottom:4px;margin-bottom:8px;';
+    var hkTitle=document.createElement('div'); hkTitle.style.cssText='font-size:12px;font-weight:bold;color:#111;text-transform:uppercase;'; hkTitle.textContent='Ambizione (Haki)';
+    var hkPoolB=document.createElement('div'); hkPoolB.style.cssText='display:flex;align-items:center;gap:6px;background:#f0f0f0;padding:2px 6px;border:1px solid #ccc;border-radius:2px;';
+    var hkPoolL=document.createElement('div'); hkPoolL.style.cssText='font-size:10px;font-weight:bold;'; hkPoolL.textContent='Pool Dadi/Punti Haki:';
+    var hkPoolI=document.createElement('input'); hkPoolI.type='text'; hkPoolI.value=s.hakiPool||''; hkPoolI.style.cssText='width:50px;border:none;border-bottom:1px solid #aaa;background:transparent;text-align:center;font-size:12px;font-weight:bold;'; hkPoolI.oninput=function(){s.hakiPool=this.value;ss();};
+    hkPoolB.appendChild(hkPoolL); hkPoolB.appendChild(hkPoolI);
+    hkTop.appendChild(hkTitle); hkTop.appendChild(hkPoolB); hkBox.appendChild(hkTop);
     
-    /* HAKI PANEL */
-    var hkBox=document.createElement('div'); hkBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;';
-    var hkTop=document.createElement('div'); hkTop.style.cssText='border-bottom:2px solid #111;margin-bottom:4px;padding-bottom:2px;';
-    var hkTitle=document.createElement('div'); hkTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; hkTitle.textContent='Ambizione (Haki)';
-    hkTop.appendChild(hkTitle); hkBox.appendChild(hkTop);
+    var hkGrid=document.createElement('div'); hkGrid.style.cssText='display:flex;flex-direction:column;gap:8px;';
     
-    var hkPoolB=document.createElement('div'); hkPoolB.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:4px;background:#f0f0f0;border:1px solid #ccc;';
-    var hkPoolL=document.createElement('div'); hkPoolL.style.cssText='font-size:9px;font-weight:bold;'; hkPoolL.textContent='Pool Dadi/Punti Haki:';
-    var hkPoolI=document.createElement('input'); hkPoolI.type='text'; hkPoolI.value=s.hakiPool||''; hkPoolI.style.cssText='width:60px;border:none;border-bottom:1px solid #aaa;background:transparent;text-align:center;font-size:10px;font-weight:bold;'; hkPoolI.oninput=function(){s.hakiPool=this.value;ss();};
-    hkPoolB.appendChild(hkPoolL); hkPoolB.appendChild(hkPoolI); hkBox.appendChild(hkPoolB);
+    // Kenbunshoku
+    var hkKen=document.createElement('div'); hkKen.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
+    var hkKenT=document.createElement('label'); hkKenT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
+    var hkKenC=document.createElement('input'); hkKenC.type='checkbox'; hkKenC.checked=!!s.hakiKen; hkKenC.onchange=function(){s.hakiKen=this.checked;ss();renderMain();};
+    hkKenT.appendChild(hkKenC); hkKenT.appendChild(document.createTextNode('Kenbunshoku (Osservazione)')); hkKen.appendChild(hkKenT);
+    if(s.hakiKen){
+      var hkKenS=document.createElement('select'); hkKenS.style.cssText='width:100%;font-size:9px;padding:2px;border:1px solid #bbb;background:#fff;';
+      ['Base','Avanzato - Visione del Futuro'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;hkKenS.appendChild(op);});
+      hkKenS.value=s.hakiKenLvl||'Base'; hkKenS.onchange=function(){s.hakiKenLvl=this.value;ss();}; hkKen.appendChild(hkKenS);
+      var hkKenTa=document.createElement('textarea'); hkKenTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkKenTa.placeholder='Utilizzi (es. bonus a iniziativa/percezione passiva, schivata)...'; hkKenTa.value=s.hakiKenDesc||''; hkKenTa.oninput=function(){s.hakiKenDesc=this.value;ss();};
+      hkKen.appendChild(hkKenTa);
+    }
+    hkGrid.appendChild(hkKen);
     
-    var hkG=document.createElement('div'); hkG.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;';
-    var hkList=[{id:'Ken',n:'Kenbunshoku',s:'Osservazione'},{id:'Bus',n:'Busoshoku',s:'Armatura'},{id:'Hao',n:'Haoshoku',s:'Re Conquistatore'}];
-    hkList.forEach(function(hk){
-      var b=document.createElement('div'); b.style.cssText='border:1px solid #ccc;padding:2px;display:flex;flex-direction:column;';
-      var top=document.createElement('div'); top.style.cssText='display:flex;align-items:center;gap:2px;margin-bottom:2px;';
-      var c=document.createElement('input'); c.type='checkbox'; c.checked=!!s['haki'+hk.id]; c.onchange=function(){s['haki'+hk.id]=this.checked;ss();};
-      var l=document.createElement('div'); l.style.cssText='font-size:8px;font-weight:bold;line-height:1;'; l.innerHTML=hk.n+'<br><span style="font-size:6px;font-weight:normal;">'+hk.s+'</span>';
-      top.appendChild(c); top.appendChild(l); b.appendChild(top);
-      var ta=document.createElement('textarea'); ta.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:8px;background:transparent;resize:none;box-sizing:border-box;'; ta.value=s['haki'+hk.id+'Desc']||''; ta.oninput=function(){s['haki'+hk.id+'Desc']=this.value;ss();};
-      b.appendChild(ta); hkG.appendChild(b);
-    });
-    hkBox.appendChild(hkG); col2.appendChild(hkBox);
+    // Busoshoku
+    var hkBus=document.createElement('div'); hkBus.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
+    var hkBusT=document.createElement('label'); hkBusT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
+    var hkBusC=document.createElement('input'); hkBusC.type='checkbox'; hkBusC.checked=!!s.hakiBus; hkBusC.onchange=function(){s.hakiBus=this.checked;ss();renderMain();};
+    hkBusT.appendChild(hkBusC); hkBusT.appendChild(document.createTextNode('Busoshoku (Armamento)')); hkBus.appendChild(hkBusT);
+    if(s.hakiBus){
+      var hkBusRog=document.createElement('label'); hkBusRog.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;cursor:pointer;color:#833;';
+      var hkBusRogC=document.createElement('input'); hkBusRogC.type='checkbox'; hkBusRogC.checked=!!s.hakiBusRog; hkBusRogC.onchange=function(){s.hakiBusRog=this.checked;ss();};
+      hkBusRog.appendChild(hkBusRogC); hkBusRog.appendChild(document.createTextNode('Colpisce la sostanza dei Rogia')); hkBus.appendChild(hkBusRog);
+      
+      var hkBusS=document.createElement('select'); hkBusS.style.cssText='width:100%;font-size:9px;padding:2px;border:1px solid #bbb;background:#fff;';
+      ['Indurimento','Emissione - Ryuo','Distruzione Interna'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;hkBusS.appendChild(op);});
+      hkBusS.value=s.hakiBusLvl||'Indurimento'; hkBusS.onchange=function(){s.hakiBusLvl=this.value;ss();}; hkBus.appendChild(hkBusS);
+      var hkBusTa=document.createElement('textarea'); hkBusTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkBusTa.placeholder='Bonus ai danni/CA, effetti aggiuntivi...'; hkBusTa.value=s.hakiBusDesc||''; hkBusTa.oninput=function(){s.hakiBusDesc=this.value;ss();};
+      hkBus.appendChild(hkBusTa);
+    }
+    hkGrid.appendChild(hkBus);
     
-    /* TRAITS PANEL */
-    var trBox=document.createElement('div'); trBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;flex:1;display:flex;flex-direction:column;';
-    var trTop=document.createElement('div'); trTop.style.cssText='border-bottom:2px solid #111;margin-bottom:4px;padding-bottom:2px;';
-    var trTitle=document.createElement('div'); trTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; trTitle.textContent='Tratti Razziali & Speciali';
+    // Haoshoku
+    var hkHao=document.createElement('div'); hkHao.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
+    var hkHaoT=document.createElement('label'); hkHaoT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
+    var hkHaoC=document.createElement('input'); hkHaoC.type='checkbox'; hkHaoC.checked=!!s.hakiHao; hkHaoC.onchange=function(){s.hakiHao=this.checked;ss();renderMain();};
+    hkHaoT.appendChild(hkHaoC); hkHaoT.appendChild(document.createTextNode('Haoshoku (Re Conquistatore)')); hkHao.appendChild(hkHaoT);
+    if(s.hakiHao){
+      var hkHaoCdL=document.createElement('div'); hkHaoCdL.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;';
+      var hkHaoCdI=document.createElement('input'); hkHaoCdI.type='text'; hkHaoCdI.value=s.hakiHaoCD||''; hkHaoCdI.style.cssText='width:30px;font-size:10px;text-align:center;border:1px solid #bbb;background:#fff;'; hkHaoCdI.oninput=function(){s.hakiHaoCD=this.value;ss();};
+      hkHaoCdL.appendChild(document.createTextNode('CD Imposizione Volontà:')); hkHaoCdL.appendChild(hkHaoCdI); hkHao.appendChild(hkHaoCdL);
+      
+      var hkHaoTa=document.createElement('textarea'); hkHaoTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkHaoTa.placeholder='Raggio d\'azione, effetti di stordimento...'; hkHaoTa.value=s.hakiHaoDesc||''; hkHaoTa.oninput=function(){s.hakiHaoDesc=this.value;ss();};
+      hkHao.appendChild(hkHaoTa);
+    }
+    hkGrid.appendChild(hkHao);
+    hkBox.appendChild(hkGrid);
+    opFull.appendChild(hkBox);
+    
+    /* SEZIONE 3: TRATTI RAZZIALI E LOG POSE */
+    var trBox=document.createElement('div'); trBox.style.cssText='border:1.5px solid #aaa;border-radius:3px;padding:8px;background:#fff;';
+    var trTop=document.createElement('div'); trTop.style.cssText='border-bottom:2px solid #111;margin-bottom:6px;padding-bottom:2px;';
+    var trTitle=document.createElement('div'); trTitle.style.cssText='font-size:12px;font-weight:bold;color:#111;text-transform:uppercase;'; trTitle.textContent='Tratti Fisiologici & Log Pose';
     trTop.appendChild(trTitle); trBox.appendChild(trTop);
     
-    var rTog=document.createElement('div'); rTog.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;';
+    var rTog=document.createElement('div'); rTog.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;';
     var rzList=[{id:'Fish',n:'Uomo-Pesce / Sirenetta'},{id:'Mink',n:'Vismone (Mink)'},{id:'Cyb',n:'Cyborg'},{id:'Sky',n:'Skypieano'}];
     rzList.forEach(function(rz){
-      var rL=document.createElement('label'); rL.style.cssText='display:flex;align-items:center;gap:2px;font-size:8px;font-weight:bold;cursor:pointer;background:#eee;padding:2px 4px;border-radius:2px;';
+      var rL=document.createElement('label'); rL.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;background:#eee;padding:4px 8px;border-radius:3px;border:1px solid #ddd;';
       var rC=document.createElement('input'); rC.type='checkbox'; rC.checked=!!s['tr'+rz.id]; rC.onchange=function(){s['tr'+rz.id]=this.checked;ss();renderMain();};
       rL.appendChild(rC); rL.appendChild(document.createTextNode(rz.n)); rTog.appendChild(rL);
     });
     trBox.appendChild(rTog);
     
-    var trDyn=document.createElement('div'); trDyn.style.cssText='display:flex;flex-direction:column;gap:4px;margin-bottom:6px;';
+    var trDyn=document.createElement('div'); trDyn.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;';
     if(s.trFish){
-      var bF=document.createElement('div'); bF.style.cssText='border:1px solid #8ab;padding:2px;background:#eef5f9;';
-      bF.innerHTML='<div style="font-size:8px;font-weight:bold;color:#257;">Velocità Nuoto / Karate Uomini-Pesce</div>';
-      var tF=document.createElement('textarea'); tF.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tF.value=s.trFishD||''; tF.oninput=function(){s.trFishD=this.value;ss();}; bF.appendChild(tF); trDyn.appendChild(bF);
+      var bF=document.createElement('div'); bF.style.cssText='border:1px solid #8ab;padding:4px;background:#eef5f9;';
+      bF.innerHTML='<div style="font-size:9px;font-weight:bold;color:#257;margin-bottom:2px;">Velocità Nuoto / Karate Uomini-Pesce</div>';
+      var tF=document.createElement('textarea'); tF.style.cssText='width:100%;min-height:40px;border:1px solid #bcd;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:2px;'; tF.value=s.trFishD||''; tF.oninput=function(){s.trFishD=this.value;ss();}; bF.appendChild(tF); trDyn.appendChild(bF);
     }
     if(s.trMink){
-      var bM=document.createElement('div'); bM.style.cssText='border:1px solid #a83;padding:2px;background:#fdf9ee;';
-      bM.innerHTML='<div style="font-size:8px;font-weight:bold;color:#752;">Electro / Sulong</div>';
-      var tM=document.createElement('textarea'); tM.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tM.value=s.trMinkD||''; tM.oninput=function(){s.trMinkD=this.value;ss();}; bM.appendChild(tM); trDyn.appendChild(bM);
+      var bM=document.createElement('div'); bM.style.cssText='border:1px solid #a83;padding:4px;background:#fdf9ee;';
+      bM.innerHTML='<div style="font-size:9px;font-weight:bold;color:#752;margin-bottom:2px;">Electro / Sulong</div>';
+      var tM=document.createElement('textarea'); tM.style.cssText='width:100%;min-height:40px;border:1px solid #dc9;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:2px;'; tM.value=s.trMinkD||''; tM.oninput=function(){s.trMinkD=this.value;ss();}; bM.appendChild(tM); trDyn.appendChild(bM);
     }
     if(s.trCyb){
-      var bC=document.createElement('div'); bC.style.cssText='border:1px solid #888;padding:2px;background:#f0f0f0;';
-      bC.innerHTML='<div style="font-size:8px;font-weight:bold;color:#333;">Modifiche / Riserva Cola</div>';
-      var tC=document.createElement('textarea'); tC.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tC.value=s.trCybD||''; tC.oninput=function(){s.trCybD=this.value;ss();}; bC.appendChild(tC); trDyn.appendChild(bC);
+      var bC=document.createElement('div'); bC.style.cssText='border:1px solid #888;padding:4px;background:#f0f0f0;';
+      bC.innerHTML='<div style="font-size:9px;font-weight:bold;color:#333;margin-bottom:2px;">Modifiche Corporee / Riserva Cola</div>';
+      var tC=document.createElement('textarea'); tC.style.cssText='width:100%;min-height:40px;border:1px solid #ccc;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:2px;'; tC.value=s.trCybD||''; tC.oninput=function(){s.trCybD=this.value;ss();}; bC.appendChild(tC); trDyn.appendChild(bC);
     }
     if(s.trSky){
-      var bS=document.createElement('div'); bS.style.cssText='border:1px solid #9aa;padding:2px;background:#f5f8f8;';
-      bS.innerHTML='<div style="font-size:8px;font-weight:bold;color:#355;">Dial Equipaggiati</div>';
-      var tS=document.createElement('textarea'); tS.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tS.value=s.trSkyD||''; tS.oninput=function(){s.trSkyD=this.value;ss();}; bS.appendChild(tS); trDyn.appendChild(bS);
+      var bS=document.createElement('div'); bS.style.cssText='border:1px solid #9aa;padding:4px;background:#f5f8f8;';
+      bS.innerHTML='<div style="font-size:9px;font-weight:bold;color:#355;margin-bottom:2px;">Dial Equipaggiati</div>';
+      var tS=document.createElement('textarea'); tS.style.cssText='width:100%;min-height:40px;border:1px solid #cdd;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:2px;'; tS.value=s.trSkyD||''; tS.oninput=function(){s.trSkyD=this.value;ss();}; bS.appendChild(tS); trDyn.appendChild(bS);
     }
     trBox.appendChild(trDyn);
     
-    var lpBox=document.createElement('div'); lpBox.style.cssText='border-top:1px solid #aaa;padding-top:4px;margin-top:auto;';
-    var lpT=document.createElement('div'); lpT.style.cssText='display:flex;justify-content:space-between;align-items:center;';
-    var lpL=document.createElement('div'); lpL.style.cssText='font-size:9px;font-weight:bold;'; lpL.textContent='Log Pose Tracker';
-    var lpI=document.createElement('input'); lpI.type='text'; lpI.placeholder='Destinazione Attuale'; lpI.value=s.logPose||''; lpI.style.cssText='flex:1;margin-left:8px;font-size:9px;border:none;border-bottom:1px solid #ccc;outline:none;'; lpI.oninput=function(){s.logPose=this.value;ss();};
+    var lpBox=document.createElement('div'); lpBox.style.cssText='border-top:1px solid #aaa;padding-top:6px;';
+    var lpT=document.createElement('div'); lpT.style.cssText='display:flex;align-items:center;background:#fff4e6;border:1px solid #dca;padding:4px 8px;border-radius:3px;';
+    var lpL=document.createElement('div'); lpL.style.cssText='font-size:11px;font-weight:bold;color:#852;'; lpL.textContent='Log Pose Tracker:';
+    var lpI=document.createElement('input'); lpI.type='text'; lpI.placeholder='Isola Registrata e tempo rimasto...'; lpI.value=s.logPose||''; lpI.style.cssText='flex:1;margin-left:8px;font-size:10px;border:none;border-bottom:1px solid #ccc;outline:none;background:transparent;'; lpI.oninput=function(){s.logPose=this.value;ss();};
     lpT.appendChild(lpL); lpT.appendChild(lpI); lpBox.appendChild(lpT); trBox.appendChild(lpBox);
     
-    col2.appendChild(trBox);
-    
-    opGrid.appendChild(col1); opGrid.appendChild(col2);
-    pg3.appendChild(opGrid);
+    opFull.appendChild(trBox);
+    pg3.appendChild(opFull);
   } else {
     var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;';
     var h3G=document.createElement('div'); h3G.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;';
