@@ -17337,7 +17337,33 @@ function renderScheda() {
     
     opFull.appendChild(trBox);
     pg3.appendChild(opFull);
-  } else {
+
+    /* INCANTESIMI TOGGLE - ONE PIECE */
+    var spellToggleBox = document.createElement('div');
+    spellToggleBox.style.cssText = 'margin-top:16px; border:1.5px dashed #aaa; border-radius:4px; padding:12px; text-align:center; background:#faf3e3; margin-bottom:16px;';
+    
+    var spellToggleDesc = document.createElement('div');
+    spellToggleDesc.style.cssText = 'font-size:10px; color:#555; margin-bottom:8px; font-style:italic;';
+    spellToggleDesc.textContent = "Attiva questa sezione per classi come Chemist, Priest, Skald, Tinkerer o Hybrid che usano slot incantesimo e formule preparate.";
+    spellToggleBox.appendChild(spellToggleDesc);
+    
+    var spellToggleBtn = document.createElement('button');
+    spellToggleBtn.style.cssText = 'padding:6px 16px; font-size:12px; font-weight:bold; cursor:pointer; background:#fff; border:1px solid #aaa; border-radius:3px; color:#111; text-transform:uppercase;';
+    spellToggleBtn.textContent = s.hasSpellcasting ? '- Nascondi Scheda Incantesimi / Formule' : '+ Abilita / Mostra Scheda Incantesimi';
+    spellToggleBtn.onclick = function() {
+      s.hasSpellcasting = !s.hasSpellcasting;
+      ss();
+      renderMain();
+    };
+    spellToggleBox.appendChild(spellToggleBtn);
+    pg3.appendChild(spellToggleBox);
+  }
+
+  // BUILD SPELL SECTION
+  if (!isOP || s.hasSpellcasting) {
+    var spellContainer = document.createElement('div');
+    if (isOP) spellContainer.style.cssText = 'margin-top:16px; border-top:2px solid #555; padding-top:16px;';
+    
     var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;';
     var h3G=document.createElement('div'); h3G.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;';
     var h3N=document.createElement('div'); h3N.style.cssText='padding:3px 4px;';
@@ -17346,7 +17372,7 @@ function renderScheda() {
     h3G.appendChild(makeHdrCell('Caratteristica da Incantatore','carInc',false));
     h3G.appendChild(makeHdrCell('CD Tiro Salvezza Incantesimi','cdTs',false));
     h3G.appendChild(makeHdrCell('Bonus di Attacco Incantesimi','bonusAtkInc',false));
-    hdr3.appendChild(h3G); pg3.appendChild(hdr3);
+    hdr3.appendChild(h3G); spellContainer.appendChild(hdr3);
     var incG3=document.createElement('div'); incG3.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;';
     var iC1=document.createElement('div'); iC1.style.cssText='display:flex;flex-direction:column;gap:4px;';
     iC1.appendChild(makeSpellBlock('0',s.trucchetti.map(function(n){return{nome:n,prep:false};}),'',true));
@@ -17364,7 +17390,8 @@ function renderScheda() {
     iC3.appendChild(makeSpellBlock('8',s.sp8.lista,'sp8',false));
     iC3.appendChild(makeSpellBlock('9',s.sp9.lista,'sp9',false));
     incG3.appendChild(iC3);
-    pg3.appendChild(incG3);
+    spellContainer.appendChild(incG3);
+    pg3.appendChild(spellContainer);
   }
   pgWrap.appendChild(pg3);
 
