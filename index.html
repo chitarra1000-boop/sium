@@ -9076,7 +9076,8 @@ function _renderTipoSelectorModal(onSelect) {
   grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;';
 
   var types = [
-    { key: 'normale', label: 'Normale (D&D 5e)', thumb: null, desc: 'Scheda digitale interattiva' }
+    { key: 'normale', label: 'D&D Normale', thumb: null, desc: 'Scheda digitale interattiva' },
+    { key: 'onepiece', label: 'One Piece D&D', thumb: null, desc: 'Dungeons & Devil Fruits' }
   ];
   Object.keys(SHEET_DEFS).forEach(function(k) {
     types.push({ key: k, label: SHEET_DEFS[k].label, thumb: SHEET_DEFS[k].thumbnail, desc: '' });
@@ -16348,8 +16349,8 @@ function _newScheda() {
   _renderTipoSelectorModal(function(tipo) {
     var nid = 'c' + Date.now();
     var ns;
-    if (tipo === 'normale') {
-      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: 'normale' });
+    if (tipo === 'normale' || tipo === 'onepiece') {
+      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
     } else {
       ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
     }
@@ -16847,20 +16848,47 @@ function renderScheda() {
   /* ==================== PAGINA 1 ==================== */
   var pg1=makePage();
   /* Header */
+  var isOP = (_sTipo === 'onepiece');
   var hdr1=document.createElement('div'); hdr1.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;';
-  var hR1=document.createElement('div'); hR1.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #aaa;';
-  hR1.appendChild(makeHdrCell('Classe & Livello','classelivello',true));
-  hR1.appendChild(makeHdrCell('Background','background',false));
-  hR1.appendChild(makeHdrCell('Nome Giocatore','nomeGiocatore',false));
-  var hR2=document.createElement('div'); hR2.style.cssText='display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;';
-  var nomeCell=document.createElement('div'); nomeCell.style.cssText='padding:3px 4px;';
-  var nomeInp1=document.createElement('input'); nomeInp1.type='text'; nomeInp1.value=s.nomePersonaggio||''; nomeInp1.style.cssText='width:100%;border:none;background:transparent;color:#111;font-size:14px;font-weight:bold;outline:none;';
-  nomeInp1.oninput=function(){s.nomePersonaggio=this.value;ss();};
-  nomeCell.appendChild(nomeInp1); nomeCell.appendChild(cellLbl('Nome Personaggio')); hR2.appendChild(nomeCell);
-  hR2.appendChild(makeHdrCell('Razza','razza',false));
-  hR2.appendChild(makeHdrCell('Allineamento','allineamento',false));
-  hR2.appendChild(makeHdrCell('Punti Esperienza','pe',false));
-  hdr1.appendChild(hR1); hdr1.appendChild(hR2); pg1.appendChild(hdr1);
+  if (isOP) {
+    var hR1=document.createElement('div'); hR1.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid #aaa;';
+    hR1.appendChild(makeHdrCell('Classe & Livello','classelivello',true));
+    hR1.appendChild(makeHdrCell('Razza','razza',false));
+    hR1.appendChild(makeHdrCell('Epiteto / Soprannome','epiteto',false));
+    hR1.appendChild(makeHdrCell('Ruolo Ciurma','ruoloCiurma',false));
+    var hR2=document.createElement('div'); hR2.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;border-bottom:1px solid #aaa;';
+    var nomeCell=document.createElement('div'); nomeCell.style.cssText='padding:3px 4px;';
+    var nomeInp1=document.createElement('input'); nomeInp1.type='text'; nomeInp1.value=s.nomePersonaggio||''; nomeInp1.style.cssText='width:100%;border:none;background:transparent;color:#111;font-size:14px;font-weight:bold;outline:none;';
+    nomeInp1.oninput=function(){s.nomePersonaggio=this.value;ss();};
+    nomeCell.appendChild(nomeInp1); nomeCell.appendChild(cellLbl('Nome Personaggio')); hR2.appendChild(nomeCell);
+    hR2.appendChild(makeHdrCell('Nome Ciurma','nomeCiurma',false));
+    hR2.appendChild(makeHdrCell('Nome Nave','nomeNave',false));
+    hR2.appendChild(makeHdrCell('Fazione / Affiliazione','allineamento',false));
+    var hR3=document.createElement('div'); hR3.style.cssText='display:flex;background:#faf3e3;border-bottom:1px solid #aaa;padding:4px;gap:10px;align-items:center;';
+    var wantedLbl=document.createElement('div'); wantedLbl.style.cssText='font-family:\'Cinzel\',serif;font-weight:bold;font-size:18px;letter-spacing:2px;color:#4a1010;'; wantedLbl.textContent='WANTED';
+    var bountyState=document.createElement('select'); bountyState.style.cssText='background:transparent;border:1px solid #aaa;font-size:10px;font-weight:bold;padding:2px;'; 
+    ['DEAD OR ALIVE', 'ONLY ALIVE'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;bountyState.appendChild(op);});
+    bountyState.value=s.bountyState||'DEAD OR ALIVE'; bountyState.onchange=function(){s.bountyState=this.value;ss();};
+    var bountyCur=document.createElement('input'); bountyCur.type='number'; bountyCur.placeholder='Taglia Attuale (\u0E3F)'; bountyCur.value=s.bountyCur||''; bountyCur.style.cssText='flex:1;background:transparent;border:1px dashed #aaa;text-align:right;font-weight:bold;font-size:14px;padding:2px;'; bountyCur.oninput=function(){s.bountyCur=this.value;ss();};
+    var bountyPrev=document.createElement('input'); bountyPrev.type='number'; bountyPrev.placeholder='Taglia Prec. (\u0E3F)'; bountyPrev.value=s.bountyPrev||''; bountyPrev.style.cssText='flex:0.8;background:transparent;border:1px dashed #aaa;text-align:right;font-size:10px;color:#555;padding:2px;'; bountyPrev.oninput=function(){s.bountyPrev=this.value;ss();};
+    hR3.appendChild(wantedLbl); hR3.appendChild(bountyState); hR3.appendChild(bountyCur); hR3.appendChild(bountyPrev);
+    hdr1.appendChild(hR1); hdr1.appendChild(hR2); hdr1.appendChild(hR3);
+  } else {
+    var hR1=document.createElement('div'); hR1.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #aaa;';
+    hR1.appendChild(makeHdrCell('Classe & Livello','classelivello',true));
+    hR1.appendChild(makeHdrCell('Background','background',false));
+    hR1.appendChild(makeHdrCell('Nome Giocatore','nomeGiocatore',false));
+    var hR2=document.createElement('div'); hR2.style.cssText='display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;';
+    var nomeCell=document.createElement('div'); nomeCell.style.cssText='padding:3px 4px;';
+    var nomeInp1=document.createElement('input'); nomeInp1.type='text'; nomeInp1.value=s.nomePersonaggio||''; nomeInp1.style.cssText='width:100%;border:none;background:transparent;color:#111;font-size:14px;font-weight:bold;outline:none;';
+    nomeInp1.oninput=function(){s.nomePersonaggio=this.value;ss();};
+    nomeCell.appendChild(nomeInp1); nomeCell.appendChild(cellLbl('Nome Personaggio')); hR2.appendChild(nomeCell);
+    hR2.appendChild(makeHdrCell('Razza','razza',false));
+    hR2.appendChild(makeHdrCell('Allineamento','allineamento',false));
+    hR2.appendChild(makeHdrCell('Punti Esperienza','pe',false));
+    hdr1.appendChild(hR1); hdr1.appendChild(hR2);
+  }
+  pg1.appendChild(hdr1);
   /* Main grid */
   var mg=document.createElement('div'); mg.style.cssText='display:grid;grid-template-columns:88px 186px 1fr 1fr;gap:5px;flex:1;align-items:stretch;';
   /* COL A - Stats */
@@ -16931,6 +16959,33 @@ function renderScheda() {
   }
   tsmB1.appendChild(makeDeathRow('Successi','successi','#555')); tsmB1.appendChild(makeDeathRow('Fallimenti','fallimenti','#c00'));
   dvTsR1.appendChild(tsmB1); cC.appendChild(dvTsR1);
+  if (isOP) {
+    var stamBox = document.createElement('div');
+    stamBox.style.cssText='border:1.5px solid #c9a55c;background:#faf3e3;border-radius:3px;padding:4px;margin-bottom:5px;display:flex;flex-direction:column;gap:4px;';
+    var stamTop = document.createElement('div'); stamTop.style.cssText='display:flex;align-items:center;justify-content:space-between;';
+    var stamLbl = document.createElement('div'); stamLbl.style.cssText='font-size:9px;font-weight:bold;color:#4a1010;'; stamLbl.textContent='PUNTI STAMINA / VIGORE';
+    stamTop.appendChild(stamLbl);
+    
+    var stamVals = document.createElement('div'); stamVals.style.cssText='display:flex;align-items:center;gap:4px;';
+    var stCurInp = document.createElement('input'); stCurInp.type='number'; stCurInp.value=s.staminaCur||''; stCurInp.style.cssText='width:40px;font-size:16px;font-weight:bold;text-align:right;border:1px solid #aaa;background:#fff;'; stCurInp.oninput=function(){s.staminaCur=this.value;ss();};
+    var stSep = document.createElement('span'); stSep.textContent='/'; stSep.style.cssText='font-weight:bold;color:#111;font-size:12px;';
+    var stMaxInp = document.createElement('input'); stMaxInp.type='number'; stMaxInp.value=s.staminaMax||''; stMaxInp.style.cssText='width:34px;font-size:12px;text-align:center;border:1px solid #aaa;background:#fff;'; stMaxInp.oninput=function(){s.staminaMax=this.value;ss();};
+    stamVals.appendChild(stCurInp); stamVals.appendChild(stSep); stamVals.appendChild(stMaxInp);
+    stamTop.appendChild(stamVals);
+
+    var stamBtns = document.createElement('div'); stamBtns.style.cssText='display:flex;gap:4px;';
+    var btnMin = document.createElement('button'); btnMin.textContent='-1'; btnMin.style.cssText='flex:1;cursor:pointer;background:#e5c7a0;border:1px solid #c9a55c;border-radius:2px;font-weight:bold;'; btnMin.onclick=function(){s.staminaCur = Math.max(0, (parseInt(s.staminaCur)||0)-1); stCurInp.value=s.staminaCur; ss();};
+    var btnPlus = document.createElement('button'); btnPlus.textContent='+1'; btnPlus.style.cssText='flex:1;cursor:pointer;background:#e5c7a0;border:1px solid #c9a55c;border-radius:2px;font-weight:bold;'; btnPlus.onclick=function(){s.staminaCur = Math.min((parseInt(s.staminaMax)||0), (parseInt(s.staminaCur)||0)+1); stCurInp.value=s.staminaCur; ss();};
+    var btnRipB = document.createElement('button'); btnRipB.textContent='Riposo Breve'; btnRipB.style.cssText='flex:2;font-size:8px;cursor:pointer;background:#fff;border:1px solid #aaa;border-radius:2px;'; btnRipB.onclick=function(){ 
+      /* For short rest stamina recovery, usually some dice, but here just UI alert or manual */
+      s.staminaCur = Math.min((parseInt(s.staminaMax)||0), (parseInt(s.staminaCur)||0)); stCurInp.value=s.staminaCur; ss();
+    };
+    var btnRipL = document.createElement('button'); btnRipL.textContent='Riposo Lungo'; btnRipL.style.cssText='flex:2;font-size:8px;cursor:pointer;background:#fff;border:1px solid #aaa;border-radius:2px;'; btnRipL.onclick=function(){ s.staminaCur=s.staminaMax; stCurInp.value=s.staminaCur; ss(); };
+    stamBtns.appendChild(btnMin); stamBtns.appendChild(btnPlus); stamBtns.appendChild(btnRipB); stamBtns.appendChild(btnRipL);
+
+    stamBox.appendChild(stamTop); stamBox.appendChild(stamBtns);
+    cC.appendChild(stamBox);
+  }
   var atkB1=document.createElement('div'); atkB1.style.cssText='border:1px solid #aaa;border-radius:2px;padding:4px;margin-bottom:4px;';
   var atkT1=document.createElement('table'); atkT1.style.cssText='width:100%;border-collapse:collapse;';
   atkT1.innerHTML='<thead><tr><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Nome</th><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Bonus Att.</th><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Danni/Tipo</th></tr></thead>';
@@ -16962,27 +17017,40 @@ function renderScheda() {
   folliaB1.appendChild(folliaRow); cC.appendChild(folliaB1);
   var eqB1=document.createElement('div'); eqB1.style.cssText='border:1px solid #aaa;border-radius:2px;flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:120px;';
   /* --- MONETE --- */
-  var monWrap=document.createElement('div'); monWrap.style.cssText='flex-shrink:0;padding:3px 3px 2px;border-bottom:1px solid #ccc;';
-  var monTitle=document.createElement('div'); monTitle.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#555;text-align:center;margin-bottom:3px;'; monTitle.textContent='Monete';
-  monWrap.appendChild(monTitle);
-  var monGrid=document.createElement('div'); monGrid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:2px;';
-  [['Rame','rame','#b87333'],['Argento','argento','#888'],['Oro','oro','#b8860b'],['Platino','platino','#7090a0']].forEach(function(m){
-    var cell=document.createElement('div'); cell.style.cssText='border:1px solid #ccc;border-radius:2px;padding:2px 1px;text-align:center;background:#fafafa;';
-    var lbl=document.createElement('div'); lbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;color:'+m[2]+';letter-spacing:0.05em;margin-bottom:1px;'; lbl.textContent=m[0]; cell.appendChild(lbl);
-    var inp=document.createElement('input'); inp.type='text'; inp.value=s[m[1]]||''; inp.maxLength=15;
-    inp.style.cssText='width:100%;text-align:center;font-size:7.5px;font-weight:bold;background:transparent;border:none;border-bottom:1px solid #ddd;color:#111;outline:none;padding:1px 0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;';
-    (function(k){inp.oninput=function(){s[k]=this.value;ss();};})(m[1]);
-    cell.appendChild(inp); monGrid.appendChild(cell);
-  });
-  monWrap.appendChild(monGrid);
-  /* Crediti — riga intera */
-  var credCell=document.createElement('div'); credCell.style.cssText='border:1px solid #ccc;border-radius:2px;padding:2px 4px;text-align:center;background:#f0f8ff;display:flex;align-items:center;gap:4px;';
-  var credLbl=document.createElement('div'); credLbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;color:#1a6a9a;letter-spacing:0.06em;white-space:nowrap;flex-shrink:0;'; credLbl.textContent='Crediti';
-  var credInp=document.createElement('input'); credInp.type='text'; credInp.value=s.crediti||''; credInp.maxLength=18;
-  credInp.style.cssText='flex:1;text-align:center;font-size:8px;font-weight:bold;background:transparent;border:none;border-bottom:1px solid #9bc;color:#111;outline:none;padding:1px 0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;';
-  credInp.oninput=function(){s.crediti=this.value;ss();};
-  credCell.appendChild(credLbl); credCell.appendChild(credInp); monWrap.appendChild(credCell);
-  eqB1.appendChild(monWrap);
+  if (isOP) {
+    var monWrap=document.createElement('div'); monWrap.style.cssText='flex-shrink:0;padding:3px 3px 2px;border-bottom:1px solid #ccc;';
+    var monTitle=document.createElement('div'); monTitle.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#555;text-align:center;margin-bottom:3px;'; monTitle.textContent='Finanze';
+    monWrap.appendChild(monTitle);
+    var credCell=document.createElement('div'); credCell.style.cssText='border:1px solid #c9a55c;border-radius:2px;padding:2px 4px;text-align:center;background:#faf3e3;display:flex;align-items:center;gap:4px;';
+    var credLbl=document.createElement('div'); credLbl.style.cssText='font-size:8px;font-weight:bold;text-transform:uppercase;color:#4a1010;letter-spacing:0.06em;white-space:nowrap;flex-shrink:0;'; credLbl.textContent='Berry (\u0E3F)';
+    var credInp=document.createElement('input'); credInp.type='number'; credInp.value=s.berry||'';
+    credInp.style.cssText='flex:1;text-align:center;font-size:12px;font-weight:bold;background:transparent;border:none;border-bottom:1px dashed #c9a55c;color:#111;outline:none;padding:1px 0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;';
+    credInp.oninput=function(){s.berry=this.value;ss();};
+    credCell.appendChild(credLbl); credCell.appendChild(credInp); monWrap.appendChild(credCell);
+    eqB1.appendChild(monWrap);
+  } else {
+    var monWrap=document.createElement('div'); monWrap.style.cssText='flex-shrink:0;padding:3px 3px 2px;border-bottom:1px solid #ccc;';
+    var monTitle=document.createElement('div'); monTitle.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;letter-spacing:0.07em;color:#555;text-align:center;margin-bottom:3px;'; monTitle.textContent='Monete';
+    monWrap.appendChild(monTitle);
+    var monGrid=document.createElement('div'); monGrid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:2px;';
+    [['Rame','rame','#b87333'],['Argento','argento','#888'],['Oro','oro','#b8860b'],['Platino','platino','#7090a0']].forEach(function(m){
+      var cell=document.createElement('div'); cell.style.cssText='border:1px solid #ccc;border-radius:2px;padding:2px 1px;text-align:center;background:#fafafa;';
+      var lbl=document.createElement('div'); lbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;color:'+m[2]+';letter-spacing:0.05em;margin-bottom:1px;'; lbl.textContent=m[0]; cell.appendChild(lbl);
+      var inp=document.createElement('input'); inp.type='text'; inp.value=s[m[1]]||''; inp.maxLength=15;
+      inp.style.cssText='width:100%;text-align:center;font-size:7.5px;font-weight:bold;background:transparent;border:none;border-bottom:1px solid #ddd;color:#111;outline:none;padding:1px 0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;';
+      (function(k){inp.oninput=function(){s[k]=this.value;ss();};})(m[1]);
+      cell.appendChild(inp); monGrid.appendChild(cell);
+    });
+    monWrap.appendChild(monGrid);
+    /* Crediti \u2014 riga intera */
+    var credCell=document.createElement('div'); credCell.style.cssText='border:1px solid #ccc;border-radius:2px;padding:2px 4px;text-align:center;background:#f0f8ff;display:flex;align-items:center;gap:4px;';
+    var credLbl=document.createElement('div'); credLbl.style.cssText='font-size:5.5px;font-weight:bold;text-transform:uppercase;color:#1a6a9a;letter-spacing:0.06em;white-space:nowrap;flex-shrink:0;'; credLbl.textContent='Crediti';
+    var credInp=document.createElement('input'); credInp.type='text'; credInp.value=s.crediti||''; credInp.maxLength=18;
+    credInp.style.cssText='flex:1;text-align:center;font-size:8px;font-weight:bold;background:transparent;border:none;border-bottom:1px solid #9bc;color:#111;outline:none;padding:1px 0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;';
+    credInp.oninput=function(){s.crediti=this.value;ss();};
+    credCell.appendChild(credLbl); credCell.appendChild(credInp); monWrap.appendChild(credCell);
+    eqB1.appendChild(monWrap);
+  }
   /* --- EQUIPAGGIAMENTO --- */
   var eqTa1=document.createElement('textarea'); eqTa1.style.cssText='width:100%;background:transparent;border:none;resize:none;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:9px;outline:none;padding:3px;flex:1;height:0;box-sizing:border-box;'; eqTa1.value=s.equipaggiamento||'';
   eqTa1.oninput=function(){s.equipaggiamento=this.value;ss();}; eqB1.appendChild(eqTa1); eqB1.appendChild(secTitle('Equipaggiamento')); cC.appendChild(eqB1);
@@ -17057,33 +17125,179 @@ function renderScheda() {
 
   /* ==================== PAGINA 3 ==================== */
   var pg3=makePage(); pg3.style.minHeight='1100px';
-  var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;';
-  var h3G=document.createElement('div'); h3G.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;';
-  var h3N=document.createElement('div'); h3N.style.cssText='padding:3px 4px;';
-  var h3NI=document.createElement('input'); h3NI.type='text'; h3NI.value=s.classInc||''; h3NI.style.cssText='width:100%;border:none;background:transparent;color:#111;font-size:12px;font-weight:bold;outline:none;';
-  h3NI.oninput=function(){s.classInc=this.value;ss();}; h3N.appendChild(h3NI); h3N.appendChild(cellLbl('Classe da Incantatore')); h3G.appendChild(h3N);
-  h3G.appendChild(makeHdrCell('Caratteristica da Incantatore','carInc',false));
-  h3G.appendChild(makeHdrCell('CD Tiro Salvezza Incantesimi','cdTs',false));
-  h3G.appendChild(makeHdrCell('Bonus di Attacco Incantesimi','bonusAtkInc',false));
-  hdr3.appendChild(h3G); pg3.appendChild(hdr3);
-  var incG3=document.createElement('div'); incG3.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;';
-  var iC1=document.createElement('div'); iC1.style.cssText='display:flex;flex-direction:column;gap:4px;';
-  iC1.appendChild(makeSpellBlock('0',s.trucchetti.map(function(n){return{nome:n,prep:false};}),'',true));
-  iC1.appendChild(makeSpellBlock('1',s.sp1.lista,'sp1',false));
-  iC1.appendChild(makeSpellBlock('2',s.sp2.lista,'sp2',false));
-  incG3.appendChild(iC1);
-  var iC2=document.createElement('div'); iC2.style.cssText='display:flex;flex-direction:column;gap:4px;';
-  iC2.appendChild(makeSpellBlock('3',s.sp3.lista,'sp3',false));
-  iC2.appendChild(makeSpellBlock('4',s.sp4.lista,'sp4',false));
-  iC2.appendChild(makeSpellBlock('5',s.sp5.lista,'sp5',false));
-  incG3.appendChild(iC2);
-  var iC3=document.createElement('div'); iC3.style.cssText='display:flex;flex-direction:column;gap:4px;';
-  iC3.appendChild(makeSpellBlock('6',s.sp6.lista,'sp6',false));
-  iC3.appendChild(makeSpellBlock('7',s.sp7.lista,'sp7',false));
-  iC3.appendChild(makeSpellBlock('8',s.sp8.lista,'sp8',false));
-  iC3.appendChild(makeSpellBlock('9',s.sp9.lista,'sp9',false));
-  incG3.appendChild(iC3);
-  pg3.appendChild(incG3); pgWrap.appendChild(pg3);
+  var pg3=makePage(); pg3.style.minHeight='1100px';
+  if (isOP) {
+    /* HEADER PAGE 3 - ONE PIECE */
+    var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;background:#faf3e3;text-align:center;padding:5px;';
+    var hdrTitle=document.createElement('h2'); hdrTitle.style.cssText='margin:0;font-family:\'Cinzel\',serif;font-size:16px;color:#4a1010;letter-spacing:1px;'; hdrTitle.textContent='ABILITÀ SPECIALI & POTERI';
+    hdr3.appendChild(hdrTitle); pg3.appendChild(hdr3);
+    
+    var opGrid=document.createElement('div'); opGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;';
+    
+    /* COL 1: DEVIL FRUIT */
+    var col1=document.createElement('div'); col1.style.cssText='display:flex;flex-direction:column;gap:8px;';
+    var dfBox=document.createElement('div'); dfBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;';
+    var dfTop=document.createElement('div'); dfTop.style.cssText='display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #555;padding-bottom:4px;margin-bottom:4px;';
+    var dfTitle=document.createElement('div'); dfTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; dfTitle.textContent='Frutto del Diavolo';
+    var dfToggle=document.createElement('input'); dfToggle.type='checkbox'; dfToggle.checked=!!s.hasDF; dfToggle.onchange=function(){s.hasDF=this.checked;ss();renderMain();};
+    dfTop.appendChild(dfTitle); dfTop.appendChild(dfToggle); dfBox.appendChild(dfTop);
+    
+    if (s.hasDF) {
+      var dfGrid=document.createElement('div'); dfGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;';
+      
+      var dfNameB=document.createElement('div'); dfNameB.style.cssText='border:1px solid #ccc;padding:2px;';
+      var dfNameI=document.createElement('input'); dfNameI.type='text'; dfNameI.value=s.dfName||''; dfNameI.style.cssText='width:100%;border:none;outline:none;font-size:9px;background:transparent;font-weight:bold;'; dfNameI.oninput=function(){s.dfName=this.value;ss();};
+      dfNameB.appendChild(dfNameI); dfNameB.appendChild(cellLbl('Nome del Frutto')); dfGrid.appendChild(dfNameB);
+      
+      var dfTypeB=document.createElement('div'); dfTypeB.style.cssText='border:1px solid #ccc;padding:2px;';
+      var dfTypeS=document.createElement('select'); dfTypeS.style.cssText='width:100%;border:none;outline:none;font-size:9px;background:transparent;';
+      ['','Paramisha','Rogia','Zoan','Zoan Mitologico','Zoan Antico'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;dfTypeS.appendChild(op);});
+      dfTypeS.value=s.dfType||''; dfTypeS.onchange=function(){s.dfType=this.value;ss();renderMain();};
+      dfTypeB.appendChild(dfTypeS); dfTypeB.appendChild(cellLbl('Tipo di Frutto')); dfGrid.appendChild(dfTypeB);
+      dfBox.appendChild(dfGrid);
+      
+      if(s.dfType && s.dfType.includes('Zoan')) {
+        var dfZoanB=document.createElement('div'); dfZoanB.style.cssText='border:1px solid #ccc;padding:2px;margin-bottom:4px;';
+        var dfZoanI=document.createElement('textarea'); dfZoanI.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:9px;background:transparent;resize:none;'; dfZoanI.value=s.dfZoan||''; dfZoanI.oninput=function(){s.dfZoan=this.value;ss();};
+        dfZoanB.appendChild(dfZoanI); dfZoanB.appendChild(cellLbl('Forme Zoan')); dfBox.appendChild(dfZoanB);
+      }
+      
+      var dfMGrid=document.createElement('div'); dfMGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;';
+      var dfAtkB=document.createElement('div'); dfAtkB.style.cssText='border:1px solid #ccc;padding:2px;';
+      var dfAtkI=document.createElement('input'); dfAtkI.type='text'; dfAtkI.value=s.dfAtk||''; dfAtkI.style.cssText='width:100%;border:none;outline:none;font-size:10px;text-align:center;font-weight:bold;background:transparent;'; dfAtkI.oninput=function(){s.dfAtk=this.value;ss();};
+      dfAtkB.appendChild(dfAtkI); dfAtkB.appendChild(cellLbl('CD / Bonus Attacco')); dfMGrid.appendChild(dfAtkB);
+      
+      var dfMastB=document.createElement('div'); dfMastB.style.cssText='border:1px solid #ccc;padding:2px;';
+      var dfMastI=document.createElement('input'); dfMastI.type='text'; dfMastI.value=s.dfMastery||''; dfMastI.style.cssText='width:100%;border:none;outline:none;font-size:10px;text-align:center;font-weight:bold;background:transparent;'; dfMastI.oninput=function(){s.dfMastery=this.value;ss();};
+      dfMastB.appendChild(dfMastI); dfMastB.appendChild(cellLbl('Maestria Frutto')); dfMGrid.appendChild(dfMastB);
+      dfBox.appendChild(dfMGrid);
+      
+      var dfAwB=document.createElement('div'); dfAwB.style.cssText='border:1px solid #ccc;padding:4px;margin-bottom:4px;background:#f9f9f9;';
+      var dfAwT=document.createElement('div'); dfAwT.style.cssText='display:flex;align-items:center;gap:4px;';
+      var dfAwChk=document.createElement('input'); dfAwChk.type='checkbox'; dfAwChk.checked=!!s.dfAwakened; dfAwChk.onchange=function(){s.dfAwakened=this.checked;ss();renderMain();};
+      var dfAwL=document.createElement('span'); dfAwL.style.cssText='font-size:9px;font-weight:bold;'; dfAwL.textContent='Risveglio (Awakening)';
+      dfAwT.appendChild(dfAwChk); dfAwT.appendChild(dfAwL); dfAwB.appendChild(dfAwT);
+      if(s.dfAwakened) {
+        var dfAwI=document.createElement('textarea'); dfAwI.style.cssText='width:100%;height:30px;border:1px solid #eee;outline:none;font-size:9px;background:transparent;resize:none;margin-top:4px;'; dfAwI.value=s.dfAwDesc||''; dfAwI.oninput=function(){s.dfAwDesc=this.value;ss();};
+        dfAwB.appendChild(dfAwI);
+      }
+      dfBox.appendChild(dfAwB);
+      
+      var dfWk=document.createElement('div'); dfWk.style.cssText='font-size:8px;color:#a33;font-weight:bold;margin-bottom:6px;text-align:center;'; dfWk.textContent='DEBOLEZZE: Acqua Marina, Agalmatolite (Indebolimento e blocco poteri)';
+      dfBox.appendChild(dfWk);
+      
+      var dfTech=document.createElement('div'); dfTech.style.cssText='border-top:1px solid #aaa;padding-top:4px;';
+      dfTech.appendChild(secTitle('Tecniche del Frutto'));
+      var dfTechTa=document.createElement('textarea'); dfTechTa.style.cssText='width:100%;height:200px;border:1px solid #ccc;outline:none;font-size:9px;background:transparent;resize:none;margin-top:4px;'; dfTechTa.value=s.dfTechs||''; dfTechTa.oninput=function(){s.dfTechs=this.value;ss();};
+      dfTech.appendChild(dfTechTa); dfBox.appendChild(dfTech);
+    }
+    col1.appendChild(dfBox);
+    
+    /* COL 2: HAKI & TRAITS */
+    var col2=document.createElement('div'); col2.style.cssText='display:flex;flex-direction:column;gap:8px;';
+    
+    /* HAKI PANEL */
+    var hkBox=document.createElement('div'); hkBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;';
+    var hkTop=document.createElement('div'); hkTop.style.cssText='border-bottom:2px solid #111;margin-bottom:4px;padding-bottom:2px;';
+    var hkTitle=document.createElement('div'); hkTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; hkTitle.textContent='Ambizione (Haki)';
+    hkTop.appendChild(hkTitle); hkBox.appendChild(hkTop);
+    
+    var hkPoolB=document.createElement('div'); hkPoolB.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:4px;background:#f0f0f0;border:1px solid #ccc;';
+    var hkPoolL=document.createElement('div'); hkPoolL.style.cssText='font-size:9px;font-weight:bold;'; hkPoolL.textContent='Pool Dadi/Punti Haki:';
+    var hkPoolI=document.createElement('input'); hkPoolI.type='text'; hkPoolI.value=s.hakiPool||''; hkPoolI.style.cssText='width:60px;border:none;border-bottom:1px solid #aaa;background:transparent;text-align:center;font-size:10px;font-weight:bold;'; hkPoolI.oninput=function(){s.hakiPool=this.value;ss();};
+    hkPoolB.appendChild(hkPoolL); hkPoolB.appendChild(hkPoolI); hkBox.appendChild(hkPoolB);
+    
+    var hkG=document.createElement('div'); hkG.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;';
+    var hkList=[{id:'Ken',n:'Kenbunshoku',s:'Osservazione'},{id:'Bus',n:'Busoshoku',s:'Armatura'},{id:'Hao',n:'Haoshoku',s:'Re Conquistatore'}];
+    hkList.forEach(function(hk){
+      var b=document.createElement('div'); b.style.cssText='border:1px solid #ccc;padding:2px;display:flex;flex-direction:column;';
+      var top=document.createElement('div'); top.style.cssText='display:flex;align-items:center;gap:2px;margin-bottom:2px;';
+      var c=document.createElement('input'); c.type='checkbox'; c.checked=!!s['haki'+hk.id]; c.onchange=function(){s['haki'+hk.id]=this.checked;ss();};
+      var l=document.createElement('div'); l.style.cssText='font-size:8px;font-weight:bold;line-height:1;'; l.innerHTML=hk.n+'<br><span style="font-size:6px;font-weight:normal;">'+hk.s+'</span>';
+      top.appendChild(c); top.appendChild(l); b.appendChild(top);
+      var ta=document.createElement('textarea'); ta.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:8px;background:transparent;resize:none;box-sizing:border-box;'; ta.value=s['haki'+hk.id+'Desc']||''; ta.oninput=function(){s['haki'+hk.id+'Desc']=this.value;ss();};
+      b.appendChild(ta); hkG.appendChild(b);
+    });
+    hkBox.appendChild(hkG); col2.appendChild(hkBox);
+    
+    /* TRAITS PANEL */
+    var trBox=document.createElement('div'); trBox.style.cssText='border:1px solid #aaa;border-radius:2px;padding:6px;background:#fff;flex:1;display:flex;flex-direction:column;';
+    var trTop=document.createElement('div'); trTop.style.cssText='border-bottom:2px solid #111;margin-bottom:4px;padding-bottom:2px;';
+    var trTitle=document.createElement('div'); trTitle.style.cssText='font-size:10px;font-weight:bold;color:#111;text-transform:uppercase;'; trTitle.textContent='Tratti Razziali & Speciali';
+    trTop.appendChild(trTitle); trBox.appendChild(trTop);
+    
+    var rTog=document.createElement('div'); rTog.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;';
+    var rzList=[{id:'Fish',n:'Uomo-Pesce / Sirenetta'},{id:'Mink',n:'Vismone (Mink)'},{id:'Cyb',n:'Cyborg'},{id:'Sky',n:'Skypieano'}];
+    rzList.forEach(function(rz){
+      var rL=document.createElement('label'); rL.style.cssText='display:flex;align-items:center;gap:2px;font-size:8px;font-weight:bold;cursor:pointer;background:#eee;padding:2px 4px;border-radius:2px;';
+      var rC=document.createElement('input'); rC.type='checkbox'; rC.checked=!!s['tr'+rz.id]; rC.onchange=function(){s['tr'+rz.id]=this.checked;ss();renderMain();};
+      rL.appendChild(rC); rL.appendChild(document.createTextNode(rz.n)); rTog.appendChild(rL);
+    });
+    trBox.appendChild(rTog);
+    
+    var trDyn=document.createElement('div'); trDyn.style.cssText='display:flex;flex-direction:column;gap:4px;margin-bottom:6px;';
+    if(s.trFish){
+      var bF=document.createElement('div'); bF.style.cssText='border:1px solid #8ab;padding:2px;background:#eef5f9;';
+      bF.innerHTML='<div style="font-size:8px;font-weight:bold;color:#257;">Velocità Nuoto / Karate Uomini-Pesce</div>';
+      var tF=document.createElement('textarea'); tF.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tF.value=s.trFishD||''; tF.oninput=function(){s.trFishD=this.value;ss();}; bF.appendChild(tF); trDyn.appendChild(bF);
+    }
+    if(s.trMink){
+      var bM=document.createElement('div'); bM.style.cssText='border:1px solid #a83;padding:2px;background:#fdf9ee;';
+      bM.innerHTML='<div style="font-size:8px;font-weight:bold;color:#752;">Electro / Sulong</div>';
+      var tM=document.createElement('textarea'); tM.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tM.value=s.trMinkD||''; tM.oninput=function(){s.trMinkD=this.value;ss();}; bM.appendChild(tM); trDyn.appendChild(bM);
+    }
+    if(s.trCyb){
+      var bC=document.createElement('div'); bC.style.cssText='border:1px solid #888;padding:2px;background:#f0f0f0;';
+      bC.innerHTML='<div style="font-size:8px;font-weight:bold;color:#333;">Modifiche / Riserva Cola</div>';
+      var tC=document.createElement('textarea'); tC.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tC.value=s.trCybD||''; tC.oninput=function(){s.trCybD=this.value;ss();}; bC.appendChild(tC); trDyn.appendChild(bC);
+    }
+    if(s.trSky){
+      var bS=document.createElement('div'); bS.style.cssText='border:1px solid #9aa;padding:2px;background:#f5f8f8;';
+      bS.innerHTML='<div style="font-size:8px;font-weight:bold;color:#355;">Dial Equipaggiati</div>';
+      var tS=document.createElement('textarea'); tS.style.cssText='width:100%;height:30px;border:none;outline:none;font-size:8px;background:transparent;resize:none;'; tS.value=s.trSkyD||''; tS.oninput=function(){s.trSkyD=this.value;ss();}; bS.appendChild(tS); trDyn.appendChild(bS);
+    }
+    trBox.appendChild(trDyn);
+    
+    var lpBox=document.createElement('div'); lpBox.style.cssText='border-top:1px solid #aaa;padding-top:4px;margin-top:auto;';
+    var lpT=document.createElement('div'); lpT.style.cssText='display:flex;justify-content:space-between;align-items:center;';
+    var lpL=document.createElement('div'); lpL.style.cssText='font-size:9px;font-weight:bold;'; lpL.textContent='Log Pose Tracker';
+    var lpI=document.createElement('input'); lpI.type='text'; lpI.placeholder='Destinazione Attuale'; lpI.value=s.logPose||''; lpI.style.cssText='flex:1;margin-left:8px;font-size:9px;border:none;border-bottom:1px solid #ccc;outline:none;'; lpI.oninput=function(){s.logPose=this.value;ss();};
+    lpT.appendChild(lpL); lpT.appendChild(lpI); lpBox.appendChild(lpT); trBox.appendChild(lpBox);
+    
+    col2.appendChild(trBox);
+    
+    opGrid.appendChild(col1); opGrid.appendChild(col2);
+    pg3.appendChild(opGrid);
+  } else {
+    var hdr3=document.createElement('div'); hdr3.style.cssText='border:1.5px solid #555;border-radius:3px;margin-bottom:8px;overflow:hidden;';
+    var h3G=document.createElement('div'); h3G.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr 1fr;';
+    var h3N=document.createElement('div'); h3N.style.cssText='padding:3px 4px;';
+    var h3NI=document.createElement('input'); h3NI.type='text'; h3NI.value=s.classInc||''; h3NI.style.cssText='width:100%;border:none;background:transparent;color:#111;font-size:12px;font-weight:bold;outline:none;';
+    h3NI.oninput=function(){s.classInc=this.value;ss();}; h3N.appendChild(h3NI); h3N.appendChild(cellLbl('Classe da Incantatore')); h3G.appendChild(h3N);
+    h3G.appendChild(makeHdrCell('Caratteristica da Incantatore','carInc',false));
+    h3G.appendChild(makeHdrCell('CD Tiro Salvezza Incantesimi','cdTs',false));
+    h3G.appendChild(makeHdrCell('Bonus di Attacco Incantesimi','bonusAtkInc',false));
+    hdr3.appendChild(h3G); pg3.appendChild(hdr3);
+    var incG3=document.createElement('div'); incG3.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;';
+    var iC1=document.createElement('div'); iC1.style.cssText='display:flex;flex-direction:column;gap:4px;';
+    iC1.appendChild(makeSpellBlock('0',s.trucchetti.map(function(n){return{nome:n,prep:false};}),'',true));
+    iC1.appendChild(makeSpellBlock('1',s.sp1.lista,'sp1',false));
+    iC1.appendChild(makeSpellBlock('2',s.sp2.lista,'sp2',false));
+    incG3.appendChild(iC1);
+    var iC2=document.createElement('div'); iC2.style.cssText='display:flex;flex-direction:column;gap:4px;';
+    iC2.appendChild(makeSpellBlock('3',s.sp3.lista,'sp3',false));
+    iC2.appendChild(makeSpellBlock('4',s.sp4.lista,'sp4',false));
+    iC2.appendChild(makeSpellBlock('5',s.sp5.lista,'sp5',false));
+    incG3.appendChild(iC2);
+    var iC3=document.createElement('div'); iC3.style.cssText='display:flex;flex-direction:column;gap:4px;';
+    iC3.appendChild(makeSpellBlock('6',s.sp6.lista,'sp6',false));
+    iC3.appendChild(makeSpellBlock('7',s.sp7.lista,'sp7',false));
+    iC3.appendChild(makeSpellBlock('8',s.sp8.lista,'sp8',false));
+    iC3.appendChild(makeSpellBlock('9',s.sp9.lista,'sp9',false));
+    incG3.appendChild(iC3);
+    pg3.appendChild(incG3);
+  }
+  pgWrap.appendChild(pg3);
 
   /* companion mini-sheets below character pages */
   var _cMapC=(state.companions||{})[state.schedaAttivaId]||{};
