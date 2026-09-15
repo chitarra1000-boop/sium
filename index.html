@@ -8474,6 +8474,8 @@ function render() {
 function renderMain() {
   var _scrollX = window.scrollX;
   var _scrollY = window.scrollY;
+  var _mcNode = document.querySelector('.main-content');
+  var _mcScrollY = _mcNode ? _mcNode.scrollTop : 0;
   if (typeof window._lastRenderedSection === 'undefined') window._lastRenderedSection = state.section;
   var _sectionChanged = (window._lastRenderedSection !== state.section);
   window._lastRenderedSection = state.section;
@@ -8518,9 +8520,11 @@ function renderMain() {
   }
 
   if (!_sectionChanged) {
-    setTimeout(function() {
-      window.scrollTo(_scrollX, _scrollY);
-    }, 0);
+    var _mc = document.querySelector('.main-content');
+    if (_mc && typeof _mcScrollY !== 'undefined') {
+      _mc.scrollTop = _mcScrollY;
+    }
+    window.scrollTo({ left: _scrollX, top: _scrollY, behavior: 'instant' });
   }
 }
 
@@ -17297,63 +17301,119 @@ function renderScheda() {
     opFull.appendChild(dfBox);
     
     /* SEZIONE 2: HAKI */
+    if (!s.haki) {
+        s.haki = {
+            pool: s.hakiPool || 0,
+            kenbunshoku: { active: !!s.hakiKen, stage: s.hakiKenLvl || "Base", dc: 0, damageBonus: "", techniques: [] },
+            busoshoku: { active: !!s.hakiBus, stage: s.hakiBusLvl || "Indurimento", bypassesLogia: !!s.hakiBusRog, dc: 0, damageBonus: "", techniques: [] },
+            haoshoku: { active: !!s.hakiHao, dc: s.hakiHaoCD || 13, techniques: [] }
+        };
+        if (s.hakiKenDesc) s.haki.kenbunshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", desc: s.hakiKenDesc });
+        if (s.hakiBusDesc) s.haki.busoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", desc: s.hakiBusDesc });
+        if (s.hakiHaoDesc) s.haki.haoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: s.hakiHaoCD||'', desc: s.hakiHaoDesc });
+    }
+
     var hkBox=document.createElement('div'); hkBox.style.cssText='border:1.5px solid #aaa;border-radius:3px;padding:8px;background:#fff;';
     var hkTop=document.createElement('div'); hkTop.style.cssText='display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #111;padding-bottom:4px;margin-bottom:8px;';
     var hkTitle=document.createElement('div'); hkTitle.style.cssText='font-size:12px;font-weight:bold;color:#111;text-transform:uppercase;'; hkTitle.textContent='Ambizione (Haki)';
     var hkPoolB=document.createElement('div'); hkPoolB.style.cssText='display:flex;align-items:center;gap:6px;background:#f0f0f0;padding:2px 6px;border:1px solid #ccc;border-radius:2px;';
     var hkPoolL=document.createElement('div'); hkPoolL.style.cssText='font-size:10px;font-weight:bold;'; hkPoolL.textContent='Pool Dadi/Punti Haki:';
-    var hkPoolI=document.createElement('input'); hkPoolI.type='text'; hkPoolI.value=s.hakiPool||''; hkPoolI.style.cssText='width:50px;border:none;border-bottom:1px solid #aaa;background:transparent;text-align:center;font-size:12px;font-weight:bold;'; hkPoolI.oninput=function(){s.hakiPool=this.value;ss();};
+    var hkPoolI=document.createElement('input'); hkPoolI.type='text'; hkPoolI.value=s.haki.pool||''; hkPoolI.style.cssText='width:50px;border:none;border-bottom:1px solid #aaa;background:transparent;text-align:center;font-size:12px;font-weight:bold;'; hkPoolI.oninput=function(){s.haki.pool=this.value;ss();};
     hkPoolB.appendChild(hkPoolL); hkPoolB.appendChild(hkPoolI);
     hkTop.appendChild(hkTitle); hkTop.appendChild(hkPoolB); hkBox.appendChild(hkTop);
     
     var hkGrid=document.createElement('div'); hkGrid.style.cssText='display:flex;flex-direction:column;gap:8px;';
-    
+
+    function renderHakiTechs(branchObj, parentEl) {
+        var tl = document.createElement('div'); tl.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-top:6px;';
+        if (branchObj.techniques && branchObj.techniques.length) {
+            branchObj.techniques.forEach(function(t, idx) {
+                var tc = document.createElement('div'); tc.style.cssText = 'border:1px solid #ddd;padding:4px;background:#fff;position:relative;';
+                var r1 = document.createElement('div'); r1.style.cssText = 'display:flex;gap:4px;margin-bottom:4px;';
+                
+                var inName = document.createElement('input'); inName.type='text'; inName.placeholder='Nome Tecnica'; inName.value=t.name||''; inName.style.cssText='flex:1;font-size:10px;font-weight:bold;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inName.oninput=function(){t.name=this.value;ss();}; r1.appendChild(inName);
+                var inCost = document.createElement('input'); inCost.type='text'; inCost.placeholder='Costo'; inCost.value=t.cost||''; inCost.style.cssText='width:40px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inCost.oninput=function(){t.cost=this.value;ss();}; r1.appendChild(inCost);
+                var inDc = document.createElement('input'); inDc.type='text'; inDc.placeholder='CD/Danno'; inDc.value=t.dc||''; inDc.style.cssText='width:60px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inDc.oninput=function(){t.dc=this.value;ss();}; r1.appendChild(inDc);
+                
+                var del = document.createElement('button'); del.type='button'; del.textContent='✖'; del.style.cssText='background:transparent;border:none;color:#933;cursor:pointer;font-size:10px;padding:0 4px;';
+                del.onclick = function(){ branchObj.techniques.splice(idx, 1); ss(); renderMain(); };
+                r1.appendChild(del);
+                tc.appendChild(r1);
+                
+                var ta = document.createElement('textarea'); ta.placeholder='Descrizione Effetto...'; ta.value=t.desc||''; ta.style.cssText='width:100%;font-size:9px;min-height:30px;border:1px solid #eee;resize:vertical;padding:3px;box-sizing:border-box;outline:none;'; ta.oninput=function(){t.desc=this.value;ss();}; tc.appendChild(ta);
+                tl.appendChild(tc);
+            });
+        }
+        var addB = document.createElement('button'); addB.type='button'; addB.textContent='+ Aggiungi Tecnica'; addB.style.cssText='align-self:flex-start;font-size:9px;padding:2px 6px;cursor:pointer;background:#f0f0f0;border:1px solid #ccc;color:#333;border-radius:2px;';
+        addB.onclick = function(){ 
+            if(!branchObj.techniques) branchObj.techniques=[];
+            branchObj.techniques.push({id:Date.now(), name:'', cost:'', dc:'', desc:''});
+            ss(); renderMain();
+        };
+        tl.appendChild(addB);
+        parentEl.appendChild(tl);
+    }
+
     // Kenbunshoku
     var hkKen=document.createElement('div'); hkKen.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkKenT=document.createElement('label'); hkKenT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkKenC=document.createElement('input'); hkKenC.type='checkbox'; hkKenC.checked=!!s.hakiKen; hkKenC.onchange=function(){s.hakiKen=this.checked;ss();renderMain();};
+    var hkKenC=document.createElement('input'); hkKenC.type='checkbox'; hkKenC.checked=!!s.haki.kenbunshoku.active; hkKenC.onchange=function(){s.haki.kenbunshoku.active=this.checked;ss();renderMain();};
     hkKenT.appendChild(hkKenC); hkKenT.appendChild(document.createTextNode('Kenbunshoku (Osservazione)')); hkKen.appendChild(hkKenT);
-    if(s.hakiKen){
-      var hkKenS=document.createElement('select'); hkKenS.style.cssText='width:100%;font-size:9px;padding:2px;border:1px solid #bbb;background:#fff;';
-      ['Base','Avanzato - Visione del Futuro'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;hkKenS.appendChild(op);});
-      hkKenS.value=s.hakiKenLvl||'Base'; hkKenS.onchange=function(){s.hakiKenLvl=this.value;ss();}; hkKen.appendChild(hkKenS);
-      var hkKenTa=document.createElement('textarea'); hkKenTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkKenTa.placeholder='Utilizzi (es. bonus a iniziativa/percezione passiva, schivata)...'; hkKenTa.value=s.hakiKenDesc||''; hkKenTa.oninput=function(){s.hakiKenDesc=this.value;ss();};
-      hkKen.appendChild(hkKenTa);
+    
+    if(s.haki.kenbunshoku.active){
+      var r2 = document.createElement('div'); r2.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
+      var sel = document.createElement('select'); sel.style.cssText='font-size:9px;padding:2px;border:1px solid #bbb;flex:1;background:#fff;';
+      ['Base','Avanzato - Visione del Futuro'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op);});
+      sel.value=s.haki.kenbunshoku.stage; sel.onchange=function(){s.haki.kenbunshoku.stage=this.value;ss();}; r2.appendChild(sel);
+      
+      var dcL = document.createElement('span'); dcL.textContent='CD:'; dcL.style.cssText='font-size:9px;font-weight:bold;'; r2.appendChild(dcL);
+      var dcI = document.createElement('input'); dcI.type='text'; dcI.value=s.haki.kenbunshoku.dc||''; dcI.style.cssText='width:30px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dcI.oninput=function(){s.haki.kenbunshoku.dc=this.value;ss();}; r2.appendChild(dcI);
+      hkKen.appendChild(r2);
+      
+      renderHakiTechs(s.haki.kenbunshoku, hkKen);
     }
     hkGrid.appendChild(hkKen);
     
     // Busoshoku
     var hkBus=document.createElement('div'); hkBus.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkBusT=document.createElement('label'); hkBusT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkBusC=document.createElement('input'); hkBusC.type='checkbox'; hkBusC.checked=!!s.hakiBus; hkBusC.onchange=function(){s.hakiBus=this.checked;ss();renderMain();};
+    var hkBusC=document.createElement('input'); hkBusC.type='checkbox'; hkBusC.checked=!!s.haki.busoshoku.active; hkBusC.onchange=function(){s.haki.busoshoku.active=this.checked;ss();renderMain();};
     hkBusT.appendChild(hkBusC); hkBusT.appendChild(document.createTextNode('Busoshoku (Armamento)')); hkBus.appendChild(hkBusT);
-    if(s.hakiBus){
-      var hkBusRog=document.createElement('label'); hkBusRog.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;cursor:pointer;color:#833;';
-      var hkBusRogC=document.createElement('input'); hkBusRogC.type='checkbox'; hkBusRogC.checked=!!s.hakiBusRog; hkBusRogC.onchange=function(){s.hakiBusRog=this.checked;ss();};
-      hkBusRog.appendChild(hkBusRogC); hkBusRog.appendChild(document.createTextNode('Colpisce la sostanza dei Rogia')); hkBus.appendChild(hkBusRog);
+    
+    if(s.haki.busoshoku.active){
+      var busRog=document.createElement('label'); busRog.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;cursor:pointer;color:#833;margin-top:2px;';
+      var busRogC=document.createElement('input'); busRogC.type='checkbox'; busRogC.checked=!!s.haki.busoshoku.bypassesLogia; busRogC.onchange=function(){s.haki.busoshoku.bypassesLogia=this.checked;ss();};
+      busRog.appendChild(busRogC); busRog.appendChild(document.createTextNode('Colpisce la sostanza dei Rogia')); hkBus.appendChild(busRog);
       
-      var hkBusS=document.createElement('select'); hkBusS.style.cssText='width:100%;font-size:9px;padding:2px;border:1px solid #bbb;background:#fff;';
-      ['Indurimento','Emissione - Ryuo','Distruzione Interna'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;hkBusS.appendChild(op);});
-      hkBusS.value=s.hakiBusLvl||'Indurimento'; hkBusS.onchange=function(){s.hakiBusLvl=this.value;ss();}; hkBus.appendChild(hkBusS);
-      var hkBusTa=document.createElement('textarea'); hkBusTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkBusTa.placeholder='Bonus ai danni/CA, effetti aggiuntivi...'; hkBusTa.value=s.hakiBusDesc||''; hkBusTa.oninput=function(){s.hakiBusDesc=this.value;ss();};
-      hkBus.appendChild(hkBusTa);
+      var r3 = document.createElement('div'); r3.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
+      var sel2 = document.createElement('select'); sel2.style.cssText='font-size:9px;padding:2px;border:1px solid #bbb;flex:1;background:#fff;';
+      ['Indurimento','Emissione - Ryuo','Distruzione Interna'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;sel2.appendChild(op);});
+      sel2.value=s.haki.busoshoku.stage; sel2.onchange=function(){s.haki.busoshoku.stage=this.value;ss();}; r3.appendChild(sel2);
+      
+      var dmgL = document.createElement('span'); dmgL.textContent='Bonus TxC/Danni:'; dmgL.style.cssText='font-size:9px;font-weight:bold;'; r3.appendChild(dmgL);
+      var dmgI = document.createElement('input'); dmgI.type='text'; dmgI.value=s.haki.busoshoku.damageBonus||''; dmgI.style.cssText='width:40px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dmgI.oninput=function(){s.haki.busoshoku.damageBonus=this.value;ss();}; r3.appendChild(dmgI);
+      hkBus.appendChild(r3);
+      
+      renderHakiTechs(s.haki.busoshoku, hkBus);
     }
     hkGrid.appendChild(hkBus);
     
     // Haoshoku
     var hkHao=document.createElement('div'); hkHao.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkHaoT=document.createElement('label'); hkHaoT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkHaoC=document.createElement('input'); hkHaoC.type='checkbox'; hkHaoC.checked=!!s.hakiHao; hkHaoC.onchange=function(){s.hakiHao=this.checked;ss();renderMain();};
+    var hkHaoC=document.createElement('input'); hkHaoC.type='checkbox'; hkHaoC.checked=!!s.haki.haoshoku.active; hkHaoC.onchange=function(){s.haki.haoshoku.active=this.checked;ss();renderMain();};
     hkHaoT.appendChild(hkHaoC); hkHaoT.appendChild(document.createTextNode('Haoshoku (Re Conquistatore)')); hkHao.appendChild(hkHaoT);
-    if(s.hakiHao){
-      var hkHaoCdL=document.createElement('div'); hkHaoCdL.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;';
-      var hkHaoCdI=document.createElement('input'); hkHaoCdI.type='text'; hkHaoCdI.value=s.hakiHaoCD||''; hkHaoCdI.style.cssText='width:30px;font-size:10px;text-align:center;border:1px solid #bbb;background:#fff;'; hkHaoCdI.oninput=function(){s.hakiHaoCD=this.value;ss();};
-      hkHaoCdL.appendChild(document.createTextNode('CD Imposizione Volontà:')); hkHaoCdL.appendChild(hkHaoCdI); hkHao.appendChild(hkHaoCdL);
+    
+    if(s.haki.haoshoku.active){
+      var r4 = document.createElement('div'); r4.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
+      var hdcL = document.createElement('span'); hdcL.textContent='CD Imposizione Volontà:'; hdcL.style.cssText='font-size:9px;font-weight:bold;'; r4.appendChild(hdcL);
+      var hdcI = document.createElement('input'); hdcI.type='text'; hdcI.value=s.haki.haoshoku.dc||''; hdcI.style.cssText='width:30px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; hdcI.oninput=function(){s.haki.haoshoku.dc=this.value;ss();}; r4.appendChild(hdcI);
+      hkHao.appendChild(r4);
       
-      var hkHaoTa=document.createElement('textarea'); hkHaoTa.style.cssText='width:100%;flex:1;min-height:50px;border:1px solid #eee;outline:none;font-size:9px;background:#fff;resize:vertical;box-sizing:border-box;padding:4px;'; hkHaoTa.placeholder='Raggio d\'azione, effetti di stordimento...'; hkHaoTa.value=s.hakiHaoDesc||''; hkHaoTa.oninput=function(){s.hakiHaoDesc=this.value;ss();};
-      hkHao.appendChild(hkHaoTa);
+      renderHakiTechs(s.haki.haoshoku, hkHao);
     }
     hkGrid.appendChild(hkHao);
+    
     hkBox.appendChild(hkGrid);
     opFull.appendChild(hkBox);
     
