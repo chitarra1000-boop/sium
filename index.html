@@ -16801,8 +16801,63 @@ function renderScheda() {
     var _bN=document.createElement('button'); _bN.textContent='+ Nuova Scheda';
     _bN.style.cssText='background:#8b6f3f;border:1px solid #c9a55c;color:#f0e4cc;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;letter-spacing:0.07em;';
     _bN.onclick=function(){_newScheda();}; _nb.appendChild(_bN);
+    
+    var _bExport=document.createElement('button'); _bExport.textContent='⬇ Scarica Scheda (Backup JSON)';
+    _bExport.style.cssText='background:#2d4a22;border:1px solid #4caf50;color:#e8f5e9;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;margin-left:4px;';
+    _bExport.onclick=function(){
+      var bExportOrigText = _bExport.textContent;
+      _bExport.textContent = '⏳ Preparazione...';
+      var schedaExport = JSON.parse(JSON.stringify(state.scheda));
+      var promises = [];
+      if (schedaExport.boardImages) {
+        schedaExport.boardImages.forEach(function(img) {
+          if (window.ImageDB) {
+            promises.push(
+              window.ImageDB.get(img.id).then(function(du) {
+                if(du) img.dataUrl = du;
+              })
+            );
+          }
+        });
+      }
+      Promise.all(promises).then(function() {
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(schedaExport));
+        var dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", (schedaExport.nomePersonaggio||'Personaggio') + "_Backup.json");
+        dlAnchorElem.click();
+        _bExport.textContent = bExportOrigText;
+      }).catch(function(err){
+        alert("Errore durante l'esportazione delle immagini.");
+        _bExport.textContent = bExportOrigText;
+      });
+    }; _nb.appendChild(_bExport);
+
+    var _bImport=document.createElement('button'); _bImport.textContent='⬆ Carica Scheda (Ripristina JSON)';
+    _bImport.style.cssText='background:#4a3b10;border:1px solid #ff9800;color:#fff3e0;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;margin-left:4px;';
+    _bImport.onclick=function(){
+      var fi=document.createElement('input');fi.type='file';fi.accept='.json';
+      fi.onchange=function(e){
+        var f=e.target.files[0];if(!f)return;
+        var r=new FileReader();
+        r.onload=function(ev){
+          try{
+            var parsed=JSON.parse(ev.target.result);
+            if(confirm("Sovrascrivere il personaggio attuale con il backup caricato? ATTENZIONE: Questa azione distruggerà i dati correnti di questa scheda.")){
+              var oldId = state.scheda.id || state.schedaAttivaId;
+              parsed.id = oldId;
+              state.scheda = parsed;
+              if (window.migrateImagesToDB) window.migrateImagesToDB();
+              ss(); renderMain();
+            }
+          }catch(err){alert("File JSON non valido.");}
+        };r.readAsText(f);
+      };
+      fi.click();
+    }; _nb.appendChild(_bImport);
+
     var _bA=document.createElement('button'); _bA.textContent='+ Associa Scheda';
-    _bA.style.cssText='background:#2a4060;border:1px solid #4a70a0;color:#aacef0;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;letter-spacing:0.07em;';
+    _bA.style.cssText='background:#2a4060;border:1px solid #4a70a0;color:#aacef0;border-radius:3px;padding:0.3rem 0.75rem;font-size:11px;cursor:pointer;font-family:\'Cinzel\',serif;margin-left:4px;letter-spacing:0.07em;';
     _bA.onclick=function(){state.companionShowForm=true;state.companionEditingId=null;state.companionEditingCharId=state.schedaAttivaId;renderMain();}; _nb.appendChild(_bA);
     var _bD=document.createElement('button'); _bD.textContent='Elimina personaggio';
     _bD.style.cssText='background:#4a1010;border:1px solid #c04040;color:#f08080;border-radius:3px;padding:0.3rem 0.75rem;font-size:10px;cursor:pointer;font-family:\'Cinzel\',serif;margin-left:0.5rem;';
