@@ -9508,8 +9508,13 @@ function renderLavagna(){
   wrap.appendChild(grid);
 
   if (!state.scheda) state.scheda = {};
-  if (!state.scheda.abilityBoard) state.scheda.abilityBoard = [];
-  var _imgs = state.scheda.abilityBoard;
+  // Gestione backward-compatibility (migrazione a boardImages)
+  if (state.scheda.abilityBoard && !state.scheda.boardImages) {
+    state.scheda.boardImages = state.scheda.abilityBoard;
+    delete state.scheda.abilityBoard;
+  }
+  if (!state.scheda.boardImages) state.scheda.boardImages = [];
+  var _imgs = state.scheda.boardImages;
 
   var ph=document.createElement('div');
   ph.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(201,165,92,0.3);text-align:center;pointer-events:none;';
@@ -9525,23 +9530,47 @@ function renderLavagna(){
 
   function addImg(url){
     var id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-    var entry = {id:id, dataUrl:url, x: 0, y: 0, width: 220, height: 300};
+    var entry = {id:id, x: 0, y: 0, width: 220, height: 300};
+    // Salva l'immagine su DB
+    if(window.ImageDB) {
+      window.ImageDB.save(id, url).catch(function(e){console.error("Lavagna DB err",e)});
+    }
     _imgs.push(entry);
     ph.style.display='none';
-    renderCard(entry);
+    renderCard(entry, url);
     triggerSave();
   }
 
-  function renderCard(entry){
+  function renderCard(entry, preloadedUrl){
     var card=document.createElement('div');card.id='lc_'+entry.id;
     card.style.cssText='position:relative;width:220px;flex-shrink:0;border:1px solid rgba(201,165,92,0.3);border-radius:6px;overflow:hidden;background:#0a1628;box-shadow:0 3px 10px rgba(0,0,0,0.5);';
-    var img=document.createElement('img');img.src = entry.dataUrl || entry.url;img.style.cssText='width:100%;display:block;max-height:300px;object-fit:contain;background:#111;cursor:zoom-in;';
-    img.onclick=function(){var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9998;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';var big=document.createElement('img');big.src=entry.dataUrl || entry.url;big.style.cssText='max-width:95vw;max-height:93vh;object-fit:contain;border-radius:4px;';ov.appendChild(big);ov.onclick=function(){ov.remove();};document.body.appendChild(ov);};
+    var img=document.createElement('img');
+    img.style.cssText='width:100%;display:block;max-height:300px;object-fit:contain;background:#111;cursor:zoom-in;';
+    
+    // Recupera da IndexedDB se non pre-caricata
+    if (preloadedUrl) {
+      img.src = preloadedUrl;
+    } else if (entry.dataUrl) {
+      img.src = entry.dataUrl; // Backward compat momentanea
+    } else if (window.ImageDB) {
+      window.ImageDB.get(entry.id).then(function(du){
+        if(du) img.src = du;
+        else img.alt = "Immagine persa";
+      });
+    }
+
+    img.onclick=function(){
+      var ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9998;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+      var big=document.createElement('img');big.src=img.src;big.style.cssText='max-width:95vw;max-height:93vh;object-fit:contain;border-radius:4px;';
+      ov.appendChild(big);ov.onclick=function(){ov.remove();};document.body.appendChild(ov);
+    };
+    
     var del=document.createElement('button');del.textContent='✕';del.style.cssText='position:absolute;top:5px;right:5px;background:rgba(160,25,25,0.88);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;line-height:1;';
     del.onclick=function(e){
         e.stopPropagation();
         if(confirm('Eliminare?')){
             card.remove();
+            if(window.ImageDB) window.ImageDB.remove(entry.id);
             var idx = _imgs.findIndex(function(i){ return i.id === entry.id; });
             if (idx > -1) _imgs.splice(idx, 1);
             if(!_imgs.length) ph.style.display='';
@@ -9551,7 +9580,7 @@ function renderLavagna(){
     card.appendChild(img);card.appendChild(del);grid.appendChild(card);
   }
 
-  _imgs.forEach(renderCard);
+  _imgs.forEach(function(i){ renderCard(i); });
 
   function processFile(file){var r=new FileReader();r.onload=function(ev){var i=new Image();i.onload=function(){var mxW=800,sc=Math.min(1,mxW/i.width);var cv=document.createElement('canvas');cv.width=Math.round(i.width*sc);cv.height=Math.round(i.height*sc);cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);addImg(cv.toDataURL('image/jpeg',0.75));};i.src=ev.target.result;};r.readAsDataURL(file);}
   ulInp.addEventListener('change',function(e){Array.from(e.target.files).forEach(processFile);e.target.value='';});
@@ -22964,9 +22993,90 @@ function renderBacheGrid(grid) {
 }
 
 
+/* ========================= ImageDB (IndexedDB x Lavagna) ========================= */
+const ImageDB = {
+    dbName: 'SiumBoardImages',
+    storeName: 'images',
+    version: 1,
+    init: function() {
+        return new Promise(function(resolve, reject) {
+            var req = indexedDB.open(ImageDB.dbName, ImageDB.version);
+            req.onupgradeneeded = function(e) {
+                var db = e.target.result;
+                if (!db.objectStoreNames.contains(ImageDB.storeName)) {
+                    db.createObjectStore(ImageDB.storeName, { keyPath: 'id' });
+                }
+            };
+            req.onsuccess = function(e) { resolve(e.target.result); };
+            req.onerror = function(e) { reject(e.target.error); };
+        });
+    },
+    save: function(id, dataUrl) {
+        return ImageDB.init().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction([ImageDB.storeName], 'readwrite');
+                var store = tx.objectStore(ImageDB.storeName);
+                var req = store.put({ id: id, dataUrl: dataUrl });
+                req.onsuccess = function() { resolve(); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        });
+    },
+    get: function(id) {
+        return ImageDB.init().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction([ImageDB.storeName], 'readonly');
+                var store = tx.objectStore(ImageDB.storeName);
+                var req = store.get(id);
+                req.onsuccess = function() { resolve(req.result ? req.result.dataUrl : null); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        });
+    },
+    remove: function(id) {
+        return ImageDB.init().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction([ImageDB.storeName], 'readwrite');
+                var store = tx.objectStore(ImageDB.storeName);
+                var req = store.delete(id);
+                req.onsuccess = function() { resolve(); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        });
+    }
+};
+window.ImageDB = ImageDB;
+
+function migrateImagesToDB() {
+    var changed = false;
+    function migrateBoard(board) {
+        if (!board) return;
+        board.forEach(function(img) {
+            if (img.dataUrl && img.dataUrl.length > 100) {
+                var du = img.dataUrl;
+                ImageDB.save(img.id, du).catch(function(e){console.error("Migration err", e)});
+                delete img.dataUrl;
+                changed = true;
+            }
+        });
+    }
+    
+    if (state.scheda) {
+        if (state.scheda.abilityBoard) { state.scheda.boardImages = state.scheda.abilityBoard; delete state.scheda.abilityBoard; }
+        if (state.scheda.boardImages) migrateBoard(state.scheda.boardImages);
+    }
+    Object.keys(state.personaggi || {}).forEach(function(pid) {
+        var p = state.personaggi[pid];
+        if (p.abilityBoard) { p.boardImages = p.abilityBoard; delete p.abilityBoard; }
+        if (p.boardImages) migrateBoard(p.boardImages);
+    });
+    if (changed && typeof saveToStorage === 'function') saveToStorage();
+}
+
 /* AVVIO */
 try {
   loadFromStorage();
+  migrateImagesToDB();
   // Mostra overlay login mentre Firebase Auth controlla la sessione
   document.getElementById('login-overlay').style.display = 'flex';
   // Inizializza Firebase + Auth listener (gestirà lui login/logout)
