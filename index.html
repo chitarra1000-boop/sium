@@ -5809,6 +5809,29 @@ function setupRealtimeListeners() {
       return x;
     });
 
+    var seen = {};
+    var deduped = [];
+    var dedupChanged = false;
+    existing.forEach(function(w) {
+      var key = (w.nome || '').trim().toLowerCase();
+      if (!key) return;
+      if (!seen[key]) {
+        seen[key] = w;
+        deduped.push(w);
+      } else {
+        dedupChanged = true;
+        // Dai priorità all'elemento con metadati/percorsi immagine corretti
+        if (!seen[key].immagine && w.immagine) {
+           deduped[deduped.indexOf(seen[key])] = w;
+           seen[key] = w;
+        }
+      }
+    });
+    if (dedupChanged) {
+      existing = deduped;
+      imgChanged = true;
+    }
+
     if (imgChanged) {
       _localWrite.armi = true;
       _db.ref('state/armi').set(existing, function(){ _localWrite.armi = false; });
@@ -8447,6 +8470,12 @@ function render() {
 }
 
 function renderMain() {
+  var _scrollX = window.scrollX;
+  var _scrollY = window.scrollY;
+  if (typeof window._lastRenderedSection === 'undefined') window._lastRenderedSection = state.section;
+  var _sectionChanged = (window._lastRenderedSection !== state.section);
+  window._lastRenderedSection = state.section;
+
   var main = document.querySelector('.main-content');
   if (!main) { render(); return; }
   if (state.section === 'storia') {
@@ -8484,6 +8513,12 @@ function renderMain() {
     var existingRegia = cw.querySelector('.regia-panel');
     if (state.regiaActive && !existingRegia) cw.appendChild(renderRegiaSonora());
     if (!state.regiaActive && existingRegia) existingRegia.remove();
+  }
+
+  if (!_sectionChanged) {
+    setTimeout(function() {
+      window.scrollTo(_scrollX, _scrollY);
+    }, 0);
   }
 }
 
@@ -12016,19 +12051,15 @@ function renderWeaponCard(w) {
     im.alt = w.nome;
     im.src = w.immagine;
     im.onerror = function() {
-      var ph = document.createElement('div');
-      ph.className = 'img-placeholder';
-      ph.textContent = glyphFor(w.nome);
-      img.innerHTML = '';
-      img.appendChild(ph);
-      img.appendChild(rt);
+      this.onerror = null;
+      this.src = 'path/to/default-pirate-item.png';
     };
     img.appendChild(im);
   } else {
-    var ph = document.createElement('div');
-    ph.className = 'img-placeholder';
-    ph.textContent = glyphFor(w.nome);
-    img.appendChild(ph);
+    var im = document.createElement('img');
+    im.alt = w.nome;
+    im.src = 'path/to/default-pirate-item.png';
+    img.appendChild(im);
   }
   var rt = document.createElement('div');
   rt.style.cssText = 'position:absolute;top:12px;right:12px;z-index:2;';
@@ -15473,10 +15504,24 @@ function openDetailModal(type, data) {
   if (data.immagine) {
     var im = document.createElement('img');
     im.src = data.immagine; im.alt = data.nome;
-    im.onerror = function() { imgWrap.innerHTML = '<div style="font-size:4rem;">'+(type==='mostro'?'🐉':'⚔')+'</div>'; };
+    im.onerror = function() {
+      if (type === 'mostro') {
+        imgWrap.innerHTML = '<div style="font-size:4rem;">🐉</div>';
+      } else {
+        this.onerror = null;
+        this.src = 'path/to/default-pirate-item.png';
+      }
+    };
     imgWrap.appendChild(im);
   } else {
-    imgWrap.innerHTML = '<div style="font-size:4rem;">'+(type==='mostro'?'🐉':'⚔')+'</div>';
+    if (type === 'mostro') {
+      imgWrap.innerHTML = '<div style="font-size:4rem;">🐉</div>';
+    } else {
+      var im = document.createElement('img');
+      im.src = 'path/to/default-pirate-item.png';
+      im.alt = data.nome;
+      imgWrap.appendChild(im);
+    }
   }
   leftCol.appendChild(imgWrap);
   if (type === 'mostro' && data.url) {
@@ -16959,33 +17004,7 @@ function renderScheda() {
   }
   tsmB1.appendChild(makeDeathRow('Successi','successi','#555')); tsmB1.appendChild(makeDeathRow('Fallimenti','fallimenti','#c00'));
   dvTsR1.appendChild(tsmB1); cC.appendChild(dvTsR1);
-  if (isOP) {
-    var stamBox = document.createElement('div');
-    stamBox.style.cssText='border:1.5px solid #c9a55c;background:#faf3e3;border-radius:3px;padding:4px;margin-bottom:5px;display:flex;flex-direction:column;gap:4px;';
-    var stamTop = document.createElement('div'); stamTop.style.cssText='display:flex;align-items:center;justify-content:space-between;';
-    var stamLbl = document.createElement('div'); stamLbl.style.cssText='font-size:9px;font-weight:bold;color:#4a1010;'; stamLbl.textContent='PUNTI STAMINA / VIGORE';
-    stamTop.appendChild(stamLbl);
-    
-    var stamVals = document.createElement('div'); stamVals.style.cssText='display:flex;align-items:center;gap:4px;';
-    var stCurInp = document.createElement('input'); stCurInp.type='number'; stCurInp.value=s.staminaCur||''; stCurInp.style.cssText='width:40px;font-size:16px;font-weight:bold;text-align:right;border:1px solid #aaa;background:#fff;'; stCurInp.oninput=function(){s.staminaCur=this.value;ss();};
-    var stSep = document.createElement('span'); stSep.textContent='/'; stSep.style.cssText='font-weight:bold;color:#111;font-size:12px;';
-    var stMaxInp = document.createElement('input'); stMaxInp.type='number'; stMaxInp.value=s.staminaMax||''; stMaxInp.style.cssText='width:34px;font-size:12px;text-align:center;border:1px solid #aaa;background:#fff;'; stMaxInp.oninput=function(){s.staminaMax=this.value;ss();};
-    stamVals.appendChild(stCurInp); stamVals.appendChild(stSep); stamVals.appendChild(stMaxInp);
-    stamTop.appendChild(stamVals);
 
-    var stamBtns = document.createElement('div'); stamBtns.style.cssText='display:flex;gap:4px;';
-    var btnMin = document.createElement('button'); btnMin.textContent='-1'; btnMin.style.cssText='flex:1;cursor:pointer;background:#e5c7a0;border:1px solid #c9a55c;border-radius:2px;font-weight:bold;'; btnMin.onclick=function(){s.staminaCur = Math.max(0, (parseInt(s.staminaCur)||0)-1); stCurInp.value=s.staminaCur; ss();};
-    var btnPlus = document.createElement('button'); btnPlus.textContent='+1'; btnPlus.style.cssText='flex:1;cursor:pointer;background:#e5c7a0;border:1px solid #c9a55c;border-radius:2px;font-weight:bold;'; btnPlus.onclick=function(){s.staminaCur = Math.min((parseInt(s.staminaMax)||0), (parseInt(s.staminaCur)||0)+1); stCurInp.value=s.staminaCur; ss();};
-    var btnRipB = document.createElement('button'); btnRipB.textContent='Riposo Breve'; btnRipB.style.cssText='flex:2;font-size:8px;cursor:pointer;background:#fff;border:1px solid #aaa;border-radius:2px;'; btnRipB.onclick=function(){ 
-      /* For short rest stamina recovery, usually some dice, but here just UI alert or manual */
-      s.staminaCur = Math.min((parseInt(s.staminaMax)||0), (parseInt(s.staminaCur)||0)); stCurInp.value=s.staminaCur; ss();
-    };
-    var btnRipL = document.createElement('button'); btnRipL.textContent='Riposo Lungo'; btnRipL.style.cssText='flex:2;font-size:8px;cursor:pointer;background:#fff;border:1px solid #aaa;border-radius:2px;'; btnRipL.onclick=function(){ s.staminaCur=s.staminaMax; stCurInp.value=s.staminaCur; ss(); };
-    stamBtns.appendChild(btnMin); stamBtns.appendChild(btnPlus); stamBtns.appendChild(btnRipB); stamBtns.appendChild(btnRipL);
-
-    stamBox.appendChild(stamTop); stamBox.appendChild(stamBtns);
-    cC.appendChild(stamBox);
-  }
   var atkB1=document.createElement('div'); atkB1.style.cssText='border:1px solid #aaa;border-radius:2px;padding:4px;margin-bottom:4px;';
   var atkT1=document.createElement('table'); atkT1.style.cssText='width:100%;border-collapse:collapse;';
   atkT1.innerHTML='<thead><tr><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Nome</th><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Bonus Att.</th><th style="font-size:6px;font-weight:bold;text-transform:uppercase;color:#555;padding:1px 3px;border-bottom:1px solid #bbb;text-align:left;">Danni/Tipo</th></tr></thead>';
@@ -17398,6 +17417,106 @@ function renderScheda() {
   /* companion mini-sheets below character pages */
   var _cMapC=(state.companions||{})[state.schedaAttivaId]||{};
   Object.keys(_cMapC).forEach(function(k){_cMapC[k].id=k;pgWrap.appendChild(_renderCompanionMiniSheet(state.schedaAttivaId,_cMapC[k]));});
+
+  if (isOP) {
+    if (s.staminaMax !== undefined && !s.staminaMigrated) {
+      if(!s.customTrackers) s.customTrackers = [];
+      s.customTrackers.push({
+        id: 'migrated_stamina',
+        name: 'Punti Stamina / Vigore',
+        cur: s.staminaCur || 0,
+        max: s.staminaMax || 0
+      });
+      s.staminaMigrated = true;
+      ss();
+    }
+
+    var masterWrap = document.createElement('div');
+    masterWrap.style.cssText = 'display:flex; gap:20px; align-items:flex-start; transform-origin:top center;';
+    
+    pgWrap.style.transform = '';
+    pgWrap.style.transformOrigin = '';
+    masterWrap.appendChild(pgWrap);
+    
+    var trackerCol = document.createElement('div');
+    trackerCol.style.cssText = 'width:280px; display:flex; flex-direction:column; gap:16px; margin-top:0; padding:12px; background:#e8e1d5; border:2px solid #5a3d2b; border-radius:6px; box-shadow:0 4px 10px rgba(0,0,0,0.5);';
+    
+    var tHdr = document.createElement('div');
+    tHdr.style.cssText = 'text-align:center; border-bottom:2px solid #5a3d2b; padding-bottom:10px; margin-bottom:4px;';
+    var tTitle = document.createElement('div');
+    tTitle.style.cssText = 'font-family:"Cinzel",serif; font-size:16px; font-weight:bold; color:#3e2723; margin-bottom:10px; letter-spacing:0.05em;';
+    tTitle.textContent = '☠ CONTATORI CIURMA ☠';
+    var tAdd = document.createElement('button');
+    tAdd.type = 'button';
+    tAdd.innerHTML = '+ Aggiungi Contatore';
+    tAdd.style.cssText = 'background:#5a3d2b; color:#f4ebd8; border:1px solid #3e2723; padding:6px 12px; font-size:11px; font-weight:bold; border-radius:3px; cursor:pointer; width:100%; font-family:"Cinzel",serif; transition:background 0.2s;';
+    tAdd.onmouseover = function(){this.style.background='#3e2723';};
+    tAdd.onmouseout = function(){this.style.background='#5a3d2b';};
+    tAdd.onclick = function(e) {
+      e.preventDefault();
+      if(!s.customTrackers) s.customTrackers = [];
+      s.customTrackers.push({ id: Date.now().toString(), name: 'Nuovo Contatore', cur: 0, max: 0 });
+      ss(); renderMain();
+    };
+    tHdr.appendChild(tTitle); tHdr.appendChild(tAdd);
+    trackerCol.appendChild(tHdr);
+    
+    if (s.customTrackers && s.customTrackers.length > 0) {
+      s.customTrackers.forEach(function(tr, i) {
+        var trk = document.createElement('div');
+        trk.style.cssText = 'background:#fdfbf7; border:2px dashed #8b6b55; border-radius:4px; padding:10px; box-shadow:inset 0 0 10px rgba(0,0,0,0.05); position:relative;';
+        
+        var trDel = document.createElement('button');
+        trDel.type = 'button';
+        trDel.innerHTML = '✖';
+        trDel.style.cssText = 'position:absolute; top:4px; right:4px; background:transparent; border:none; color:#a33; font-size:12px; cursor:pointer; font-weight:bold;';
+        trDel.onclick = function(e) {
+          e.preventDefault();
+          if(confirm('Eliminare questo contatore?')) {
+            s.customTrackers.splice(i, 1); ss(); renderMain();
+          }
+        };
+        trk.appendChild(trDel);
+        
+        var nameInp = document.createElement('input');
+        nameInp.type = 'text';
+        nameInp.value = tr.name;
+        nameInp.style.cssText = 'width:85%; border:none; border-bottom:1px solid #c9a55c; background:transparent; font-family:"Cinzel",serif; font-size:12px; font-weight:bold; color:#3e2723; outline:none; margin-bottom:10px;';
+        nameInp.oninput = function() { tr.name = this.value; ss(); };
+        trk.appendChild(nameInp);
+        
+        var valRow = document.createElement('div');
+        valRow.style.cssText = 'display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;';
+        
+        var ctrlL = document.createElement('div'); ctrlL.style.cssText = 'display:flex; gap:4px;';
+        var btnM = document.createElement('button'); btnM.type='button'; btnM.textContent='-'; btnM.style.cssText='width:24px;height:24px;border:1px solid #5a3d2b;background:#e8e1d5;color:#3e2723;cursor:pointer;font-weight:bold;border-radius:3px;display:flex;align-items:center;justify-content:center;';
+        btnM.onclick = function(e){ e.preventDefault(); tr.cur = Math.max(0, (parseInt(tr.cur)||0)-1); ss(); renderMain(); };
+        var btnP = document.createElement('button'); btnP.type='button'; btnP.textContent='+'; btnP.style.cssText='width:24px;height:24px;border:1px solid #5a3d2b;background:#e8e1d5;color:#3e2723;cursor:pointer;font-weight:bold;border-radius:3px;display:flex;align-items:center;justify-content:center;';
+        btnP.onclick = function(e){ e.preventDefault(); tr.cur = (parseInt(tr.cur)||0)+1; ss(); renderMain(); };
+        ctrlL.appendChild(btnM); ctrlL.appendChild(btnP);
+        
+        var vals = document.createElement('div'); vals.style.cssText = 'display:flex; align-items:center; gap:2px; font-size:14px; font-weight:bold; color:#3e2723;';
+        var iCur = document.createElement('input'); iCur.type='number'; iCur.value = tr.cur; iCur.style.cssText='width:36px;text-align:right;border:1px solid #aaa;outline:none;background:#fff;padding:2px;border-radius:2px;font-weight:bold;font-size:12px;'; iCur.oninput=function(){ tr.cur=this.value; ss(); };
+        var iMax = document.createElement('input'); iMax.type='number'; iMax.value = tr.max; iMax.style.cssText='width:36px;text-align:center;border:1px solid #aaa;outline:none;background:#fff;padding:2px;border-radius:2px;font-weight:bold;font-size:12px;'; iMax.oninput=function(){ tr.max=this.value; ss(); };
+        vals.appendChild(iCur); vals.appendChild(document.createTextNode('/')); vals.appendChild(iMax);
+        
+        valRow.appendChild(ctrlL); valRow.appendChild(vals);
+        trk.appendChild(valRow);
+        
+        var rRow = document.createElement('div'); rRow.style.cssText = 'display:flex; gap:4px;';
+        var rbB = document.createElement('button'); rbB.type='button'; rbB.textContent='Riposo Breve'; rbB.style.cssText='flex:1; font-size:9px; padding:3px; cursor:pointer; background:#fff; border:1px solid #8b6b55; border-radius:2px; font-weight:bold; color:#5a3d2b; text-transform:uppercase;';
+        rbB.onclick = function(e){ e.preventDefault(); tr.cur = Math.min((parseInt(tr.max)||0), (parseInt(tr.cur)||0)); ss(); renderMain(); };
+        var rbL = document.createElement('button'); rbL.type='button'; rbL.textContent='Riposo Lungo'; rbL.style.cssText='flex:1; font-size:9px; padding:3px; cursor:pointer; background:#fff; border:1px solid #8b6b55; border-radius:2px; font-weight:bold; color:#5a3d2b; text-transform:uppercase;';
+        rbL.onclick = function(e){ e.preventDefault(); tr.cur = parseInt(tr.max)||0; ss(); renderMain(); };
+        rRow.appendChild(rbB); rRow.appendChild(rbL);
+        trk.appendChild(rRow);
+        
+        trackerCol.appendChild(trk);
+      });
+    }
+    masterWrap.appendChild(trackerCol);
+    pgWrap = masterWrap;
+  }
 
   scrollArea.appendChild(pgWrap); wrap.appendChild(scrollArea);
   setTimeout(function(){applyZoom();},0);
