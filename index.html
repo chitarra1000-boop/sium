@@ -8472,8 +8472,8 @@ function render() {
 }
 
 function renderMain() {
-  var _scrollX = window.scrollX;
-  var _scrollY = window.scrollY;
+  var _scrollX = window.scrollX || document.documentElement.scrollLeft;
+  var _scrollY = window.scrollY || document.documentElement.scrollTop;
   var _mcNode = document.querySelector('.main-content');
   var _mcScrollY = _mcNode ? _mcNode.scrollTop : 0;
   if (typeof window._lastRenderedSection === 'undefined') window._lastRenderedSection = state.section;
@@ -17304,13 +17304,23 @@ function renderScheda() {
     if (!s.haki) {
         s.haki = {
             pool: s.hakiPool || 0,
-            kenbunshoku: { active: !!s.hakiKen, stage: s.hakiKenLvl || "Base", dc: 0, damageBonus: "", techniques: [] },
-            busoshoku: { active: !!s.hakiBus, stage: s.hakiBusLvl || "Indurimento", bypassesLogia: !!s.hakiBusRog, dc: 0, damageBonus: "", techniques: [] },
-            haoshoku: { active: !!s.hakiHao, dc: s.hakiHaoCD || 13, techniques: [] }
+            kenbunshoku: { unlocked: !!s.hakiKen, stage: s.hakiKenLvl || "Base", dc: 13, damageBonus: "+0", techniques: [] },
+            busoshoku: { unlocked: !!s.hakiBus, stage: s.hakiBusLvl || "Base", bypassesLogia: !!s.hakiBusRog, dc: 13, damageBonus: "+0", techniques: [] },
+            haoshoku: { unlocked: !!s.hakiHao, stage: "Base", dc: s.hakiHaoCD || 13, damageBonus: "+0", techniques: [] }
         };
-        if (s.hakiKenDesc) s.haki.kenbunshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", desc: s.hakiKenDesc });
-        if (s.hakiBusDesc) s.haki.busoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", desc: s.hakiBusDesc });
-        if (s.hakiHaoDesc) s.haki.haoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: s.hakiHaoCD||'', desc: s.hakiHaoDesc });
+        if (s.hakiKenDesc) s.haki.kenbunshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", damage: "", desc: s.hakiKenDesc });
+        if (s.hakiBusDesc) s.haki.busoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: "", damage: "", desc: s.hakiBusDesc });
+        if (s.hakiHaoDesc) s.haki.haoshoku.techniques.push({ id: 1, name: "Uso Generico", cost: "", dc: s.hakiHaoCD||'', damage: "", desc: s.hakiHaoDesc });
+    } else {
+        // Migration of older active properties to unlocked, and missing properties
+        if (s.haki.kenbunshoku.active !== undefined) { s.haki.kenbunshoku.unlocked = s.haki.kenbunshoku.active; delete s.haki.kenbunshoku.active; }
+        if (s.haki.busoshoku.active !== undefined) { s.haki.busoshoku.unlocked = s.haki.busoshoku.active; delete s.haki.busoshoku.active; }
+        if (s.haki.haoshoku.active !== undefined) { s.haki.haoshoku.unlocked = s.haki.haoshoku.active; delete s.haki.haoshoku.active; }
+        
+        if (typeof s.haki.kenbunshoku.damageBonus === 'undefined') s.haki.kenbunshoku.damageBonus = "+0";
+        if (typeof s.haki.busoshoku.damageBonus === 'undefined') s.haki.busoshoku.damageBonus = "+0";
+        if (typeof s.haki.haoshoku.damageBonus === 'undefined') s.haki.haoshoku.damageBonus = "+0";
+        if (typeof s.haki.haoshoku.stage === 'undefined') s.haki.haoshoku.stage = "Base";
     }
 
     var hkBox=document.createElement('div'); hkBox.style.cssText='border:1.5px solid #aaa;border-radius:3px;padding:8px;background:#fff;';
@@ -17329,14 +17339,15 @@ function renderScheda() {
         if (branchObj.techniques && branchObj.techniques.length) {
             branchObj.techniques.forEach(function(t, idx) {
                 var tc = document.createElement('div'); tc.style.cssText = 'border:1px solid #ddd;padding:4px;background:#fff;position:relative;';
-                var r1 = document.createElement('div'); r1.style.cssText = 'display:flex;gap:4px;margin-bottom:4px;';
+                var r1 = document.createElement('div'); r1.style.cssText = 'display:flex;gap:4px;margin-bottom:4px;flex-wrap:wrap;';
                 
-                var inName = document.createElement('input'); inName.type='text'; inName.placeholder='Nome Tecnica'; inName.value=t.name||''; inName.style.cssText='flex:1;font-size:10px;font-weight:bold;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inName.oninput=function(){t.name=this.value;ss();}; r1.appendChild(inName);
+                var inName = document.createElement('input'); inName.type='text'; inName.placeholder='Nome Tecnica'; inName.value=t.name||''; inName.style.cssText='min-width:100px;flex:1;font-size:10px;font-weight:bold;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inName.oninput=function(){t.name=this.value;ss();}; r1.appendChild(inName);
                 var inCost = document.createElement('input'); inCost.type='text'; inCost.placeholder='Costo'; inCost.value=t.cost||''; inCost.style.cssText='width:40px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inCost.oninput=function(){t.cost=this.value;ss();}; r1.appendChild(inCost);
-                var inDc = document.createElement('input'); inDc.type='text'; inDc.placeholder='CD/Danno'; inDc.value=t.dc||''; inDc.style.cssText='width:60px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inDc.oninput=function(){t.dc=this.value;ss();}; r1.appendChild(inDc);
+                var inDc = document.createElement('input'); inDc.type='text'; inDc.placeholder='CD'; inDc.value=t.dc||''; inDc.style.cssText='width:30px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inDc.oninput=function(){t.dc=this.value;ss();}; r1.appendChild(inDc);
+                var inDmg = document.createElement('input'); inDmg.type='text'; inDmg.placeholder='Danno'; inDmg.value=t.damage||''; inDmg.style.cssText='width:60px;font-size:10px;text-align:center;border:none;border-bottom:1px solid #bbb;outline:none;background:transparent;'; inDmg.oninput=function(){t.damage=this.value;ss();}; r1.appendChild(inDmg);
                 
                 var del = document.createElement('button'); del.type='button'; del.textContent='✖'; del.style.cssText='background:transparent;border:none;color:#933;cursor:pointer;font-size:10px;padding:0 4px;';
-                del.onclick = function(){ branchObj.techniques.splice(idx, 1); ss(); renderMain(); };
+                del.onclick = function(e){ e.preventDefault(); branchObj.techniques.splice(idx, 1); ss(); renderMain(); };
                 r1.appendChild(del);
                 tc.appendChild(r1);
                 
@@ -17345,31 +17356,43 @@ function renderScheda() {
             });
         }
         var addB = document.createElement('button'); addB.type='button'; addB.textContent='+ Aggiungi Tecnica'; addB.style.cssText='align-self:flex-start;font-size:9px;padding:2px 6px;cursor:pointer;background:#f0f0f0;border:1px solid #ccc;color:#333;border-radius:2px;';
-        addB.onclick = function(){ 
+        addB.onclick = function(e){ 
+            e.preventDefault();
             if(!branchObj.techniques) branchObj.techniques=[];
-            branchObj.techniques.push({id:Date.now(), name:'', cost:'', dc:'', desc:''});
+            branchObj.techniques.push({id:Date.now(), name:'', cost:'', dc:'', damage:'', desc:''});
             ss(); renderMain();
         };
         tl.appendChild(addB);
         parentEl.appendChild(tl);
     }
 
+    function createBranchBaseInputs(branchObj, parentEl, hasLogia) {
+      var r2 = document.createElement('div'); r2.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;flex-wrap:wrap;';
+      var sel = document.createElement('select'); sel.style.cssText='font-size:9px;padding:2px;border:1px solid #bbb;flex:1;background:#fff;';
+      ['Base','Avanzato','Risvegliato / Maestro'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op);});
+      sel.value=branchObj.stage; sel.onchange=function(){branchObj.stage=this.value;ss();}; r2.appendChild(sel);
+      
+      var dcL = document.createElement('span'); dcL.textContent='CD:'; dcL.style.cssText='font-size:9px;font-weight:bold;'; r2.appendChild(dcL);
+      var dcI = document.createElement('input'); dcI.type='text'; dcI.value=branchObj.dc||''; dcI.style.cssText='width:30px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dcI.oninput=function(){branchObj.dc=this.value;ss();}; r2.appendChild(dcI);
+      
+      var dmgL = document.createElement('span'); dmgL.textContent='Danni:'; dmgL.style.cssText='font-size:9px;font-weight:bold;'; r2.appendChild(dmgL);
+      var dmgI = document.createElement('input'); dmgI.type='text'; dmgI.value=branchObj.damageBonus||''; dmgI.style.cssText='width:40px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dmgI.oninput=function(){branchObj.damageBonus=this.value;ss();}; r2.appendChild(dmgI);
+      parentEl.appendChild(r2);
+      
+      if(hasLogia){
+        var busRog=document.createElement('label'); busRog.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;cursor:pointer;color:#833;margin-top:2px;';
+        var busRogC=document.createElement('input'); busRogC.type='checkbox'; busRogC.checked=!!branchObj.bypassesLogia; busRogC.onchange=function(){branchObj.bypassesLogia=this.checked;ss();};
+        busRog.appendChild(busRogC); busRog.appendChild(document.createTextNode('Colpisce la sostanza dei Rogia')); parentEl.appendChild(busRog);
+      }
+    }
+
     // Kenbunshoku
     var hkKen=document.createElement('div'); hkKen.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkKenT=document.createElement('label'); hkKenT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkKenC=document.createElement('input'); hkKenC.type='checkbox'; hkKenC.checked=!!s.haki.kenbunshoku.active; hkKenC.onchange=function(){s.haki.kenbunshoku.active=this.checked;ss();renderMain();};
+    var hkKenC=document.createElement('input'); hkKenC.type='checkbox'; hkKenC.checked=!!s.haki.kenbunshoku.unlocked; hkKenC.onchange=function(){s.haki.kenbunshoku.unlocked=this.checked;ss();renderMain();};
     hkKenT.appendChild(hkKenC); hkKenT.appendChild(document.createTextNode('Kenbunshoku (Osservazione)')); hkKen.appendChild(hkKenT);
-    
-    if(s.haki.kenbunshoku.active){
-      var r2 = document.createElement('div'); r2.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
-      var sel = document.createElement('select'); sel.style.cssText='font-size:9px;padding:2px;border:1px solid #bbb;flex:1;background:#fff;';
-      ['Base','Avanzato - Visione del Futuro'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;sel.appendChild(op);});
-      sel.value=s.haki.kenbunshoku.stage; sel.onchange=function(){s.haki.kenbunshoku.stage=this.value;ss();}; r2.appendChild(sel);
-      
-      var dcL = document.createElement('span'); dcL.textContent='CD:'; dcL.style.cssText='font-size:9px;font-weight:bold;'; r2.appendChild(dcL);
-      var dcI = document.createElement('input'); dcI.type='text'; dcI.value=s.haki.kenbunshoku.dc||''; dcI.style.cssText='width:30px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dcI.oninput=function(){s.haki.kenbunshoku.dc=this.value;ss();}; r2.appendChild(dcI);
-      hkKen.appendChild(r2);
-      
+    if(s.haki.kenbunshoku.unlocked){
+      createBranchBaseInputs(s.haki.kenbunshoku, hkKen, false);
       renderHakiTechs(s.haki.kenbunshoku, hkKen);
     }
     hkGrid.appendChild(hkKen);
@@ -17377,23 +17400,10 @@ function renderScheda() {
     // Busoshoku
     var hkBus=document.createElement('div'); hkBus.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkBusT=document.createElement('label'); hkBusT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkBusC=document.createElement('input'); hkBusC.type='checkbox'; hkBusC.checked=!!s.haki.busoshoku.active; hkBusC.onchange=function(){s.haki.busoshoku.active=this.checked;ss();renderMain();};
+    var hkBusC=document.createElement('input'); hkBusC.type='checkbox'; hkBusC.checked=!!s.haki.busoshoku.unlocked; hkBusC.onchange=function(){s.haki.busoshoku.unlocked=this.checked;ss();renderMain();};
     hkBusT.appendChild(hkBusC); hkBusT.appendChild(document.createTextNode('Busoshoku (Armamento)')); hkBus.appendChild(hkBusT);
-    
-    if(s.haki.busoshoku.active){
-      var busRog=document.createElement('label'); busRog.style.cssText='display:flex;align-items:center;gap:4px;font-size:9px;cursor:pointer;color:#833;margin-top:2px;';
-      var busRogC=document.createElement('input'); busRogC.type='checkbox'; busRogC.checked=!!s.haki.busoshoku.bypassesLogia; busRogC.onchange=function(){s.haki.busoshoku.bypassesLogia=this.checked;ss();};
-      busRog.appendChild(busRogC); busRog.appendChild(document.createTextNode('Colpisce la sostanza dei Rogia')); hkBus.appendChild(busRog);
-      
-      var r3 = document.createElement('div'); r3.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
-      var sel2 = document.createElement('select'); sel2.style.cssText='font-size:9px;padding:2px;border:1px solid #bbb;flex:1;background:#fff;';
-      ['Indurimento','Emissione - Ryuo','Distruzione Interna'].forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;sel2.appendChild(op);});
-      sel2.value=s.haki.busoshoku.stage; sel2.onchange=function(){s.haki.busoshoku.stage=this.value;ss();}; r3.appendChild(sel2);
-      
-      var dmgL = document.createElement('span'); dmgL.textContent='Bonus TxC/Danni:'; dmgL.style.cssText='font-size:9px;font-weight:bold;'; r3.appendChild(dmgL);
-      var dmgI = document.createElement('input'); dmgI.type='text'; dmgI.value=s.haki.busoshoku.damageBonus||''; dmgI.style.cssText='width:40px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; dmgI.oninput=function(){s.haki.busoshoku.damageBonus=this.value;ss();}; r3.appendChild(dmgI);
-      hkBus.appendChild(r3);
-      
+    if(s.haki.busoshoku.unlocked){
+      createBranchBaseInputs(s.haki.busoshoku, hkBus, true);
       renderHakiTechs(s.haki.busoshoku, hkBus);
     }
     hkGrid.appendChild(hkBus);
@@ -17401,15 +17411,10 @@ function renderScheda() {
     // Haoshoku
     var hkHao=document.createElement('div'); hkHao.style.cssText='border:1px solid #ccc;padding:6px;display:flex;flex-direction:column;gap:4px;background:#fafafa;';
     var hkHaoT=document.createElement('label'); hkHaoT.style.cssText='display:flex;align-items:center;gap:4px;font-size:10px;font-weight:bold;cursor:pointer;border-bottom:1px solid #ddd;padding-bottom:2px;';
-    var hkHaoC=document.createElement('input'); hkHaoC.type='checkbox'; hkHaoC.checked=!!s.haki.haoshoku.active; hkHaoC.onchange=function(){s.haki.haoshoku.active=this.checked;ss();renderMain();};
+    var hkHaoC=document.createElement('input'); hkHaoC.type='checkbox'; hkHaoC.checked=!!s.haki.haoshoku.unlocked; hkHaoC.onchange=function(){s.haki.haoshoku.unlocked=this.checked;ss();renderMain();};
     hkHaoT.appendChild(hkHaoC); hkHaoT.appendChild(document.createTextNode('Haoshoku (Re Conquistatore)')); hkHao.appendChild(hkHaoT);
-    
-    if(s.haki.haoshoku.active){
-      var r4 = document.createElement('div'); r4.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:2px;';
-      var hdcL = document.createElement('span'); hdcL.textContent='CD Imposizione Volontà:'; hdcL.style.cssText='font-size:9px;font-weight:bold;'; r4.appendChild(hdcL);
-      var hdcI = document.createElement('input'); hdcI.type='text'; hdcI.value=s.haki.haoshoku.dc||''; hdcI.style.cssText='width:30px;font-size:9px;text-align:center;border:1px solid #bbb;background:#fff;'; hdcI.oninput=function(){s.haki.haoshoku.dc=this.value;ss();}; r4.appendChild(hdcI);
-      hkHao.appendChild(r4);
-      
+    if(s.haki.haoshoku.unlocked){
+      createBranchBaseInputs(s.haki.haoshoku, hkHao, false);
       renderHakiTechs(s.haki.haoshoku, hkHao);
     }
     hkGrid.appendChild(hkHao);
