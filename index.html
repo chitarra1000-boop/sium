@@ -6321,6 +6321,7 @@ function _attachMappaListener() {
         }
         _tDone++;
         if (_tDone === _tPaths.length) {
+          state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
           var keys = Object.keys(state.mappaList);
           if (keys.length > 0) {
             state.mappaActiveId = keys[0];
@@ -6346,6 +6347,7 @@ function _attachMappaListener() {
         if (v) {
           if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
           else if (!v.maps) state.mappaList = state.mappaList || {};
+          state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
           if (typeof v.activeMapId === 'string') {
             state.mappaActiveId = v.activeMapId;
             var activeMap = state.mappaList[state.mappaActiveId];
@@ -6397,6 +6399,7 @@ function _attachMappaListener() {
     if (v) {
       if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
       else if (!v.maps) state.mappaList = state.mappaList || {};
+      state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
       if (typeof v.activeMapId === 'string') {
         var prevMapId = state.mappaActiveId;
         state.mappaActiveId = v.activeMapId;
@@ -8190,10 +8193,9 @@ var EVENTI_MALVAGI = EVENTI_MEDIUM;
    =========================================================== */
 var LS_KEY = 'mercante_errante_v1';
 
-function loadFromStorage() {
+function _applySnapshot(raw) {
+  if (!raw) return;
   try {
-    var raw = localStorage.getItem(LS_KEY);
-    if (!raw) return;
     var data = JSON.parse(raw);
     if (data && typeof data === 'object') {
       if (Array.isArray(data.caosPlayers)) state.caosPlayers = data.caosPlayers;
@@ -8236,8 +8238,27 @@ function loadFromStorage() {
       if (typeof data.worldbuildingMapId === 'string' && data.worldbuildingMapId) state.mappaActiveId = data.worldbuildingMapId;
     }
   } catch (e) {
-    console.warn('[Mercante] Lettura localStorage fallita:', e.message);
+    console.warn('[Mercante] Lettura snapshot fallita:', e.message);
   }
+}
+
+function loadFromStorageAsync(cb) {
+    if (window.ImageDB) {
+        window.ImageDB.getState().then(function(snapStr) {
+            if (snapStr) {
+                _applySnapshot(snapStr);
+            } else {
+                _applySnapshot(localStorage.getItem(LS_KEY));
+            }
+            cb();
+        }).catch(function() {
+            _applySnapshot(localStorage.getItem(LS_KEY));
+            cb();
+        });
+    } else {
+        _applySnapshot(localStorage.getItem(LS_KEY));
+        cb();
+    }
 }
 
 function saveToStorage() {
@@ -8264,13 +8285,16 @@ function saveToStorage() {
       regiaUrlsBardo: state.regiaUrlsBardo,
       storia: { content: state.storia.content, markers: state.storia.markers }
     };
-    localStorage.setItem(LS_KEY, JSON.stringify(snapshot));
+    var snapStr = JSON.stringify(snapshot);
+    // Salva sempre su IndexedDB per scavalcare i 5MB di quota!
+    if(window.ImageDB) window.ImageDB.saveState(snapStr).catch(function(){});
+    // E prova a salvare anche su localStorage come fallback
+    localStorage.setItem(LS_KEY, snapStr);
   } catch (e) {
     if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-      alert("Spazio di archiviazione esaurito! Elimina vecchie immagini dalla lavagna o altri dati pesanti, altrimenti i nuovi salvataggi non andranno a buon fine.");
+      // Ignorato intenzionalmente.
     }
   }
-  /* Sync Firebase paths selettivamente (chiamate dedicate per i percorsi shared) */
 }
 
 /* Variabili per il drag-and-drop dell'iniziativa */
@@ -21795,6 +21819,15 @@ function _refreshMappaSelectorOptions(sel) {
   // Aggiorna le opzioni del selettore mappe senza perdere il valore corrente
   var current = sel.value;
   while (sel.firstChild) sel.removeChild(sel.firstChild);
+  
+  if (!state.mappaList) state.mappaList = {};
+  state.mappaList['world-map-ohara'] = {
+    nome: 'Mappa Mondiale Completa (Library of Ohara)',
+    url: 'iframe',
+    isInteractive: true,
+    flags: {}
+  };
+
   var ids = Object.keys(state.mappaList || {});
   ids.forEach(function(mid) {
     var opt = document.createElement('option');
@@ -22299,6 +22332,7 @@ function renderMappa() {
     renameMapBtn.title = 'Rinomina mappa selezionata';
     renameMapBtn.onclick = function() {
       if (!state.mappaActiveId || !state.mappaList[state.mappaActiveId]) return;
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi rinominare questa mappa speciale.'); return; }
       var current = state.mappaList[state.mappaActiveId].nome || '';
       var newName = prompt('Nuovo nome:', current);
       if (!newName || newName === current) return;
@@ -22313,6 +22347,7 @@ function renderMappa() {
     addMapBtn.className = 'mappa-btn mappa-btn-add-map';
     addMapBtn.innerHTML = state.mappaUrl ? '✎ Cambia Immagine' : '🗺 Carica Immagine';
     addMapBtn.onclick = function() {
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi cambiare l\'immagine di questa mappa speciale.'); return; }
       if (!state.mappaActiveId && Object.keys(state.mappaList || {}).length === 0) {
         alert('Prima crea una mappa con "Nuova Mappa".');
         return;
@@ -22373,6 +22408,7 @@ function renderMappa() {
     delMapBtn.title = 'Elimina mappa selezionata';
     delMapBtn.onclick = function() {
       if (!state.mappaActiveId || !state.mappaList[state.mappaActiveId]) return;
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi eliminare questa mappa speciale.'); return; }
       var nomeMappa = state.mappaList[state.mappaActiveId].nome || state.mappaActiveId;
       if (!confirm('Eliminare "' + nomeMappa + '"? Tutti i flag verranno persi.')) return;
       _db && _db.ref(_mappaBasePath() + '/maps/' + state.mappaActiveId).remove();
@@ -22545,7 +22581,7 @@ function _updateMappaMoveFlag(dmControls, mapDiv) {
   if (oldMove) oldMove.remove();
   if (oldFlag) oldFlag.remove();
   if (oldOvBtn) oldOvBtn.remove();
-  if (!state.mappaUrl) return;
+  if (!state.mappaUrl || state.mappaActiveId === 'world-map-ohara') return;
 
   var moveBtn = document.createElement('button');
   moveBtn.className = 'mappa-btn mappa-btn-move' + (state.mappaMode === 'move' ? ' active' : '');
@@ -22591,6 +22627,11 @@ function _updateMappaMoveFlag(dmControls, mapDiv) {
 function initLeafletMap(mapDiv, infoPanel) {
   if (_leafletMap) { try { _leafletMap.remove(); } catch(e){} _leafletMap = null; }
   mapDiv.innerHTML = '';
+
+  if (state.mappaActiveId === 'world-map-ohara') {
+    mapDiv.innerHTML = '<iframe src="https://thelibraryofohara.com/onepieceworldmap/" style="width: 100%; height: 100%; border: none; border-radius: 6px;" allowfullscreen></iframe>';
+    return;
+  }
 
   if (typeof L === 'undefined') {
     mapDiv.innerHTML = '<div style="padding:2rem;color:var(--text-muted);font-style:italic;">Libreria Leaflet non disponibile. Controlla la connessione.</div>';
@@ -23052,7 +23093,7 @@ function renderBacheGrid(grid) {
 const ImageDB = {
     dbName: 'SiumBoardImages',
     storeName: 'images',
-    version: 1,
+    version: 2,
     init: function() {
         return new Promise(function(resolve, reject) {
             var req = indexedDB.open(ImageDB.dbName, ImageDB.version);
@@ -23061,9 +23102,32 @@ const ImageDB = {
                 if (!db.objectStoreNames.contains(ImageDB.storeName)) {
                     db.createObjectStore(ImageDB.storeName, { keyPath: 'id' });
                 }
+                if (!db.objectStoreNames.contains('app_state')) {
+                    db.createObjectStore('app_state');
+                }
             };
             req.onsuccess = function(e) { resolve(e.target.result); };
             req.onerror = function(e) { reject(e.target.error); };
+        });
+    },
+    saveState: function(snapStr) {
+        return ImageDB.init().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(['app_state'], 'readwrite');
+                var req = tx.objectStore('app_state').put(snapStr, 'state');
+                req.onsuccess = function() { resolve(); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
+        });
+    },
+    getState: function() {
+        return ImageDB.init().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(['app_state'], 'readonly');
+                var req = tx.objectStore('app_state').get('state');
+                req.onsuccess = function() { resolve(req.result); };
+                req.onerror = function(e) { reject(e.target.error); };
+            });
         });
     },
     save: function(id, dataUrl) {
@@ -23130,26 +23194,34 @@ function migrateImagesToDB() {
 
 /* AVVIO */
 try {
-  loadFromStorage();
-  migrateImagesToDB();
-  // Mostra overlay login mentre Firebase Auth controlla la sessione
-  document.getElementById('login-overlay').style.display = 'flex';
-  // Inizializza Firebase + Auth listener (gestirà lui login/logout)
-  try {
-    if (!_firebaseApp) {
-      _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-      _db = firebase.database();
-    }
-    initAuth();
-  } catch(e) {
-    console.warn('[Mercante] Firebase non disponibile:', e.message);
-    // Fallback: mostra login
+  loadFromStorageAsync(function() {
+    migrateImagesToDB();
+    // Mostra overlay login mentre Firebase Auth controlla la sessione
     document.getElementById('login-overlay').style.display = 'flex';
-  }
+    // Inizializza Firebase + Auth listener (gestirà lui login/logout)
+    try {
+      if (!_firebaseApp) {
+        _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+        _db = firebase.database();
+      }
+      initAuth();
+    } catch(e) {
+      console.warn('[Mercante] Firebase non disponibile:', e.message);
+      // Fallback: mostra login
+      document.getElementById('login-overlay').style.display = 'flex';
+    }
 
-  // Salva storia prima di chiudere/cambiare tab
-  window.addEventListener('beforeunload', function() { storiaFlushSave(); });
-  window.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') storiaFlushSave(); });
+    // Salva storia prima di chiudere/cambiare tab
+    window.addEventListener('beforeunload', function() { storiaFlushSave(); });
+    window.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') storiaFlushSave(); });
+
+    renderMenu();
+    aggiornaPannelloAvatar();
+    main.appendChild(renderGeneratore());
+  });
+} catch(e) {
+  console.warn('[Mercante] Start error:', e);
+}
 
 } catch (err) {
   console.error('[Mercante] Errore:', err);
