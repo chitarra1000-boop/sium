@@ -9563,11 +9563,19 @@ function renderLibri() {
   var space = document.createElement('div'); space.style.flex = '1'; toolBar.appendChild(space);
   
   var searchInp = document.createElement('input');
+  searchInp.id = 'libri-search-input';
   searchInp.type = 'text';
   searchInp.placeholder = '🔍 Cerca titolo o tag...';
   searchInp.value = state.libriSearch || '';
   searchInp.style.cssText = 'background:rgba(0,0,0,0.3);border:1px solid rgba(245,166,35,0.3);color:var(--text-primary);padding:0.4rem 0.8rem;border-radius:15px;font-size:13px;width:200px;';
-  searchInp.oninput = function() { state.libriSearch = this.value; renderMain(); };
+  searchInp.oninput = function() {
+    state.libriSearch = this.value;
+    renderMain();
+    setTimeout(function(){
+      var el = document.getElementById('libri-search-input');
+      if (el) { el.focus(); var v = el.value; el.value = ''; el.value = v; }
+    }, 0);
+  };
   toolBar.appendChild(searchInp);
   
   var sortWrap = document.createElement('div');
