@@ -6300,7 +6300,7 @@ function _attachMappaListener() {
 
   if (_mappaViewAsUser === '__tutte__') {
     // Modalità "Tutte le mappe": aggrega da tutti gli utenti con letture singole
-    var _tPaths = [{ path: 'state/mappa', owner: null }]; // legacy
+    var _tPaths = [{ path: 'state/mappa', owner: null }, { path: 'state/multiverso/mappa', owner: '__multiverso__' }]; // legacy e multiverso
     var _tSeen = {};
     // Path personale dell'admin corrente
     var _myUid = _authUser && _authUser.uid;
@@ -6349,7 +6349,7 @@ function _attachMappaListener() {
         if (v) {
           if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
           else if (!v.maps) state.mappaList = state.mappaList || {};
-          state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
+          if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; }
           if (typeof v.activeMapId === 'string') {
             state.mappaActiveId = v.activeMapId;
             var activeMap = state.mappaList[state.mappaActiveId];
@@ -6401,7 +6401,7 @@ function _attachMappaListener() {
     if (v) {
       if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
       else if (!v.maps) state.mappaList = state.mappaList || {};
-      state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
+      if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; }
       if (_mappaViewAsUser === '__multiverso__' && Object.keys(state.mappaList).length <= 1) {
         state.mappaList['m_onepiece'] = { nome: 'Mappa del Mondo di One Piece', categoria: 'Mappe Esterne / One Piece', url: '', flags: {} };
         if (!v.maps) _db.ref('state/multiverso/mappa/maps/m_onepiece').set(state.mappaList['m_onepiece']);
@@ -22123,12 +22123,7 @@ function _refreshMappaSelectorOptions(sel) {
   while (sel.firstChild) sel.removeChild(sel.firstChild);
   
   if (!state.mappaList) state.mappaList = {};
-  state.mappaList['world-map-ohara'] = {
-    nome: 'Mappa Mondiale Completa (Library of Ohara)',
-    url: 'iframe',
-    isInteractive: true,
-    flags: {}
-  };
+  if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', isInteractive: true, flags: {} }; } else { delete state.mappaList['world-map-ohara']; }
 
   var ids = Object.keys(state.mappaList || {});
   ids.forEach(function(mid) {
