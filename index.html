@@ -6402,10 +6402,7 @@ function _attachMappaListener() {
       if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
       else if (!v.maps) state.mappaList = state.mappaList || {};
       if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; }
-      if (_mappaViewAsUser === '__multiverso__' && Object.keys(state.mappaList).length <= 1) {
-        state.mappaList['m_onepiece'] = { nome: 'Mappa del Mondo di One Piece', categoria: 'Mappe Esterne / One Piece', url: '', flags: {} };
-        if (!v.maps) _db.ref('state/multiverso/mappa/maps/m_onepiece').set(state.mappaList['m_onepiece']);
-      }
+      
       if (typeof v.activeMapId === 'string') {
         var prevMapId = state.mappaActiveId;
         state.mappaActiveId = v.activeMapId;
