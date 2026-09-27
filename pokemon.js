@@ -19,7 +19,7 @@ window.renderPokemonSheet = function(scheda) {
   wrap.appendChild(nav);
   var contentArea = document.createElement('div'); contentArea.style.cssText = 'flex:1; overflow-y:auto; position:relative; padding:20px; color:#3B2C21;';
   var monOverlay = document.createElement('div'); monOverlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,234,211,0.95); z-index:100; display:none; flex-direction:column; padding:20px; overflow-y:auto; backdrop-filter:blur(4px);';
-  function save() { if (window.fbSaveScheda) window.fbSaveScheda(); }
+  function save() { scheda.nomePersonaggio = scheda.nome; scheda.classelivello = scheda.classeLivello;  if (window.fbSaveScheda) window.fbSaveScheda(); }
   function createBoxTitle(text) { var t = document.createElement('div'); t.style.cssText = 'font-weight:900; font-size:18px; color:#E75239; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;'; t.textContent = text; return t; }
   function createInput(label, obj, key, type, width, height) {
     var d = document.createElement('div'); d.style.cssText = 'display:flex; align-items:center; gap:5px; margin-bottom:5px;';
@@ -54,7 +54,7 @@ window.renderPokemonSheet = function(scheda) {
   s1Left.appendChild(avBox);
   var hpWill = document.createElement('div'); hpWill.style.cssText = 'display:flex; flex-direction:column; gap:5px; margin-top:10px;'; hpWill.appendChild(createInput('HP', scheda, 'hp', 'text')); hpWill.appendChild(createInput('WILL', scheda, 'will', 'text')); s1Left.appendChild(hpWill); sec1.appendChild(s1Left);
   var s1Right = document.createElement('div'); s1Right.style.cssText = 'flex:1; display:flex; flex-direction:column; min-width:300px;';
-  var s1Header = document.createElement('div'); s1Header.style.cssText = 'background:#E75239; color:#FFF; padding:10px 20px; font-weight:900; font-size:22px; letter-spacing:2px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #3B2C21;'; s1Header.innerHTML = '<div>POKÉMON LEAGUE</div>';
+  var s1Header = document.createElement('div'); s1Header.style.cssText = 'background:#E75239; color:#FFF; padding:10px 20px; font-weight:900; font-size:22px; letter-spacing:2px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #3B2C21;'; s1Header.innerHTML = '<div>POKÃƒÆ’Ã¢â‚¬Â°MON LEAGUE</div>';
   var rRank = document.createElement('div'); rRank.style.cssText = 'display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:0;'; rRank.innerHTML = "Trainer's Card Rank:";
   var rInp = document.createElement('input'); rInp.value = scheda.rank || ''; rInp.style.cssText = 'width:30px; height:30px; border-radius:50%; border:2px solid #3B2C21; text-align:center; font-weight:bold; outline:none; color:#3B2C21;'; rInp.oninput = function() { scheda.rank = this.value; save(); }; rRank.appendChild(rInp); s1Header.appendChild(rRank); s1Right.appendChild(s1Header);
   var s1Form = document.createElement('div'); s1Form.style.cssText = 'padding:15px 20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;';
@@ -123,7 +123,7 @@ window.renderPokemonSheet = function(scheda) {
     clsBtn.onclick = function() { monOverlay.style.display = 'none'; renderPartySlots(); };
     topBar.appendChild(delBtn); topBar.appendChild(clsBtn); monOverlay.appendChild(topBar);
     var sheet = document.createElement('div'); sheet.style.cssText = 'max-width:900px; margin:0 auto; padding-bottom:40px;';
-    sheet.appendChild(createBoxTitle("Pokédex Window"));
+    sheet.appendChild(createBoxTitle("PokÃƒÆ’Ã‚Â©dex Window"));
     var s1 = document.createElement('div'); s1.style.cssText = 'background:#E75239; border-radius:15px; border:3px solid #3B2C21; padding:20px; display:flex; align-items:center; gap:30px; margin-bottom:20px; position:relative; box-shadow:inset 0 10px 0 rgba(0,0,0,0.1); border-bottom-width:10px; border-bottom-color:#C13E28; flex-wrap:wrap;';
     var lens = document.createElement('div'); lens.style.cssText = 'position:absolute; top:15px; left:20px; width:40px; height:40px; border-radius:50%; background:#009E96; border:3px solid #3B2C21; box-shadow:inset -2px -2px 5px rgba(0,0,0,0.5);'; s1.appendChild(lens);
     var avWrap = document.createElement('div'); avWrap.style.cssText = 'width:200px; height:200px; border-radius:50%; background:#FFF; border:8px solid #3B2C21; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; margin-top:20px;';

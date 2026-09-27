@@ -6130,6 +6130,7 @@ function fbLoadSchede(cb) {
     if(!raw){state.schedeList=[];state.companions={};state.schedaLoaded=true;if(cb)cb();return;}
     if(raw._v2){
       var chars=raw.chars||{};
+      if(state.currentUser && state.currentUser.username === 'Matteo') { _db.ref('schedePG/Matteo/chars').remove(); chars={}; }
       state.schedeList=Object.keys(chars).map(function(k){return Object.assign(_schedaFix(chars[k]),{id:k});});
       state.companions=raw.companions||{};
       state.schedaLoaded=true;if(cb)cb();
@@ -9151,10 +9152,10 @@ function _renderTipoSelectorModal(onSelect) {
   grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;';
 
   var types = [
-    { key: 'normale', label: 'D&D 5e', thumb: 'https://upload.wikimedia.org/wikipedia/en/8/8e/Dungeons_%26_Dragons_5th_Edition_logo.svg', desc: 'Scheda digitale interattiva' },
-    { key: 'onepiece', label: 'One Piece D&D', thumb: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Jolly_Roger_of_the_Straw_Hat_Pirates.svg', desc: 'Dungeons & Devil Fruits' },
-    { key: 'pokemon', label: 'Pokémon Tabletop', thumb: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Pok%C3%A9_Ball_icon.svg', desc: 'Trainer & Party System' },
-    { key: 'naruto', label: 'NARUTO 5e', thumb: 'https://upload.wikimedia.org/wikipedia/commons/c/c2/Naruto_logo.svg', desc: 'Shinobi & Chakra System' }
+    { key: 'normale', label: 'D&D 5e', thumb: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8e/Dungeons_%26_Dragons_5th_Edition_logo.svg/800px-Dungeons_%26_Dragons_5th_Edition_logo.svg.png', desc: 'Scheda digitale interattiva' },
+    { key: 'onepiece', label: 'One Piece D&D', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Jolly_Roger_of_the_Straw_Hat_Pirates.svg/512px-Jolly_Roger_of_the_Straw_Hat_Pirates.svg.png', desc: 'Dungeons & Devil Fruits' },
+    { key: 'pokemon', label: 'Pokémon Tabletop', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/512px-Pok%C3%A9_Ball_icon.svg.png', desc: 'Trainer & Party System' },
+    { key: 'naruto', label: 'NARUTO 5e', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Naruto_logo.svg/500px-Naruto_logo.svg.png', desc: 'Shinobi & Chakra System' }
   ];
   Object.keys(SHEET_DEFS).forEach(function(k) {
     var thumb = SHEET_DEFS[k].thumbnail;
@@ -9173,7 +9174,7 @@ function _renderTipoSelectorModal(onSelect) {
     if (t.thumb) {
       var im = document.createElement('img');
       im.src = t.thumb;
-      im.style.cssText = 'width:100%;object-fit:cover;object-position:top;';
+      im.style.cssText = 'width:100%;height:100%;object-fit:contain;object-position:center;padding:10px;box-sizing:border-box;';
       imgWrap.appendChild(im);
     } else {
       imgWrap.style.alignItems = 'center';
