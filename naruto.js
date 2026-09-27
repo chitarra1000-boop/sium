@@ -26,8 +26,10 @@ window._narutoDefault = function(id) {
 window.renderNarutoSheet = function(scheda) {
   function handleAvatarClick(currentAvatar, callback) {
     if (confirm('Vuoi caricare un\'immagine dal PC? (Clicca "Annulla" per inserire un URL)')) {
-      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
+      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+      document.body.appendChild(fi);
       fi.onchange = function(e) {
+        document.body.removeChild(fi);
         var f = e.target.files[0]; if (!f) return;
         var rd = new FileReader();
         rd.onload = function(ev) {
@@ -42,6 +44,8 @@ window.renderNarutoSheet = function(scheda) {
         };
         rd.readAsDataURL(f);
       };
+      // Handle cancellation to remove from DOM if user cancels file dialog
+      window.addEventListener('focus', function handler() { setTimeout(function(){ if(fi.parentNode) document.body.removeChild(fi); }, 1000); window.removeEventListener('focus', handler); }, {once:true});
       fi.click();
     } else {
       var u = prompt('Immagine URL:', currentAvatar);
