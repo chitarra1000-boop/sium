@@ -83,7 +83,7 @@ window.renderPokemonSheet = function(scheda) {
   s1Left.appendChild(avBox);
   var hpWill = document.createElement('div'); hpWill.style.cssText = 'display:flex; flex-direction:column; gap:5px; margin-top:10px;'; hpWill.appendChild(createInput('HP', scheda, 'hp', 'text')); hpWill.appendChild(createInput('WILL', scheda, 'will', 'text')); s1Left.appendChild(hpWill); sec1.appendChild(s1Left);
   var s1Right = document.createElement('div'); s1Right.style.cssText = 'flex:1; display:flex; flex-direction:column; min-width:300px;';
-  var s1Header = document.createElement('div'); s1Header.style.cssText = 'background:#E75239; color:#FFF; padding:10px 20px; font-weight:900; font-size:22px; letter-spacing:2px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #3B2C21;'; s1Header.innerHTML = '<div>POKÃƒÆ’Ã¢â‚¬Â°MON LEAGUE</div>';
+  var s1Header = document.createElement('div'); s1Header.style.cssText = 'background:#E75239; color:#FFF; padding:10px 20px; font-weight:900; font-size:22px; letter-spacing:2px; display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #3B2C21;'; s1Header.innerHTML = '<div>POKÉMON LEAGUE</div>';
   var rRank = document.createElement('div'); rRank.style.cssText = 'display:flex; align-items:center; gap:5px; font-size:12px; letter-spacing:0;'; rRank.innerHTML = "Trainer's Card Rank:";
   var rInp = document.createElement('input'); rInp.value = scheda.rank || ''; rInp.style.cssText = 'width:30px; height:30px; border-radius:50%; border:2px solid #3B2C21; text-align:center; font-weight:bold; outline:none; color:#3B2C21;'; rInp.oninput = function() { scheda.rank = this.value; save(); }; rRank.appendChild(rInp); s1Header.appendChild(rRank); s1Right.appendChild(s1Header);
   var s1Form = document.createElement('div'); s1Form.style.cssText = 'padding:15px 20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;';
@@ -124,7 +124,7 @@ window.renderPokemonSheet = function(scheda) {
   sec2.appendChild(s2M);
   var s2R = document.createElement('div'); s2R.style.cssText = 'display:flex; flex-direction:column; gap:10px; width:150px;';
   s2R.appendChild(createDots('TOUGH', scheda.social, 'tough', 5, '#F3DB70', '#3B2C21')); s2R.appendChild(createDots('COOL', scheda.social, 'cool', 5, '#F1AD87', '#3B2C21')); s2R.appendChild(createDots('BEAUTY', scheda.social, 'beauty', 5, '#A8C5CC', '#3B2C21')); s2R.appendChild(createDots('CLEVER', scheda.social, 'clever', 5, '#B6D787', '#3B2C21')); s2R.appendChild(createDots('CUTE', scheda.social, 'cute', 5, '#F0B2C7', '#3B2C21'));
-  var pdBox = document.createElement('div'); pdBox.style.cssText = 'background:#E75239; border:2px solid #3B2C21; border-radius:8px; padding:10px; margin-top:10px; color:#FFF;'; pdBox.innerHTML = '<div style="font-size:10px; font-weight:bold; margin-bottom:5px; text-align:center;">POKEMON CAUGHT/SEEN</div>';
+  var pdBox = document.createElement('div'); pdBox.style.cssText = 'background:#E75239; border:2px solid #3B2C21; border-radius:8px; padding:10px; margin-top:10px; color:#FFF;'; pdBox.innerHTML = '<div style="font-size:10px; font-weight:bold; margin-bottom:5px; text-align:center;">POKÉMON CAUGHT/SEEN</div>';
   var pdi = document.createElement('div'); pdi.style.cssText = 'display:flex; gap:5px; align-items:center; justify-content:center;';
   var pC = document.createElement('input'); pC.style.cssText = 'width:40px; border:none; border-radius:4px; text-align:center; padding:2px; font-weight:bold; color:#3B2C21;'; pC.value = scheda.pokedex.caught||''; pC.oninput=function(){scheda.pokedex.caught=this.value;save();};
   var pS = document.createElement('input'); pS.style.cssText = 'width:40px; border:none; border-radius:4px; text-align:center; padding:2px; font-weight:bold; color:#3B2C21;'; pS.value = scheda.pokedex.seen||''; pS.oninput=function(){scheda.pokedex.seen=this.value;save();};
@@ -152,7 +152,7 @@ window.renderPokemonSheet = function(scheda) {
     clsBtn.onclick = function() { monOverlay.style.display = 'none'; renderPartySlots(); };
     topBar.appendChild(delBtn); topBar.appendChild(clsBtn); monOverlay.appendChild(topBar);
     var sheet = document.createElement('div'); sheet.style.cssText = 'max-width:900px; margin:0 auto; padding-bottom:40px;';
-    sheet.appendChild(createBoxTitle("PokÃƒÆ’Ã‚Â©dex Window"));
+    sheet.appendChild(createBoxTitle("Pokédex Window"));
     var s1 = document.createElement('div'); s1.style.cssText = 'background:#E75239; border-radius:15px; border:3px solid #3B2C21; padding:20px; display:flex; align-items:center; gap:30px; margin-bottom:20px; position:relative; box-shadow:inset 0 10px 0 rgba(0,0,0,0.1); border-bottom-width:10px; border-bottom-color:#C13E28; flex-wrap:wrap;';
     var lens = document.createElement('div'); lens.style.cssText = 'position:absolute; top:15px; left:20px; width:40px; height:40px; border-radius:50%; background:#009E96; border:3px solid #3B2C21; box-shadow:inset -2px -2px 5px rgba(0,0,0,0.5);'; s1.appendChild(lens);
     var avWrap = document.createElement('div'); avWrap.style.cssText = 'width:200px; height:200px; border-radius:50%; background:#FFF; border:8px solid #3B2C21; display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; margin-top:20px;';

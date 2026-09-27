@@ -5715,7 +5715,7 @@ function setupRealtimeListeners() {
   // ---- SCHEDE PG ----
   _db.ref('schedePG').on('value', function(snap) {
     state.schedePGAll = snap.val() || {};
-      if(state.schedePGAll['Matteo']) { delete state.schedePGAll['Matteo']; _db.ref('schedePG/Matteo').remove(); }
+      
     if (state.section === 'schedepg') renderMain();
   });
 
@@ -6131,7 +6131,7 @@ function fbLoadSchede(cb) {
     if(!raw){state.schedeList=[];state.companions={};state.schedaLoaded=true;if(cb)cb();return;}
     if(raw._v2){
       var chars=raw.chars||{};
-      if(state.currentUser && state.currentUser.username === 'Matteo') { _db.ref('schedePG/Matteo/chars').remove(); chars={}; }
+      
       state.schedeList=Object.keys(chars).map(function(k){return Object.assign(_schedaFix(chars[k]),{id:k});});
       state.companions=raw.companions||{};
       state.schedaLoaded=true;if(cb)cb();
@@ -21004,7 +21004,7 @@ function renderSchedePG() {
     if (_db) {
       _db.ref('schedePG').once('value', function(snap) {
         state.schedePGAll = snap.val() || {};
-      if(state.schedePGAll['Matteo']) { delete state.schedePGAll['Matteo']; _db.ref('schedePG/Matteo').remove(); }
+      
         renderMain();
       });
     }
