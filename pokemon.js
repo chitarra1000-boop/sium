@@ -182,7 +182,12 @@ window.renderPokemonSheet = function(scheda) {
     var s4 = document.createElement('div'); s4.style.cssText = 'background:#E75239; border-radius:15px; border:3px solid #3B2C21; padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px;';
     var s4L = document.createElement('div'); s4L.style.cssText = 'display:flex; flex-direction:column; gap:10px;';
     s4L.appendChild(createDots('TOUGH', mon.social, 'tough', 5, '#F3DB70', '#3B2C21')); s4L.appendChild(createDots('COOL', mon.social, 'cool', 5, '#F1AD87', '#3B2C21')); s4L.appendChild(createDots('BEAUTY', mon.social, 'beauty', 5, '#A8C5CC', '#3B2C21')); s4L.appendChild(createDots('CUTE', mon.social, 'cute', 5, '#F0B2C7', '#3B2C21')); s4L.appendChild(createDots('CLEVER', mon.social, 'clever', 5, '#B6D787', '#3B2C21'));
-    var tw = document.createElement('div'); tw.style.cssText = 'display:flex; gap:10px; margin-top:10px;'; tw.appendChild(createInput('TYPE:', mon, 'tipo')); tw.appendChild(createInput('WEAKNESS:', mon, 'weakness')); s4L.appendChild(tw); s4.appendChild(s4L);
+    var tw = document.createElement('div'); tw.style.cssText = 'display:flex; flex-direction:column; gap:10px; margin-top:10px;';
+    tw.appendChild(createInput('TYPE:', mon, 'tipo', 'text'));
+    tw.appendChild(createInput('WEAKNESS:', mon, 'weakness', 'textarea', '100%', '60px'));
+    tw.appendChild(createInput('RESISTENCES:', mon, 'resistences', 'textarea', '100%', '60px'));
+    tw.appendChild(createInput('IMMUNITY:', mon, 'immunity', 'textarea', '100%', '60px'));
+    s4L.appendChild(tw); s4.appendChild(s4L);
     var s4R = document.createElement('div'); s4R.style.cssText = 'display:flex; flex-direction:column; gap:10px;';
     s4R.appendChild(createInput('NATURE:', mon, 'natura')); s4R.appendChild(createInput('CONFIDENCE:', mon, 'conf'));
     var hl = document.createElement('div'); hl.style.cssText = 'display:flex; gap:10px;'; hl.appendChild(createDots('HAPPINESS', mon, 'hap', 5, '#009E96', '#FFF')); hl.appendChild(createDots('LOYALTY', mon, 'loy', 5, '#009E96', '#FFF')); s4R.appendChild(hl);
