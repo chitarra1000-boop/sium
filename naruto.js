@@ -261,8 +261,59 @@ window.renderNarutoSheet = function(scheda) {
   vrBox.appendChild(makeInput(scheda, 'allies', '', '100%', 'flex:1; resize:none; border:none; background:transparent; font-size:11px;', true));
   var allL = document.createElement('div'); allL.textContent = 'ALLIES & ORGANIZATIONS'; allL.style.cssText = 'font-weight:bold; text-align:center; font-size:11px; margin-top:5px;'; vrBox.appendChild(allL);
   topRBox.appendChild(vrBox);
-  var natBox = document.createElement('div'); natBox.style.cssText = 'width:220px; padding-left:10px; display:flex; flex-direction:column; align-items:center; justify-content:center;';
-  natBox.innerHTML = '<div style="width:180px; height:180px; border:2px solid #000; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; background:#FFF; box-shadow:inset 0 0 10px rgba(0,0,0,0.1);"><div style="font-weight:bold; font-size:14px; position:absolute; top:20px; border-bottom:1px solid #000;">Nature Affinity</div><div style="font-size:10px; color:#555;">(Interactive)</div></div>';
+  var natBox = document.createElement('div');
+  natBox.style.cssText = 'width:220px; display:flex; flex-direction:column; align-items:center; justify-content:center;';
+  var circleCont = document.createElement('div');
+  circleCont.style.cssText = 'width:190px; height:190px; border:2px solid #000; border-radius:50%; position:relative; background:#FFF; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 10px rgba(0,0,0,0.1); margin-left:10px;';
+  
+  var title = document.createElement('div');
+  title.textContent = 'Nature Affinity';
+  title.style.cssText = 'position:absolute; top:15px; font-weight:bold; font-size:14px; z-index:2; border-bottom:1px solid #000; padding-bottom:2px;';
+  circleCont.appendChild(title);
+
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '190'); svg.setAttribute('height', '190');
+  svg.style.cssText = 'position:absolute; top:0; left:0; z-index:0;';
+  var arrows = [
+    '<defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="#888"/></marker></defs>',
+    '<path d="M 103,63 L 123,78" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 130,105 L 123,122" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 98,137 L 75,137" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 53,115 L 45,95" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 55,65 L 75,50" stroke="#888" stroke-width="3" marker-end="url(#arr)" />'
+  ];
+  svg.innerHTML = arrows.join('');
+  circleCont.appendChild(svg);
+
+  var elements = [
+    { key: 'fire', label: 'Fire', kanji: '火', color: '#ef5350', top: '35px', left: '75px', lblCss: 'top:-14px; left:0px;' },
+    { key: 'wind', label: 'Wind', kanji: '風', color: '#80deea', top: '75px', left: '130px', lblCss: 'top:10px; right:-32px;' },
+    { key: 'lightning', label: 'Lightning', kanji: '雷', color: '#ffee58', top: '130px', left: '110px', lblCss: 'bottom:-14px; right:-14px;' },
+    { key: 'earth', label: 'Earth', kanji: '土', color: '#ffb74d', top: '130px', left: '40px', lblCss: 'bottom:-14px; left:-14px;' },
+    { key: 'water', label: 'Water', kanji: '水', color: '#5c6bc0', top: '75px', left: '20px', lblCss: 'top:10px; left:-36px;' }
+  ];
+
+  elements.forEach(function(el) {
+    var eNode = document.createElement('div');
+    eNode.style.cssText = 'position:absolute; width:40px; height:40px; border:2px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold; cursor:pointer; transition:background 0.2s; z-index:2;';
+    eNode.style.top = el.top;
+    eNode.style.left = el.left;
+    eNode.textContent = el.kanji;
+    
+    var lbl = document.createElement('div');
+    lbl.textContent = el.label;
+    lbl.style.cssText = 'position:absolute; font-size:9px; font-family:sans-serif; font-weight:normal; background:#FFF; border:1px solid #CCC; padding:1px 3px; ' + el.lblCss;
+    eNode.appendChild(lbl);
+
+    function updateColor() {
+      if(scheda.natureAffinity[el.key]) { eNode.style.background = el.color; eNode.style.color = (el.key==='water')?'#FFF':'#000'; } 
+      else { eNode.style.background = '#FFF'; eNode.style.color = '#000'; }
+    }
+    updateColor();
+    eNode.onclick = function() { scheda.natureAffinity[el.key] = !scheda.natureAffinity[el.key]; updateColor(); save(); };
+    circleCont.appendChild(eNode);
+  });
+  natBox.appendChild(circleCont);
   topRBox.appendChild(natBox);
   p2R.appendChild(topRBox);
   
