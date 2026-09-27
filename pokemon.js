@@ -7,6 +7,31 @@ window._pokemonMonDefault = function() {
   return { id: 'p' + Date.now() + Math.floor(Math.random()*1000), avatar: '', numero: '', nome: '', abilita: '', hp: '', will: '', held: '', status: '', init: '', acc: '', dmg: '', eva: '', clash: '', def: '', sdef: '', rank: '', mosse: [ { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' } ], attrs: { str: 0, dex: 0, vit: 0, spc: 0, ins: 0 }, size: '', weight: '', social: { tough: 0, cool: 0, beauty: 0, cute: 0, clever: 0 }, natura: '', conf: '', hap: 0, loy: 0, battles: '', victories: '', accessories: '', tipo: '', weakness: '' };
 };
 window.renderPokemonSheet = function(scheda) {
+  function handleAvatarClick(currentAvatar, callback) {
+    if (confirm('Vuoi caricare un\'immagine dal PC? (Clicca "Annulla" per inserire un URL)')) {
+      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
+      fi.onchange = function(e) {
+        var f = e.target.files[0]; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function(ev) {
+          var img = new Image();
+          img.onload = function() {
+            var max = 600; var ratio = Math.min(1, max/img.width, max/img.height);
+            var cv = document.createElement('canvas'); cv.width = img.width * ratio; cv.height = img.height * ratio;
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            callback(cv.toDataURL('image/jpeg', 0.85));
+          };
+          img.src = ev.target.result;
+        };
+        rd.readAsDataURL(f);
+      };
+      fi.click();
+    } else {
+      var u = prompt('Immagine URL:', currentAvatar);
+      if (u !== null) callback(u);
+    }
+  }
+
   scheda.party = scheda.party || []; scheda.attrs = scheda.attrs || {}; scheda.skills = scheda.skills || {}; scheda.social = scheda.social || {}; scheda.inventory = scheda.inventory || {}; scheda.badges = scheda.badges || ['', '', '', '', '', '', '', '']; scheda.pokedex = scheda.pokedex || {};
   var wrap = document.createElement('div'); wrap.style.cssText = 'display:flex; flex-direction:column; width:100%; height:100%; overflow:hidden; background:#F1EAD3; font-family:"Arial Rounded MT Bold", "Nunito", sans-serif; position:relative;';
   var nav = document.createElement('div'); nav.style.cssText = 'background:#1a1a1a; border-bottom:1px solid #333; padding:0.45rem 1rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; position:sticky; top:0; z-index:200;';

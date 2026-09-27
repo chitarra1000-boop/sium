@@ -24,6 +24,31 @@ window._narutoDefault = function(id) {
 };
 
 window.renderNarutoSheet = function(scheda) {
+  function handleAvatarClick(currentAvatar, callback) {
+    if (confirm('Vuoi caricare un\'immagine dal PC? (Clicca "Annulla" per inserire un URL)')) {
+      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*';
+      fi.onchange = function(e) {
+        var f = e.target.files[0]; if (!f) return;
+        var rd = new FileReader();
+        rd.onload = function(ev) {
+          var img = new Image();
+          img.onload = function() {
+            var max = 600; var ratio = Math.min(1, max/img.width, max/img.height);
+            var cv = document.createElement('canvas'); cv.width = img.width * ratio; cv.height = img.height * ratio;
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            callback(cv.toDataURL('image/jpeg', 0.85));
+          };
+          img.src = ev.target.result;
+        };
+        rd.readAsDataURL(f);
+      };
+      fi.click();
+    } else {
+      var u = prompt('Immagine URL:', currentAvatar);
+      if (u !== null) callback(u);
+    }
+  }
+
   // Aliases for global compatibility
   scheda.nomePersonaggio = scheda.nomePersonaggio || scheda.nome || '';
   scheda.classeLivello = scheda.classeLivello || scheda.classelivello || '';
@@ -243,7 +268,13 @@ window.renderNarutoSheet = function(scheda) {
   var avIm = document.createElement('img'); avIm.style.cssText = 'width:100%; height:100%; object-fit:contain; display:'+(scheda.avatar?'block':'none')+';'; avIm.src=scheda.avatar||'';
   var avT = document.createElement('span'); avT.textContent='Click to Add Picture'; avT.style.display=scheda.avatar?'none':'block'; avT.style.color='#999';
   avWrap.appendChild(avIm); avWrap.appendChild(avT);
-  avWrap.onclick = function() { let u = prompt('Immagine URL:', scheda.avatar); if(u!==null) { scheda.avatar=u; avIm.src=u; if(u){avIm.style.display='block';avT.style.display='none';}else{avIm.style.display='none';avT.style.display='block';} save(); } };
+  avWrap.onclick = function() {
+    handleAvatarClick(scheda.avatar, function(url) {
+      scheda.avatar = url; avIm.src = url;
+      if(url){ avIm.style.display='block'; avT.style.display='none'; } else { avIm.style.display='none'; avT.style.display='block'; }
+      save();
+    });
+  };
   appBox.appendChild(avWrap);
   var appL = document.createElement('div'); appL.textContent = 'CHARACTER APPEARANCE'; appL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:auto;'; appBox.appendChild(appL);
   p2L.appendChild(appBox);
