@@ -1,4 +1,4 @@
-// naruto.js - D&D Naruto 5e System
+﻿// naruto.js - D&D Naruto 5e System
 
 window._narutoDefault = function(id) {
   return {
@@ -262,51 +262,45 @@ window.renderNarutoSheet = function(scheda) {
   var allL = document.createElement('div'); allL.textContent = 'ALLIES & ORGANIZATIONS'; allL.style.cssText = 'font-weight:bold; text-align:center; font-size:11px; margin-top:5px;'; vrBox.appendChild(allL);
   topRBox.appendChild(vrBox);
   var natBox = document.createElement('div');
-  natBox.style.cssText = 'width:220px; display:flex; flex-direction:column; align-items:center; justify-content:center;';
+  natBox.style.cssText = 'width:250px; padding-top:20px; display:flex; flex-direction:column; align-items:center; justify-content:center;';
   var circleCont = document.createElement('div');
-  circleCont.style.cssText = 'width:190px; height:190px; border:2px solid #000; border-radius:50%; position:relative; background:#FFF; display:flex; align-items:center; justify-content:center; box-shadow:inset 0 0 10px rgba(0,0,0,0.1); margin-left:10px;';
-  
+  circleCont.style.cssText = 'width:200px; height:200px; border:2px solid #000; border-radius:50%; position:relative; background:#FFF; box-shadow:inset 0 0 10px rgba(0,0,0,0.1); margin:0 auto;';
   var title = document.createElement('div');
   title.textContent = 'Nature Affinity';
-  title.style.cssText = 'position:absolute; top:15px; font-weight:bold; font-size:14px; z-index:2; border-bottom:1px solid #000; padding-bottom:2px;';
+  title.style.cssText = 'position:absolute; top:-25px; left:50%; transform:translateX(-50%); font-weight:bold; font-size:16px; border-bottom:1px solid #000; padding-bottom:2px; white-space:nowrap; z-index:2;';
   circleCont.appendChild(title);
-
   var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', '190'); svg.setAttribute('height', '190');
+  svg.setAttribute('width', '200'); svg.setAttribute('height', '200');
   svg.style.cssText = 'position:absolute; top:0; left:0; z-index:0;';
   var arrows = [
-    '<defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L6,3 z" fill="#888"/></marker></defs>',
-    '<path d="M 103,63 L 123,78" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
-    '<path d="M 130,105 L 123,122" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
-    '<path d="M 98,137 L 75,137" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
-    '<path d="M 53,115 L 45,95" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
-    '<path d="M 55,65 L 75,50" stroke="#888" stroke-width="3" marker-end="url(#arr)" />'
+    '<defs><marker id="arr" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto"><path d="M0,0 L0,5 L5,2.5 z" fill="#888"/></marker></defs>',
+    '<path d="M 116,45 L 140,62" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 155,102 L 145,127" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 115,153 L 85,153" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 55,130 L 45,105" stroke="#888" stroke-width="3" marker-end="url(#arr)" />',
+    '<path d="M 54,65 L 80,48" stroke="#888" stroke-width="3" marker-end="url(#arr)" />'
   ];
   svg.innerHTML = arrows.join('');
   circleCont.appendChild(svg);
-
   var elements = [
-    { key: 'fire', label: 'Fire', kanji: '火', color: '#ef5350', top: '35px', left: '75px', lblCss: 'top:-14px; left:0px;' },
-    { key: 'wind', label: 'Wind', kanji: '風', color: '#80deea', top: '75px', left: '130px', lblCss: 'top:10px; right:-32px;' },
-    { key: 'lightning', label: 'Lightning', kanji: '雷', color: '#ffee58', top: '130px', left: '110px', lblCss: 'bottom:-14px; right:-14px;' },
-    { key: 'earth', label: 'Earth', kanji: '土', color: '#ffb74d', top: '130px', left: '40px', lblCss: 'bottom:-14px; left:-14px;' },
-    { key: 'water', label: 'Water', kanji: '水', color: '#5c6bc0', top: '75px', left: '20px', lblCss: 'top:10px; left:-36px;' }
+    { key: 'fire', label: 'Fire', kanji: '火', color: '#ef5350', cx: 100, cy: 35, lblCss: 'top:-18px; left:50%; transform:translateX(-50%);' },
+    { key: 'wind', label: 'Wind', kanji: '風', color: '#80deea', cx: 162, cy: 80, lblCss: 'top:50%; right:-35px; transform:translateY(-50%);' },
+    { key: 'lightning', label: 'Lightning', kanji: '雷', color: '#ffee58', cx: 138, cy: 153, lblCss: 'bottom:-18px; left:50%; transform:translateX(-50%);' },
+    { key: 'earth', label: 'Earth', kanji: '土', color: '#ffb74d', cx: 62, cy: 153, lblCss: 'bottom:-18px; left:50%; transform:translateX(-50%);' },
+    { key: 'water', label: 'Water', kanji: '水', color: '#5c6bc0', cx: 38, cy: 80, lblCss: 'top:50%; left:-40px; transform:translateY(-50%);' }
   ];
-
   elements.forEach(function(el) {
     var eNode = document.createElement('div');
-    eNode.style.cssText = 'position:absolute; width:40px; height:40px; border:2px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:bold; cursor:pointer; transition:background 0.2s; z-index:2;';
-    eNode.style.top = el.top;
-    eNode.style.left = el.left;
+    eNode.style.cssText = 'position:absolute; width:44px; height:44px; border:2px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; cursor:pointer; transition:background 0.2s; z-index:2; transform:translate(-50%, -50%);';
+    eNode.style.top = el.cy + 'px';
+    eNode.style.left = el.cx + 'px';
     eNode.textContent = el.kanji;
-    
     var lbl = document.createElement('div');
     lbl.textContent = el.label;
-    lbl.style.cssText = 'position:absolute; font-size:9px; font-family:sans-serif; font-weight:normal; background:#FFF; border:1px solid #CCC; padding:1px 3px; ' + el.lblCss;
+    lbl.style.cssText = 'position:absolute; font-size:11px; font-family:sans-serif; font-weight:normal; background:#FFF; border:1px solid #CCC; padding:1px 4px; ' + el.lblCss;
     eNode.appendChild(lbl);
-
     function updateColor() {
-      if(scheda.natureAffinity[el.key]) { eNode.style.background = el.color; eNode.style.color = (el.key==='water')?'#FFF':'#000'; } 
+      if(scheda.natureAffinity[el.key]) { eNode.style.background = el.color; eNode.style.color = (el.key==='water')?'#FFF':'#000'; }
       else { eNode.style.background = '#FFF'; eNode.style.color = '#000'; }
     }
     updateColor();
