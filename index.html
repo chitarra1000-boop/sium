@@ -9152,7 +9152,8 @@ function _renderTipoSelectorModal(onSelect) {
 
   var types = [
     { key: 'normale', label: 'D&D Normale', thumb: null, desc: 'Scheda digitale interattiva' },
-    { key: 'onepiece', label: 'One Piece D&D', thumb: null, desc: 'Dungeons & Devil Fruits' }
+    { key: 'onepiece', label: 'One Piece D&D', thumb: null, desc: 'Dungeons & Devil Fruits' },
+    { key: 'pokemon', label: 'Pokemon Tabletop', thumb: null, desc: 'Trainer & Party System' }
   ];
   Object.keys(SHEET_DEFS).forEach(function(k) {
     types.push({ key: k, label: SHEET_DEFS[k].label, thumb: SHEET_DEFS[k].thumbnail, desc: '' });
@@ -16799,6 +16800,10 @@ function _newScheda() {
     var ns;
     if (tipo === 'normale' || tipo === 'onepiece') {
       ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
+    } else if (tipo === 'pokemon') {
+      ns = window._pokemonDefault ? window._pokemonDefault(nid) : { id: nid, schedaTipo: 'pokemon' };
+    } else if (false) {
+      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
     } else {
       ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
     }
@@ -17098,6 +17103,7 @@ function renderScheda() {
 
   /* Routing per schede alternative */
   var _sTipo = state.scheda.schedaTipo || 'normale';
+  if (_sTipo === 'pokemon' && window.renderPokemonSheet) return window.renderPokemonSheet(state.scheda);
   if (_sTipo !== 'normale' && SHEET_DEFS[_sTipo]) return _renderAltSheet(_sTipo);
 
   var wrap=document.createElement('div');
@@ -24877,6 +24883,7 @@ function renderArchivio() {
   return wrap;
 }
 </script>
+<script src="pokemon.js"></script>
 </body>
 </html>
 
