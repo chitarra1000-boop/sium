@@ -52,7 +52,7 @@ window.renderPokemonSheet = function(scheda) {
     i.value = obj[key] || ''; i.style.cssText = 'background:#FFF; border:2px solid #3B2C21; border-radius:10px; color:#3B2C21; font-weight:bold; padding:4px 8px; outline:none; font-family:inherit; flex:1; width:100%; box-sizing:border-box;';
     if (width) { d.style.width = width; i.style.flex = 'none'; i.style.width = '100%'; }
     if (height) { i.style.height = height; i.style.resize = 'none'; }
-    i.oninput = function() { obj[key] = i.value; save(); }; d.appendChild(i); return d;
+    i.oninput = function() { obj[key] = i.value; save(); }; i.onchange = function() { obj[key] = i.value; save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } }; d.appendChild(i); return d;
   }
   function createDots(label, obj, key, max, bgColor, textColor) {
     var w = document.createElement('div'); w.style.cssText = 'display:flex; flex-direction:column; align-items:center; background:' + (bgColor||'#009E96') + '; border-radius:15px; border:2px solid #3B2C21; padding:4px 10px; margin-bottom:6px;';
@@ -74,7 +74,7 @@ window.renderPokemonSheet = function(scheda) {
   var avImg = document.createElement('img'); avImg.style.cssText = 'width:100%; height:100%; object-fit:cover; display:' + (scheda.avatar ? 'block' : 'none') + ';'; avImg.src = scheda.avatar || '';
   var avTxt = document.createElement('span'); avTxt.textContent = 'PICTURE'; avTxt.style.cssText = 'font-weight:900; color:#CCC;'; avTxt.style.display = scheda.avatar ? 'none' : 'block';
   avBox.appendChild(avImg); avBox.appendChild(avTxt);
-  avBox.onclick = function() { var url = prompt('URL Immagine Allenatore:', scheda.avatar); if (url !== null) { scheda.avatar = url; avImg.src = url; if (url) { avImg.style.display='block'; avTxt.style.display='none'; } else { avImg.style.display='none'; avTxt.style.display='block'; } save(); } };
+  avBox.onclick = function() { handleAvatarClick(scheda.avatar, function(url) { scheda.avatar = url; avImg.src = url; if(url){avImg.style.display='block'; avTxt.style.display='none';} else {avImg.style.display='none'; avTxt.style.display='block';} save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } }); };
   s1Left.appendChild(avBox);
   var hpWill = document.createElement('div'); hpWill.style.cssText = 'display:flex; flex-direction:column; gap:5px; margin-top:10px;'; hpWill.appendChild(createInput('HP', scheda, 'hp', 'text')); hpWill.appendChild(createInput('WILL', scheda, 'will', 'text')); s1Left.appendChild(hpWill); sec1.appendChild(s1Left);
   var s1Right = document.createElement('div'); s1Right.style.cssText = 'flex:1; display:flex; flex-direction:column; min-width:300px;';
@@ -133,7 +133,7 @@ window.renderPokemonSheet = function(scheda) {
   for(let i=0; i<8; i++) {
     let b = document.createElement('div'); b.style.cssText = 'width:50px; height:50px; background:#F1EAD3; border:2px solid #3B2C21; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden;';
     let bIm = document.createElement('img'); bIm.style.cssText = 'width:100%; height:100%; object-fit:contain; display:' + (scheda.badges[i] ? 'block' : 'none') + ';'; bIm.src = scheda.badges[i] || ''; b.appendChild(bIm);
-    b.onclick = function() { var url = prompt('URL Immagine Medaglia:', scheda.badges[i]); if (url !== null) { scheda.badges[i] = url; bIm.src = url; bIm.style.display = url ? 'block' : 'none'; save(); } }; badges.appendChild(b);
+    b.onclick = function() { handleAvatarClick(scheda.badges[i], function(url) { scheda.badges[i] = url; bIm.src = url; bIm.style.display = url ? 'block' : 'none'; save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } }); }; badges.appendChild(b);
   }
   sec3.appendChild(badges); tCard.appendChild(sec3); contentArea.appendChild(tCard); wrap.appendChild(contentArea);
   
@@ -154,7 +154,7 @@ window.renderPokemonSheet = function(scheda) {
     var avImg = document.createElement('img'); avImg.style.cssText = 'width:100%; height:100%; object-fit:cover; display:' + (mon.avatar ? 'block' : 'none') + ';'; avImg.src = mon.avatar || '';
     var avTxt = document.createElement('span'); avTxt.textContent = 'PICTURE'; avTxt.style.cssText = 'font-weight:900; color:#CCC;'; avTxt.style.display = mon.avatar ? 'none' : 'block';
     avWrap.appendChild(avImg); avWrap.appendChild(avTxt);
-    avWrap.onclick = function() { var url = prompt('URL Immagine Pokemon:', mon.avatar); if (url !== null) { mon.avatar = url; avImg.src = url; if (url) { avImg.style.display='block'; avTxt.style.display='none'; } else { avImg.style.display='none'; avTxt.style.display='block'; } save(); } };
+    avWrap.onclick = function() { handleAvatarClick(mon.avatar, function(url) { mon.avatar = url; avImg.src = url; if(url){avImg.style.display='block'; avTxt.style.display='none';} else {avImg.style.display='none'; avTxt.style.display='block';} save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } }); };
     s1.appendChild(avWrap);
     var s1R = document.createElement('div'); s1R.style.cssText = 'flex:1; display:flex; flex-direction:column; gap:10px; margin-top:20px; min-width:250px;';
     s1R.appendChild(createInput('#', mon, 'numero')); s1R.appendChild(createInput('Name', mon, 'nome')); s1R.appendChild(createInput('Ability', mon, 'abilita')); s1.appendChild(s1R); sheet.appendChild(s1);

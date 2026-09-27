@@ -111,7 +111,7 @@ window.renderNarutoSheet = function(scheda) {
     if (placeholder) el.placeholder = placeholder;
     el.style.cssText = 'border:none; border-bottom:1px solid #000; background:transparent; outline:none; font-family:inherit; padding:2px 4px; color:#000; ' + (styleExtra||'');
     if (width) el.style.width = width;
-    el.oninput = function() { obj[key] = el.value; save(); };
+    el.oninput = function() { obj[key] = el.value; save(); }; el.onchange = function() { obj[key] = el.value; save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } };
     return el;
   }
   function makeCheckbox(obj, key) {
