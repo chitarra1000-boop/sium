@@ -16883,7 +16883,7 @@ function _renderSchedaList() {
       card.onmouseleave=function(){this.style.transform='';this.style.boxShadow='0 3px 16px rgba(0,0,0,0.5)';};
       (function(s){card.onclick=function(){state.scheda=s;state.schedaAttivaId=s.id;renderMain();};})(sch);
       var imgD=document.createElement('div'); imgD.style.cssText='width:100%;height:160px;background:#e0d5c0;display:flex;align-items:center;justify-content:center;overflow:hidden;';
-      if(sch.aspettoImg){var im=document.createElement('img');im.src=sch.aspettoImg;im.style.cssText='width:100%;height:100%;object-fit:cover;';imgD.appendChild(im);}
+      if(sch.aspettoImg || sch.avatar){var im=document.createElement('img');im.src=sch.aspettoImg || sch.avatar;im.style.cssText='width:100%;height:100%;object-fit:cover;';imgD.appendChild(im);}
       else{imgD.innerHTML='<div style="font-size:48px;">🧙</div>';}
       card.appendChild(imgD);
       var info=document.createElement('div'); info.style.cssText='padding:0.6rem 0.75rem;text-align:center;';
@@ -21137,8 +21137,8 @@ function renderSchedePG() {
 
     var imgBox = document.createElement('div');
     imgBox.style.cssText = 'width:100%;height:140px;background:var(--bg-card-elevated);display:flex;align-items:center;justify-content:center;overflow:hidden;';
-    if (ch.aspettoImg) {
-      var img = document.createElement('img'); img.src = ch.aspettoImg;
+    if (ch.aspettoImg || ch.avatar) {
+      var img = document.createElement('img'); img.src = ch.aspettoImg || ch.avatar;
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;'; imgBox.appendChild(img);
     } else {
       var ph = document.createElement('div'); ph.style.cssText = 'font-size:48px;line-height:1;'; ph.textContent = '🧙'; imgBox.appendChild(ph);
