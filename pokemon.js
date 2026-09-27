@@ -162,5 +162,6 @@ window.renderPokemonSheet = function(scheda) {
     s4R.appendChild(createInput('ACCESORY:', mon, 'accessories', 'textarea', null, '50px')); s4.appendChild(s4R); sheet.appendChild(s4);
     monOverlay.appendChild(sheet); monOverlay.style.display = 'flex';
   }
+  wrap.appendChild(monOverlay);
   return wrap;
 };
