@@ -8,32 +8,27 @@ window._pokemonMonDefault = function() {
 };
 window.renderPokemonSheet = function(scheda) {
   function handleAvatarClick(currentAvatar, callback) {
-    if (confirm('Vuoi caricare un\'immagine dal PC? (Clicca "Annulla" per inserire un URL)')) {
-      var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
-      document.body.appendChild(fi);
-      fi.onchange = function(e) {
-        document.body.removeChild(fi);
-        var f = e.target.files[0]; if (!f) return;
-        var rd = new FileReader();
-        rd.onload = function(ev) {
-          var img = new Image();
-          img.onload = function() {
-            var max = 600; var ratio = Math.min(1, max/img.width, max/img.height);
-            var cv = document.createElement('canvas'); cv.width = img.width * ratio; cv.height = img.height * ratio;
-            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-            callback(cv.toDataURL('image/jpeg', 0.85));
-          };
-          img.src = ev.target.result;
+    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+    document.body.appendChild(fi);
+    fi.onchange = function(e) {
+      document.body.removeChild(fi);
+      var f = e.target.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function(ev) {
+        var img = new Image();
+        img.onload = function() {
+          var max = 600; var ratio = Math.min(1, max/img.width, max/img.height);
+          var cv = document.createElement('canvas'); cv.width = img.width * ratio; cv.height = img.height * ratio;
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          callback(cv.toDataURL('image/jpeg', 0.85));
         };
-        rd.readAsDataURL(f);
+        img.src = ev.target.result;
       };
-      // Handle cancellation to remove from DOM if user cancels file dialog
-      window.addEventListener('focus', function handler() { setTimeout(function(){ if(fi.parentNode) document.body.removeChild(fi); }, 1000); window.removeEventListener('focus', handler); }, {once:true});
-      fi.click();
-    } else {
-      var u = prompt('Immagine URL:', currentAvatar);
-      if (u !== null) callback(u);
-    }
+      rd.readAsDataURL(f);
+    };
+    // Handle cancellation to remove from DOM if user cancels file dialog
+    window.addEventListener('focus', function handler() { setTimeout(function(){ if(fi.parentNode) document.body.removeChild(fi); }, 1000); window.removeEventListener('focus', handler); }, {once:true});
+    fi.click();
   }
 
   scheda.party = scheda.party || []; scheda.attrs = scheda.attrs || {}; scheda.skills = scheda.skills || {}; scheda.social = scheda.social || {}; scheda.inventory = scheda.inventory || {}; scheda.badges = scheda.badges || ['', '', '', '', '', '', '', '']; scheda.pokedex = scheda.pokedex || {};
