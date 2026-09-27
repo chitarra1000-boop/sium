@@ -95,6 +95,9 @@ window.renderNarutoSheet = function(scheda) {
       if (window.renderMain) window.renderMain();
     }
   };
+  var btnSave = document.createElement('button'); btnSave.textContent = 'SALVA SCHEDA'; btnSave.style.cssText = 'background:#2d4a22; border:1px solid #4caf50; color:#fff; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:Cinzel, serif; margin-right:10px; font-weight:bold;';
+  btnSave.onclick = function() { save(); if(window.fbSaveScheda) window.fbSaveScheda(true); alert('Salvataggio forzato completato con successo!'); };
+  if (!window.state || !window.state.schedePGViewMode) nav.appendChild(btnSave);
   if (!window.state || !window.state.schedePGViewMode) nav.appendChild(btnDel);
   wrap.appendChild(nav);
 

@@ -39,6 +39,9 @@ window.renderPokemonSheet = function(scheda) {
   nav.appendChild(bk); var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
   var btnDel = document.createElement('button'); btnDel.textContent = 'Elimina Scheda'; btnDel.style.cssText = 'background:#4a1010; border:1px solid #c04040; color:#f08080; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
   btnDel.onclick = function() { if (!confirm('Sei sicuro di voler ELIMINARE DEFINITIVAMENTE questa scheda?')) return; if (window.state && window.state.schedaAttivaId) { if(window.fbDeleteSchedaItem) { window.fbDeleteSchedaItem(window.state.schedaAttivaId); } else if(window._db) { window._db.ref('schedePG/' + window.state.currentUser.username + '/chars/' + window.state.schedaAttivaId).remove(); } let idx = window.state.schedeList.findIndex(s => s.id === window.state.schedaAttivaId); if(idx>=0) window.state.schedeList.splice(idx,1); window.state.schedaAttivaId = null; window.state.scheda = {}; if (window.renderMain) window.renderMain(); } };
+  var btnSave = document.createElement('button'); btnSave.textContent = 'SALVA SCHEDA'; btnSave.style.cssText = 'background:#2d4a22; border:1px solid #4caf50; color:#fff; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:Cinzel, serif; margin-right:10px; font-weight:bold;';
+  btnSave.onclick = function() { save(); if(window.fbSaveScheda) window.fbSaveScheda(true); alert('Salvataggio forzato completato con successo!'); };
+  if (!window.state || !window.state.schedePGViewMode) nav.appendChild(btnSave);
   if (!window.state || !window.state.schedePGViewMode) nav.appendChild(btnDel);
   wrap.appendChild(nav);
   var contentArea = document.createElement('div'); contentArea.style.cssText = 'flex:1; overflow-y:auto; position:relative; padding:20px; color:#3B2C21;';
