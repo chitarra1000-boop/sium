@@ -7,6 +7,7 @@ window._pokemonMonDefault = function() {
   return { id: 'p' + Date.now() + Math.floor(Math.random()*1000), avatar: '', numero: '', nome: '', abilita: '', hp: '', will: '', held: '', status: '', init: '', acc: '', dmg: '', eva: '', clash: '', def: '', sdef: '', rank: '', mosse: [ { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' }, { nome: '', tipo: '', freq: '', note: '' } ], attrs: { str: 0, dex: 0, vit: 0, spc: 0, ins: 0 }, size: '', weight: '', social: { tough: 0, cool: 0, beauty: 0, cute: 0, clever: 0 }, natura: '', conf: '', hap: 0, loy: 0, battles: '', victories: '', accessories: '', tipo: '', weakness: '' };
 };
 window.renderPokemonSheet = function(scheda) {
+  console.log('[POKEMON LOAD] Dati recuperati:', JSON.parse(JSON.stringify(scheda)));
   function handleAvatarClick(currentAvatar, callback) {
     var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
     document.body.appendChild(fi);

@@ -6116,17 +6116,21 @@ function _schedaFix(raw) {
 }
 var _schedaSaveTimer=null;
 function fbSaveScheda(immediate) {
-    if(!_db||!state.currentUser||!state.schedaAttivaId) return;
-    clearTimeout(_schedaSaveTimer);
-    var _sid=state.schedaAttivaId;
-    var doSave = function() {
-      var data=Object.assign({},state.scheda); delete data.id;
-      _db.ref('schedePG/'+state.currentUser.username+'/chars/'+_sid).set(data);
-      var _idx = state.schedeList.findIndex(function(s){return s.id===_sid;}); if(_idx>=0) state.schedeList[_idx] = Object.assign({}, state.scheda);
-    };
-    if (immediate===true) doSave();
-    else _schedaSaveTimer=setTimeout(doSave,600);
-  }
+      if(!_db||!state.currentUser||!state.schedaAttivaId || !state.scheda || Object.keys(state.scheda).length===0) return;
+      clearTimeout(_schedaSaveTimer);
+      var _sid=state.schedaAttivaId;
+      var snapshot = JSON.parse(JSON.stringify(state.scheda));
+        delete snapshot.id;
+        if (snapshot.schedaTipo === 'pokemon') console.log('[POKEMON SAVE] Payload inviato:', snapshot);
+        if (snapshot.schedaTipo === 'naruto') console.log('[NARUTO SAVE] Payload inviato:', snapshot);
+      var doSave = function() {
+        _db.ref('schedePG/'+state.currentUser.username+'/chars/'+_sid).set(snapshot);
+        var _idx = state.schedeList.findIndex(function(s){return s.id===_sid;});
+        if(_idx>=0) { state.schedeList[_idx] = JSON.parse(JSON.stringify(snapshot)); state.schedeList[_idx].id = _sid; }
+      };
+      if (immediate===true) doSave();
+      else _schedaSaveTimer=setTimeout(doSave,600);
+    }
 function fbLoadSchede(cb) {
   if(!_db||!state.currentUser){state.schedeList=[];state.companions={};state.schedaLoaded=true;if(cb)cb();return;}
   _db.ref('schedePG/'+state.currentUser.username).once('value',function(snap){

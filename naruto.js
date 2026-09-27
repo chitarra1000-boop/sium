@@ -24,6 +24,7 @@ window._narutoDefault = function(id) {
 };
 
 window.renderNarutoSheet = function(scheda) {
+  console.log('[NARUTO LOAD] Dati recuperati:', JSON.parse(JSON.stringify(scheda)));
   function handleAvatarClick(currentAvatar, callback) {
     var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
     document.body.appendChild(fi);
