@@ -9156,14 +9156,14 @@ function _renderTipoSelectorModal(onSelect) {
   grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem;';
 
   var types = [
-    { key: 'normale', label: 'D&D 5e', thumb: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/8e/Dungeons_%26_Dragons_5th_Edition_logo.svg/800px-Dungeons_%26_Dragons_5th_Edition_logo.svg.png', desc: 'Scheda digitale interattiva' },
-    { key: 'onepiece', label: 'One Piece D&D', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Jolly_Roger_of_the_Straw_Hat_Pirates.svg/512px-Jolly_Roger_of_the_Straw_Hat_Pirates.svg.png', desc: 'Dungeons & Devil Fruits' },
-    { key: 'pokemon', label: 'Pokémon Tabletop', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/512px-Pok%C3%A9_Ball_icon.svg.png', desc: 'Trainer & Party System' },
-    { key: 'naruto', label: 'NARUTO 5e', thumb: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Naruto_logo.svg/500px-Naruto_logo.svg.png', desc: 'Shinobi & Chakra System' }
+    { key: 'normale', label: 'D&D 5e', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTc1MjM5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNS0xMC01ek0yIDE3bDEwIDUgMTAtNU0yIDEybDEwIDUgMTAtNSIvPjwvc3ZnPg==', desc: 'Scheda digitale interattiva' },
+    { key: 'onepiece', label: 'One Piece D&D', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iNSIvPjxwYXRoIGQ9Ik03IDE0czIgMyA1IDMgNS0zIDUtM00xMiAydjNNMTIgMTV2M000IDEwaDNNMTcgMTBoMyIvPjwvc3ZnPg==', desc: 'Dungeons & Devil Fruits' },
+    { key: 'pokemon', label: 'Pokémon Tabletop', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRTc1MjM5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIi8+PHBhdGggZD0iTTIgMTJoN00xNSAxMmg3Ii8+PC9zdmc+', desc: 'Trainer & Party System' },
+    { key: 'naruto', label: 'NARUTO 5e', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBhNTAwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgMTQuNWMtMi40OSAwLTQuNS0yLjAxLTQuNS00LjVTOS41MSA3LjUgMTIgNy41czQuNSAyLjAxIDQuNSA0LjUtMi4wMSA0LjUtNC41IDQuNXptMC03LjVjLTEuNjYgMC0zIDEuMzQtMyAzczEuMzQgMyAzIDMgMy0xLjM0IDMtMy0xLjM0LTMtMy0zeiIvPjwvc3ZnPg==', desc: 'Shinobi & Chakra System' }
   ];
   Object.keys(SHEET_DEFS).forEach(function(k) {
     var thumb = SHEET_DEFS[k].thumbnail;
-    if (k === '7thsea') thumb = 'https://upload.wikimedia.org/wikipedia/en/9/93/7th_Sea_2nd_Edition_cover.jpg';
+    if (k === '7thsea') thumb = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDA0NDg4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48cGF0aCBkPSJNMTIgMnYyME0yIDEyaDIwTTQuOTMgNC45M2wxNC4xNCAxNC4xNE00LjkzIDE5LjA3TDE5LjA3IDQuOTMiLz48L3N2Zz4=';
     types.push({ key: k, label: SHEET_DEFS[k].label, thumb: thumb, desc: 'Sistema Custom / Pdf' });
   });
 
