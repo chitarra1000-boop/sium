@@ -139,7 +139,7 @@ window.renderNarutoSheet = function(scheda) {
   function passBadge(lbl, k) { var b=document.createElement('div'); b.style.cssText='border:2px solid #000; border-radius:10px; display:flex; flex-direction:column; align-items:center; padding:2px; flex:1;'; var i=makeInput(scheda.passives, k, '', '100%', 'text-align:center; border:none; border-bottom:1px solid #000; font-size:14px; font-weight:bold;'); var l=document.createElement('div'); l.textContent=lbl; l.style.cssText='font-size:9px; text-align:center;'; b.appendChild(i); b.appendChild(l); return b; }
   passRow.appendChild(passBadge('Passive Perception', 'perception')); passRow.appendChild(passBadge('Passive Insight', 'insight'));
   hLeft.appendChild(passRow);
-  var wof = document.createElement('div'); wof.style.cssText = 'border:2px solid #000; border-radius:20px; text-align:center; padding:5px; font-weight:bold; font-size:14px; letter-spacing:1px; margin-top:5px;'; wof.textContent = 'Will of Fire'; hLeft.appendChild(wof);
+  var wof = document.createElement('div'); wof.style.cssText = 'border:2px solid #000; border-radius:20px; text-align:center; padding:5px; font-weight:bold; font-size:14px; letter-spacing:1px; margin-top:5px; cursor:pointer; transition:color 0.2s;'; wof.textContent = 'Will of Fire'; wof.style.color = scheda.willOfFire ? '#d32f2f' : '#000'; wof.onclick = function() { scheda.willOfFire = !scheda.willOfFire; wof.style.color = scheda.willOfFire ? '#d32f2f' : '#000'; save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); } }; hLeft.appendChild(wof);
   hRow.appendChild(hLeft);
   
   var hRight = document.createElement('div'); hRight.style.cssText = 'flex:1; border:2px solid #000; border-radius:10px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: 1px 1px 0 rgba(0,0,0,0.1);';
@@ -163,7 +163,7 @@ window.renderNarutoSheet = function(scheda) {
   var leftCol = document.createElement('div'); leftCol.style.cssText = 'display:flex; flex-direction:column; gap:10px;';
   function makeStat(title, obj, modKey, skillsArr) {
     let b = document.createElement('div'); b.style.cssText = 'border:2px solid #000; border-radius:10px; display:flex; position:relative; padding-top:10px;';
-    let bL = document.createElement('div'); bL.style.cssText = 'width:60px; display:flex; flex-direction:column; align-items:center; padding:5px;';
+    let bL = document.createElement('div'); bL.style.cssText = 'width:80px; display:flex; flex-direction:column; align-items:center; padding:5px; flex-shrink:0;';
     let t = document.createElement('div'); t.textContent = title; t.style.cssText = 'font-size:9px; font-weight:bold; margin-bottom:2px;'; bL.appendChild(t);
     let vI = makeInput(obj, modKey, '10', '100%', 'text-align:center; font-size:18px; font-weight:bold; border:none; margin-bottom:5px;'); bL.appendChild(vI);
     let mS = document.createElement('div'); mS.style.cssText = 'border:2px solid #000; border-radius:50%; width:30px; height:30px; line-height:26px; text-align:center; font-weight:bold; font-size:12px;';
@@ -349,6 +349,39 @@ window.renderNarutoSheet = function(scheda) {
   addFeat.appendChild(makeInput(scheda, 'features2', '', '100%', 'flex:1; resize:none; border:none; background:transparent; font-size:11px;', true));
   var addL = document.createElement('div'); addL.textContent = 'ADDITIONAL FEATURES & TRAITS'; addL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:5px;'; addFeat.appendChild(addL);
   p2R.appendChild(addFeat);
+  var abilityBox = document.createElement('div'); abilityBox.style.cssText = 'border:2px solid #000; border-radius:10px; padding:10px; display:flex; flex-direction:column; min-height:250px; box-shadow:1px 1px 0 rgba(0,0,0,0.1); margin-top:20px;';
+  var abWrap = document.createElement('div'); abWrap.style.cssText = 'width:100%; flex:1; border:2px dashed #CCC; margin-bottom:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;';
+  var abImg = document.createElement('img'); abImg.style.cssText = 'width:100%; height:100%; object-fit:contain; display:none;';
+  var abTxt = document.createElement('div'); abTxt.style.cssText = 'color:#999; font-size:12px; font-weight:bold; text-align:center;'; abTxt.innerHTML = 'CLICK TO UPLOAD<br>ABILITY IMAGE';
+  if (scheda.abilityImg) { abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none'; }
+  abWrap.appendChild(abTxt); abWrap.appendChild(abImg);
+  abWrap.onclick = function() {
+    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none'; document.body.appendChild(fi);
+    fi.onchange = function(e) {
+      document.body.removeChild(fi);
+      var f = e.target.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function(ev) {
+        var img = new Image();
+        img.onload = function() {
+          var cv = document.createElement('canvas'); var max = 1000; var ratio = Math.min(1, max/img.width, max/img.height);
+          cv.width = img.width * ratio; cv.height = img.height * ratio;
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          scheda.abilityImg = cv.toDataURL('image/jpeg', 0.85);
+          abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none';
+          save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); }
+        };
+        img.src = ev.target.result;
+      };
+      rd.readAsDataURL(f);
+    };
+    window.addEventListener('focus', function handler() { setTimeout(function(){ if(fi.parentNode) document.body.removeChild(fi); }, 1000); window.removeEventListener('focus', handler); }, {once:true});
+    fi.click();
+  };
+  abilityBox.appendChild(abWrap);
+  var abL = document.createElement('div'); abL.textContent = 'ABILITY IMAGE ATTACHMENT'; abL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:5px;'; abilityBox.appendChild(abL);
+  p2R.appendChild(abilityBox);
+
   p2grid.appendChild(p2R);
   p2.appendChild(p2grid);
   sheet.appendChild(p2);
