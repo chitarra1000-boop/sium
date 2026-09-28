@@ -82,6 +82,16 @@ window.renderNarutoSheet = function(scheda) {
   };
   nav.appendChild(bk);
   var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
+  var zoomWrap = document.createElement('div'); zoomWrap.style.cssText = 'display:flex; align-items:center; gap:5px; margin-right:15px; color:#fff; font-size:11px; font-weight:bold;';
+  var zoomLbl = document.createElement('span'); zoomLbl.textContent = 'Zoom:'; zoomWrap.appendChild(zoomLbl);
+  var zoomInp = document.createElement('input'); zoomInp.type = 'range'; zoomInp.min = '50'; zoomInp.max = '200'; zoomInp.value = '100'; zoomInp.style.cssText = 'width:80px; cursor:pointer;';
+  zoomInp.oninput = function() { contentArea.style.zoom = (this.value / 100); };
+  var zoomReset = document.createElement('button'); zoomReset.textContent = '100%'; zoomReset.style.cssText = 'background:transparent; border:1px solid #666; color:#ccc; border-radius:3px; padding:2px 5px; cursor:pointer; font-size:9px;';
+  zoomReset.onclick = function() { zoomInp.value = 100; contentArea.style.zoom = 1; }; zoomWrap.appendChild(zoomInp); zoomWrap.appendChild(zoomReset); nav.appendChild(zoomWrap);
+  var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
+  lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
+  nav.appendChild(lavToggle);
+
   var btnDel = document.createElement('button');
   btnDel.textContent = 'Elimina Scheda';
   btnDel.style.cssText = 'background:#4a1010; border:1px solid #c04040; color:#f08080; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
@@ -349,64 +359,6 @@ window.renderNarutoSheet = function(scheda) {
   addFeat.appendChild(makeInput(scheda, 'features2', '', '100%', 'flex:1; resize:none; border:none; background:transparent; font-size:11px;', true));
   var addL = document.createElement('div'); addL.textContent = 'ADDITIONAL FEATURES & TRAITS'; addL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:5px;'; addFeat.appendChild(addL);
   p2R.appendChild(addFeat);
-  var abilityBox = document.createElement('div'); abilityBox.style.cssText = 'border:2px solid #000; border-radius:10px; padding:10px; display:flex; flex-direction:column; min-height:250px; box-shadow:1px 1px 0 rgba(0,0,0,0.1); margin-top:20px;';
-  var abWrap = document.createElement('div'); abWrap.style.cssText = 'width:100%; flex:1; border:2px dashed #CCC; margin-bottom:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;';
-  var abImg = document.createElement('img'); abImg.style.cssText = 'width:100%; height:100%; object-fit:contain; display:none;';
-  var abTxt = document.createElement('div'); abTxt.style.cssText = 'color:#999; font-size:12px; font-weight:bold; text-align:center;'; abTxt.innerHTML = 'CLICK TO UPLOAD<br>OR CTRL+V TO PASTE';
-  if (scheda.abilityImg) { abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none'; }
-  abWrap.appendChild(abTxt); abWrap.appendChild(abImg);
-  abWrap.onclick = function() {
-    var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none'; document.body.appendChild(fi);
-    fi.onchange = function(e) {
-      document.body.removeChild(fi);
-      var f = e.target.files[0]; if (!f) return;
-      var rd = new FileReader();
-      rd.onload = function(ev) {
-        var img = new Image();
-        img.onload = function() {
-          var cv = document.createElement('canvas'); var max = 1000; var ratio = Math.min(1, max/img.width, max/img.height);
-          cv.width = img.width * ratio; cv.height = img.height * ratio;
-          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-          scheda.abilityImg = cv.toDataURL('image/jpeg', 0.85);
-          abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none';
-          save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); }
-        };
-        img.src = ev.target.result;
-      };
-      rd.readAsDataURL(f);
-    };
-    window.addEventListener('focus', function handler() { setTimeout(function(){ if(fi.parentNode) document.body.removeChild(fi); }, 1000); window.removeEventListener('focus', handler); }, {once:true});
-    fi.click();
-  };
-  abilityBox.appendChild(abWrap);
-  function onAbilityPaste(e) {
-    if (!window.state || window.state.schedaAttivaId !== scheda.id || window.state.scheda.schedaTipo !== 'naruto') { document.removeEventListener('paste', onAbilityPaste); return; }
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    var items = e.clipboardData && e.clipboardData.items; if(!items) return;
-    for(var i=0; i<items.length; i++) {
-      if(items[i].type.indexOf('image') !== -1) {
-        var f = items[i].getAsFile(); var rd = new FileReader();
-        rd.onload = function(ev) {
-          var img = new Image();
-          img.onload = function() {
-            var cv = document.createElement('canvas'); var max = 1000; var ratio = Math.min(1, max/img.width, max/img.height);
-            cv.width = img.width * ratio; cv.height = img.height * ratio;
-            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-            scheda.abilityImg = cv.toDataURL('image/jpeg', 0.85);
-            abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none';
-            save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); }
-          };
-          img.src = ev.target.result;
-        };
-        rd.readAsDataURL(f); e.preventDefault(); break;
-      }
-    }
-  }
-  document.addEventListener('paste', onAbilityPaste);
-
-  var abL = document.createElement('div'); abL.textContent = 'ABILITY IMAGE ATTACHMENT'; abL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:5px;'; abilityBox.appendChild(abL);
-  p2R.appendChild(abilityBox);
-
   p2grid.appendChild(p2R);
   p2.appendChild(p2grid);
   sheet.appendChild(p2);
@@ -455,5 +407,12 @@ window.renderNarutoSheet = function(scheda) {
 
   content.appendChild(sheet);
   wrap.appendChild(content);
+    var lavPane = document.createElement('div'); lavPane.style.cssText = 'position:absolute; top:0; right:0; height:100%; background:#1a1a2e; border-left:1px solid rgba(201,165,92,0.4); transition:width 0.3s; overflow:hidden; z-index:9000; box-shadow:-2px 0 10px rgba(0,0,0,0.5);';
+  lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px';
+  var lavInner = document.createElement('div'); lavInner.style.cssText = 'width:300px; height:100%;';
+  if(window.state.lavagnaOpen) { lavInner.appendChild(window.renderLavagna()); }
+  lavPane.appendChild(lavInner);
+  wrap.appendChild(lavPane);
+
   return wrap;
 };
