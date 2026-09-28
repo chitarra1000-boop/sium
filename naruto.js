@@ -53,13 +53,14 @@ window.renderNarutoSheet = function(scheda) {
   scheda.nomePersonaggio = scheda.nomePersonaggio || scheda.nome || '';
   scheda.classeLivello = scheda.classeLivello || scheda.classelivello || '';
   
+  scheda.passives = scheda.passives || {};
   scheda.stats = scheda.stats || {}; scheda.saves = scheda.saves || {}; scheda.skills = scheda.skills || {};
   scheda.combat = scheda.combat || {}; scheda.traits = scheda.traits || {}; scheda.attacks = scheda.attacks || [];
   scheda.appearance = scheda.appearance || {}; scheda.natureAffinity = scheda.natureAffinity || {};
   scheda.jutsuBonuses = scheda.jutsuBonuses || {}; scheda.jutsu = scheda.jutsu || { e:[], d:[], c:[], b:[], a:[], s:[] };
 
   let saveTimer = null;
-  function save() {
+  function save() { if (window.state && window.state.schedePGViewMode) return;
     scheda.nome = scheda.nomePersonaggio; // Sync back
     scheda.classelivello = scheda.classeLivello;
     if (!window._db || !window.state || !window.state.currentUser) return;

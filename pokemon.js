@@ -64,7 +64,7 @@ window.renderPokemonSheet = function(scheda) {
   }, {passive:false});
 
   var monOverlay = document.createElement('div'); monOverlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,234,211,0.95); z-index:100; display:none; flex-direction:column; padding:20px; overflow-y:auto; backdrop-filter:blur(4px);';
-  function save() { scheda.nomePersonaggio = scheda.nome; scheda.classelivello = scheda.classeLivello; scheda.aspettoImg = scheda.avatar; if (window.fbSaveScheda) window.fbSaveScheda(); }
+  function save() { if (window.state && window.state.schedePGViewMode) return; scheda.nomePersonaggio = scheda.nome; scheda.classelivello = scheda.classeLivello; scheda.aspettoImg = scheda.avatar; if (window.fbSaveScheda) window.fbSaveScheda(); }
   function createBoxTitle(text) { var t = document.createElement('div'); t.style.cssText = 'font-weight:900; font-size:18px; color:#E75239; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;'; t.textContent = text; return t; }
   function createInput(label, obj, key, type, width, height) {
     var d = document.createElement('div'); d.style.cssText = 'display:flex; align-items:center; gap:5px; margin-bottom:5px;';
