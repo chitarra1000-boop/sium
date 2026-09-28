@@ -352,7 +352,7 @@ window.renderNarutoSheet = function(scheda) {
   var abilityBox = document.createElement('div'); abilityBox.style.cssText = 'border:2px solid #000; border-radius:10px; padding:10px; display:flex; flex-direction:column; min-height:250px; box-shadow:1px 1px 0 rgba(0,0,0,0.1); margin-top:20px;';
   var abWrap = document.createElement('div'); abWrap.style.cssText = 'width:100%; flex:1; border:2px dashed #CCC; margin-bottom:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative;';
   var abImg = document.createElement('img'); abImg.style.cssText = 'width:100%; height:100%; object-fit:contain; display:none;';
-  var abTxt = document.createElement('div'); abTxt.style.cssText = 'color:#999; font-size:12px; font-weight:bold; text-align:center;'; abTxt.innerHTML = 'CLICK TO UPLOAD<br>ABILITY IMAGE';
+  var abTxt = document.createElement('div'); abTxt.style.cssText = 'color:#999; font-size:12px; font-weight:bold; text-align:center;'; abTxt.innerHTML = 'CLICK TO UPLOAD<br>OR CTRL+V TO PASTE';
   if (scheda.abilityImg) { abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none'; }
   abWrap.appendChild(abTxt); abWrap.appendChild(abImg);
   abWrap.onclick = function() {
@@ -379,6 +379,31 @@ window.renderNarutoSheet = function(scheda) {
     fi.click();
   };
   abilityBox.appendChild(abWrap);
+  function onAbilityPaste(e) {
+    if (!window.state || window.state.schedaAttivaId !== scheda.id || window.state.scheda.schedaTipo !== 'naruto') { document.removeEventListener('paste', onAbilityPaste); return; }
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    var items = e.clipboardData && e.clipboardData.items; if(!items) return;
+    for(var i=0; i<items.length; i++) {
+      if(items[i].type.indexOf('image') !== -1) {
+        var f = items[i].getAsFile(); var rd = new FileReader();
+        rd.onload = function(ev) {
+          var img = new Image();
+          img.onload = function() {
+            var cv = document.createElement('canvas'); var max = 1000; var ratio = Math.min(1, max/img.width, max/img.height);
+            cv.width = img.width * ratio; cv.height = img.height * ratio;
+            cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+            scheda.abilityImg = cv.toDataURL('image/jpeg', 0.85);
+            abImg.src = scheda.abilityImg; abImg.style.display = 'block'; abTxt.style.display = 'none';
+            save(); if(window._schedaSaveTimer) { clearTimeout(window._schedaSaveTimer); window.fbSaveScheda(true); }
+          };
+          img.src = ev.target.result;
+        };
+        rd.readAsDataURL(f); e.preventDefault(); break;
+      }
+    }
+  }
+  document.addEventListener('paste', onAbilityPaste);
+
   var abL = document.createElement('div'); abL.textContent = 'ABILITY IMAGE ATTACHMENT'; abL.style.cssText = 'font-weight:bold; text-align:center; font-size:12px; margin-top:5px;'; abilityBox.appendChild(abL);
   p2R.appendChild(abilityBox);
 
