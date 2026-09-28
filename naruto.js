@@ -57,7 +57,8 @@ window.renderNarutoSheet = function(scheda) {
   scheda.stats = scheda.stats || {}; scheda.saves = scheda.saves || {}; scheda.skills = scheda.skills || {};
   scheda.combat = scheda.combat || {}; scheda.traits = scheda.traits || {}; scheda.attacks = scheda.attacks || [];
   scheda.appearance = scheda.appearance || {}; scheda.natureAffinity = scheda.natureAffinity || {};
-  scheda.jutsuBonuses = scheda.jutsuBonuses || {}; scheda.jutsu = scheda.jutsu || { e:[], d:[], c:[], b:[], a:[], s:[] };
+  scheda.jutsuBonuses = scheda.jutsuBonuses || {}; scheda.jutsu = scheda.jutsu || {};
+  ['e','d','c','b','a','s'].forEach(function(k) { scheda.jutsu[k] = scheda.jutsu[k] || []; });
 
   let saveTimer = null;
   function save() { if (window.state && window.state.schedePGViewMode) return;
