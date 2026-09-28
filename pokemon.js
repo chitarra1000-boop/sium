@@ -37,21 +37,9 @@ window.renderPokemonSheet = function(scheda) {
   var nav = document.createElement('div'); nav.style.cssText = 'background:#1a1a1a; border-bottom:1px solid #333; padding:0.45rem 1rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; position:sticky; top:0; z-index:200;';
   var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
   lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
-  var zoomWrap = document.createElement('div'); zoomWrap.style.cssText = 'display:flex; align-items:center; gap:5px; margin-right:15px; color:#fff; font-size:11px; font-weight:bold;';
-  var zoomLbl = document.createElement('span'); zoomLbl.textContent = 'Zoom:'; zoomWrap.appendChild(zoomLbl);
-  var zoomInp = document.createElement('input'); zoomInp.type = 'range'; zoomInp.min = '50'; zoomInp.max = '200'; zoomInp.value = '100'; zoomInp.style.cssText = 'width:80px; cursor:pointer;';
-  zoomInp.oninput = function() { contentArea.style.zoom = (this.value / 100); if (typeof monOverlay !== 'undefined') monOverlay.style.zoom = (this.value / 100); };
-  var zoomReset = document.createElement('button'); zoomReset.textContent = '100%'; zoomReset.style.cssText = 'background:transparent; border:1px solid #666; color:#ccc; border-radius:3px; padding:2px 5px; cursor:pointer; font-size:9px;';
-  zoomReset.onclick = function() { zoomInp.value = 100; contentArea.style.zoom = 1; if (typeof monOverlay !== 'undefined') monOverlay.style.zoom = 1; }; zoomWrap.appendChild(zoomInp); zoomWrap.appendChild(zoomReset); nav.appendChild(zoomWrap); nav.appendChild(lavToggle);
   var bk = document.createElement('button'); bk.innerHTML = '&#8592; Torna ai personaggi'; bk.style.cssText = 'background:#444; border:1px solid #666; color:#ccc; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
   bk.onclick = function() { if(window.state && window.state.schedePGViewMode) { window.state.schedePGViewMode=false; window.state.schedePGOpenChar=null; window.state.schedaAttivaId=null; window.state.scheda={}; window.state.companions={}; } else { window.state.schedaAttivaId=null; window.state.scheda={}; } if (window.renderMain) window.renderMain(); };
   nav.appendChild(bk); var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
-  var zoomWrap = document.createElement('div'); zoomWrap.style.cssText = 'display:flex; align-items:center; gap:5px; margin-right:15px; color:#fff; font-size:11px; font-weight:bold;';
-  var zoomLbl = document.createElement('span'); zoomLbl.textContent = 'Zoom:'; zoomWrap.appendChild(zoomLbl);
-  var zoomInp = document.createElement('input'); zoomInp.type = 'range'; zoomInp.min = '50'; zoomInp.max = '200'; zoomInp.value = '100'; zoomInp.style.cssText = 'width:80px; cursor:pointer;';
-  zoomInp.oninput = function() { contentArea.style.zoom = (this.value / 100); };
-  var zoomReset = document.createElement('button'); zoomReset.textContent = '100%'; zoomReset.style.cssText = 'background:transparent; border:1px solid #666; color:#ccc; border-radius:3px; padding:2px 5px; cursor:pointer; font-size:9px;';
-  zoomReset.onclick = function() { zoomInp.value = 100; contentArea.style.zoom = 1; }; zoomWrap.appendChild(zoomInp); zoomWrap.appendChild(zoomReset); nav.appendChild(zoomWrap);
   var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
   lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
   nav.appendChild(lavToggle);
@@ -64,6 +52,17 @@ window.renderPokemonSheet = function(scheda) {
   if (!window.state || !window.state.schedePGViewMode) nav.appendChild(btnDel);
   wrap.appendChild(nav);
   var contentArea = document.createElement('div'); contentArea.style.cssText = 'flex:1; overflow-y:auto; position:relative; padding:20px; color:#3B2C21;';
+  window.state.schedaZoom = window.state.schedaZoom || 1;
+  contentArea.style.zoom = window.state.schedaZoom;
+  contentArea.addEventListener('wheel', function(e){
+    if(e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      window.state.schedaZoom = Math.max(0.4, Math.min(2.5, window.state.schedaZoom - (e.deltaY > 0 ? 0.1 : -0.1)));
+      contentArea.style.zoom = window.state.schedaZoom;
+      if (typeof monOverlay !== 'undefined' && monOverlay) monOverlay.style.zoom = window.state.schedaZoom;
+    }
+  }, {passive:false});
+
   var monOverlay = document.createElement('div'); monOverlay.style.cssText = 'position:absolute; inset:0; background:rgba(241,234,211,0.95); z-index:100; display:none; flex-direction:column; padding:20px; overflow-y:auto; backdrop-filter:blur(4px);';
   function save() { scheda.nomePersonaggio = scheda.nome; scheda.classelivello = scheda.classeLivello; scheda.aspettoImg = scheda.avatar; if (window.fbSaveScheda) window.fbSaveScheda(); }
   function createBoxTitle(text) { var t = document.createElement('div'); t.style.cssText = 'font-weight:900; font-size:18px; color:#E75239; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.05em;'; t.textContent = text; return t; }

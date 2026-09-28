@@ -82,12 +82,6 @@ window.renderNarutoSheet = function(scheda) {
   };
   nav.appendChild(bk);
   var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
-  var zoomWrap = document.createElement('div'); zoomWrap.style.cssText = 'display:flex; align-items:center; gap:5px; margin-right:15px; color:#fff; font-size:11px; font-weight:bold;';
-  var zoomLbl = document.createElement('span'); zoomLbl.textContent = 'Zoom:'; zoomWrap.appendChild(zoomLbl);
-  var zoomInp = document.createElement('input'); zoomInp.type = 'range'; zoomInp.min = '50'; zoomInp.max = '200'; zoomInp.value = '100'; zoomInp.style.cssText = 'width:80px; cursor:pointer;';
-  zoomInp.oninput = function() { contentArea.style.zoom = (this.value / 100); };
-  var zoomReset = document.createElement('button'); zoomReset.textContent = '100%'; zoomReset.style.cssText = 'background:transparent; border:1px solid #666; color:#ccc; border-radius:3px; padding:2px 5px; cursor:pointer; font-size:9px;';
-  zoomReset.onclick = function() { zoomInp.value = 100; contentArea.style.zoom = 1; }; zoomWrap.appendChild(zoomInp); zoomWrap.appendChild(zoomReset); nav.appendChild(zoomWrap);
   var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
   lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
   nav.appendChild(lavToggle);
@@ -114,6 +108,15 @@ window.renderNarutoSheet = function(scheda) {
 
   var content = document.createElement('div');
   content.style.cssText = 'flex:1; overflow-y:auto; padding:20px;';
+  window.state.schedaZoom = window.state.schedaZoom || 1;
+  content.style.zoom = window.state.schedaZoom;
+  content.addEventListener('wheel', function(e){
+    if(e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      window.state.schedaZoom = Math.max(0.4, Math.min(2.5, window.state.schedaZoom - (e.deltaY > 0 ? 0.1 : -0.1)));
+      content.style.zoom = window.state.schedaZoom;
+    }
+  }, {passive:false});
 
   var sheet = document.createElement('div');
   sheet.style.cssText = 'max-width:900px; margin:0 auto; background:#FFF; border:2px solid #000; padding:20px; box-shadow:0 0 20px rgba(0,0,0,0.5); color:#000;';
