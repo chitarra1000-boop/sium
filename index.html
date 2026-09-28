@@ -6331,7 +6331,7 @@ function _attachMappaListener() {
         }
         _tDone++;
         if (_tDone === _tPaths.length) {
-          state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true };
+          state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; state.mappaList['naruto-world-map'] = { nome: 'Naruto', url: 'iframe', flags: {}, isInteractive: true };
           var keys = Object.keys(state.mappaList);
           if (keys.length > 0) {
             state.mappaActiveId = keys[0];
@@ -6358,7 +6358,7 @@ function _attachMappaListener() {
         if (v) {
           if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
           else if (!v.maps) state.mappaList = state.mappaList || {};
-          if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; }
+          if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; state.mappaList['naruto-world-map'] = { nome: 'Naruto', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; delete state.mappaList['naruto-world-map']; }
           if (typeof v.activeMapId === 'string') {
             state.mappaActiveId = v.activeMapId;
             var activeMap = state.mappaList[state.mappaActiveId];
@@ -6410,7 +6410,7 @@ function _attachMappaListener() {
     if (v) {
       if (v.maps && typeof v.maps === 'object') state.mappaList = v.maps;
       else if (!v.maps) state.mappaList = state.mappaList || {};
-      if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; }
+      if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', flags: {}, isInteractive: true }; state.mappaList['naruto-world-map'] = { nome: 'Naruto', url: 'iframe', flags: {}, isInteractive: true }; } else { delete state.mappaList['world-map-ohara']; delete state.mappaList['naruto-world-map']; }
       
       if (typeof v.activeMapId === 'string') {
         var prevMapId = state.mappaActiveId;
@@ -22153,7 +22153,7 @@ function _refreshMappaSelectorOptions(sel) {
   while (sel.firstChild) sel.removeChild(sel.firstChild);
   
   if (!state.mappaList) state.mappaList = {};
-  if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', isInteractive: true, flags: {} }; } else { delete state.mappaList['world-map-ohara']; }
+  if (_mappaViewAsUser === '__tutte__' || _mappaViewAsUser === '__multiverso__') { state.mappaList['world-map-ohara'] = { nome: 'Mappa Mondiale Completa (Library of Ohara)', url: 'iframe', isInteractive: true, flags: {} }; state.mappaList['naruto-world-map'] = { nome: 'Naruto', url: 'iframe', isInteractive: true, flags: {} }; } else { delete state.mappaList['world-map-ohara']; delete state.mappaList['naruto-world-map']; }
 
   var ids = Object.keys(state.mappaList || {});
   ids.forEach(function(mid) {
@@ -22666,7 +22666,7 @@ function renderMappa() {
     renameMapBtn.title = 'Rinomina mappa selezionata';
     renameMapBtn.onclick = function() {
       if (!state.mappaActiveId || !state.mappaList[state.mappaActiveId]) return;
-      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi rinominare questa mappa speciale.'); return; }
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi rinominare questa mappa speciale.'); return; } if (state.mappaActiveId === 'naruto-world-map') { alert('Non puoi rinominare questa mappa speciale.'); return; }
       var current = state.mappaList[state.mappaActiveId].nome || '';
       var newName = prompt('Nuovo nome:', current);
       if (!newName || newName === current) return;
@@ -22682,7 +22682,7 @@ function renderMappa() {
     addMapBtn.className = 'mappa-btn mappa-btn-add-map';
     addMapBtn.innerHTML = state.mappaUrl ? '✎ Cambia Immagine' : '🗺 Carica Immagine';
     addMapBtn.onclick = function() {
-      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi cambiare l\'immagine di questa mappa speciale.'); return; }
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi cambiare l\'immagine di questa mappa speciale.'); return; } if (state.mappaActiveId === 'naruto-world-map') { alert('Non puoi cambiare l\'immagine di questa mappa speciale.'); return; }
       if (!state.mappaActiveId && Object.keys(state.mappaList || {}).length === 0) {
         alert('Prima crea una mappa con "Nuova Mappa".');
         return;
@@ -22744,7 +22744,7 @@ function renderMappa() {
     delMapBtn.title = 'Elimina mappa selezionata';
     delMapBtn.onclick = function() {
       if (!state.mappaActiveId || !state.mappaList[state.mappaActiveId]) return;
-      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi eliminare questa mappa speciale.'); return; }
+      if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi eliminare questa mappa speciale.'); return; } if (state.mappaActiveId === 'naruto-world-map') { alert('Non puoi eliminare questa mappa speciale.'); return; }
       var nomeMappa = state.mappaList[state.mappaActiveId].nome || state.mappaActiveId;
       if (!confirm('Eliminare "' + nomeMappa + '"? Tutti i flag verranno persi.')) return;
       _db && _db.ref(_mappaBasePath() + '/maps/' + state.mappaActiveId).remove();
@@ -22783,7 +22783,7 @@ function renderMappa() {
       reassignBtn.title = 'Sposta mappa ad altro master o multiverso';
       reassignBtn.onclick = function() {
         if (!state.mappaActiveId || !state.mappaList[state.mappaActiveId]) return;
-        if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi spostare questa mappa speciale.'); return; }
+        if (state.mappaActiveId === 'world-map-ohara') { alert('Non puoi spostare questa mappa speciale.'); return; } if (state.mappaActiveId === 'naruto-world-map') { alert('Non puoi spostare questa mappa speciale.'); return; }
         
         var optionsText = 'Seleziona destinazione:\n1. Multiverso\n';
         var dests = [{ id: 'multiverso', path: 'state/multiverso/mappa' }];
@@ -22965,7 +22965,7 @@ function _updateMappaMoveFlag(dmControls, mapDiv) {
   if (oldMove) oldMove.remove();
   if (oldFlag) oldFlag.remove();
   if (oldOvBtn) oldOvBtn.remove();
-  if (!state.mappaUrl || state.mappaActiveId === 'world-map-ohara') return;
+  if (!state.mappaUrl || state.mappaActiveId === 'world-map-ohara' || state.mappaActiveId === 'naruto-world-map') return;
 
   var moveBtn = document.createElement('button');
   moveBtn.className = 'mappa-btn mappa-btn-move' + (state.mappaMode === 'move' ? ' active' : '');
@@ -23016,6 +23016,11 @@ function initLeafletMap(mapDiv, infoPanel) {
     mapDiv.innerHTML = '<iframe src="https://thelibraryofohara.com/onepieceworldmap/" style="width: 100%; height: 100%; border: none; border-radius: 6px;" allowfullscreen></iframe>';
     return;
   }
+
+  if (state.mappaActiveId === 'naruto-world-map') {
+      mapDiv.innerHTML = '<div style="width: 100%; height: 100%; position: relative; display: flex; flex-direction: column;"><div style="background: #1a1a2e; padding: 10px; text-align: center; border-bottom: 1px solid #c9a55c; flex-shrink: 0;"><a href="https://www.worldanvil.com/w/naruto-5e-world-scarletbunnydungeon/map/0019a94e-5b71-40ad-91a5-c579d57a803e" target="_blank" style="color: #c9a55c; text-decoration: none; font-weight: bold; font-family: \'Cinzel\', serif; border: 1px solid #c9a55c; padding: 5px 15px; border-radius: 4px; display: inline-block; cursor:pointer;">🔗 Apri mappa a schermo intero / nuova scheda</a><div style="font-size: 11px; color: #aaa; margin-top: 5px;">Se la mappa qui sotto non viene caricata o risulta bloccata, usa questo pulsante.</div></div><iframe src="https://www.worldanvil.com/w/naruto-5e-world-scarletbunnydungeon/map/0019a94e-5b71-40ad-91a5-c579d57a803e" style="flex: 1; width: 100%; border: none; border-radius: 0 0 6px 6px;" allowfullscreen></iframe></div>';
+      return;
+    }
 
   if (typeof L === 'undefined') {
     mapDiv.innerHTML = '<div style="padding:2rem;color:var(--text-muted);font-style:italic;">Libreria Leaflet non disponibile. Controlla la connessione.</div>';
