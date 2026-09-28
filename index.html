@@ -5534,7 +5534,15 @@ function doSignIn() {
     try {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
-    } catch(e) {}
+        _db.ref('state/multiverso/mappa/maps').once('value', function(s){
+          var m = s.val() || {};
+          Object.keys(m).forEach(function(k){
+            if (m[k] && m[k].nome === 'Mappe del Mondo di One Piece') {
+              _db.ref('state/multiverso/mappa/maps/' + k).remove();
+            }
+          });
+        });
+      } catch(e) {}
   }
   _db.ref('users/' + u).once('value', function(snap) {
     var ud = snap.val();
@@ -5557,7 +5565,15 @@ function _completeLogin(username, ud) {
     try {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
-    } catch(e) {}
+        _db.ref('state/multiverso/mappa/maps').once('value', function(s){
+          var m = s.val() || {};
+          Object.keys(m).forEach(function(k){
+            if (m[k] && m[k].nome === 'Mappe del Mondo di One Piece') {
+              _db.ref('state/multiverso/mappa/maps/' + k).remove();
+            }
+          });
+        });
+      } catch(e) {}
   }
   if (typeof setupPresence === 'function') setupPresence();
   setupRealtimeListeners();
@@ -5606,7 +5622,15 @@ function initAuth() {
     try {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
-    } catch(e) {}
+        _db.ref('state/multiverso/mappa/maps').once('value', function(s){
+          var m = s.val() || {};
+          Object.keys(m).forEach(function(k){
+            if (m[k] && m[k].nome === 'Mappe del Mondo di One Piece') {
+              _db.ref('state/multiverso/mappa/maps/' + k).remove();
+            }
+          });
+        });
+      } catch(e) {}
   }
   // Sessione NON ripristinata automaticamente: il login viene mostrato ad ogni apertura
   var ov = document.getElementById('login-overlay');
@@ -5625,7 +5649,15 @@ function pgEntra() {
     try {
       if (!_firebaseApp) _firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
       _db = firebase.database();
-    } catch(e) {}
+        _db.ref('state/multiverso/mappa/maps').once('value', function(s){
+          var m = s.val() || {};
+          Object.keys(m).forEach(function(k){
+            if (m[k] && m[k].nome === 'Mappe del Mondo di One Piece') {
+              _db.ref('state/multiverso/mappa/maps/' + k).remove();
+            }
+          });
+        });
+      } catch(e) {}
   }
   setupRealtimeListeners();
   setTimeout(function() { render(); renderUserBadge(); }, 300);
