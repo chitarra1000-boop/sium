@@ -9728,7 +9728,8 @@ function _buildSchedaWithLavagna(){
     +';border:1px solid rgba(201,165,92,'+(state.lavagnaOpen?'0.8':'0.4')+');'
     +'color:#c9a55c;border-radius:5px;padding:5px 9px;cursor:pointer;font-size:16px;'
     +'box-shadow:0 2px 8px rgba(0,0,0,0.5);';
-  toggleBtn.addEventListener('click',function(){
+  window._toggleGlobalLavagna = function() { toggleBtn.click(); };
+    toggleBtn.addEventListener('click',function(){
     state.lavagnaOpen=!state.lavagnaOpen;
     if(state.lavagnaOpen){
       lavPane.style.width='300px';

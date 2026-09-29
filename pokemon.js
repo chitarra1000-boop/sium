@@ -35,14 +35,15 @@ window.renderPokemonSheet = function(scheda) {
   scheda.party = scheda.party || []; scheda.attrs = scheda.attrs || {}; scheda.skills = scheda.skills || {}; scheda.social = scheda.social || {}; scheda.inventory = scheda.inventory || {}; scheda.badges = scheda.badges || ['', '', '', '', '', '', '', '']; scheda.pokedex = scheda.pokedex || {};
   var wrap = document.createElement('div'); wrap.style.cssText = 'display:flex; flex-direction:column; width:100%; height:100%; overflow:hidden; background:#F1EAD3; font-family:"Arial Rounded MT Bold", "Nunito", sans-serif; position:relative;';
   var nav = document.createElement('div'); nav.style.cssText = 'background:#1a1a1a; border-bottom:1px solid #333; padding:0.45rem 1rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; position:sticky; top:0; z-index:200;';
-  var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
-  lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
-  var bk = document.createElement('button'); bk.innerHTML = '&#8592; Torna ai personaggi'; bk.style.cssText = 'background:#444; border:1px solid #666; color:#ccc; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
+      var bk = document.createElement('button'); bk.innerHTML = '&#8592; Torna ai personaggi'; bk.style.cssText = 'background:#444; border:1px solid #666; color:#ccc; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
   bk.onclick = function() { if(window.state && window.state.schedePGViewMode) { window.state.schedePGViewMode=false; window.state.schedePGOpenChar=null; window.state.schedaAttivaId=null; window.state.scheda={}; window.state.companions={}; } else { window.state.schedaAttivaId=null; window.state.scheda={}; } if (window.renderMain) window.renderMain(); };
   nav.appendChild(bk); var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
   var lavToggle = document.createElement('button'); lavToggle.innerHTML = '📋 Lavagna Abilità'; lavToggle.style.cssText = 'background:#1a1a2e; border:1px solid #c9a55c; color:#c9a55c; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:\"Cinzel\", serif; margin-right:10px; font-weight:bold;';
-  lavToggle.onclick = function() { window.state.lavagnaOpen = !window.state.lavagnaOpen; lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px'; if(window.state.lavagnaOpen) { lavInner.innerHTML = ''; lavInner.appendChild(window.renderLavagna()); } };
-  nav.appendChild(lavToggle);
+  lavToggle.onclick = function() {
+        if (window._toggleGlobalLavagna) window._toggleGlobalLavagna();
+        else { window.state.lavagnaOpen = !window.state.lavagnaOpen; if (window.renderMain) window.renderMain(); }
+    };
+    nav.appendChild(lavToggle);
 
   var btnDel = document.createElement('button'); btnDel.textContent = 'Elimina Scheda'; btnDel.style.cssText = 'background:#4a1010; border:1px solid #c04040; color:#f08080; border-radius:3px; padding:0.3rem 0.75rem; font-size:11px; cursor:pointer; font-family:"Cinzel", serif;';
   btnDel.onclick = function() { if (!confirm('Sei sicuro di voler ELIMINARE DEFINITIVAMENTE questa scheda?')) return; if (window.state && window.state.schedaAttivaId) { if(window.fbDeleteSchedaItem) { window.fbDeleteSchedaItem(window.state.schedaAttivaId); } else if(window._db) { window._db.ref('schedePG/' + window.state.currentUser.username + '/chars/' + window.state.schedaAttivaId).remove(); } let idx = window.state.schedeList.findIndex(s => s.id === window.state.schedaAttivaId); if(idx>=0) window.state.schedeList.splice(idx,1); window.state.schedaAttivaId = null; window.state.scheda = {}; if (window.renderMain) window.renderMain(); } };
@@ -213,12 +214,6 @@ window.renderPokemonSheet = function(scheda) {
     monOverlay.appendChild(sheet); monOverlay.style.display = 'flex';
   }
   wrap.appendChild(monOverlay);
-    var lavPane = document.createElement('div'); lavPane.style.cssText = 'position:absolute; top:0; right:0; height:100%; background:#1a1a2e; border-left:1px solid rgba(201,165,92,0.4); transition:width 0.3s; overflow:hidden; z-index:9000; box-shadow:-2px 0 10px rgba(0,0,0,0.5);';
-  lavPane.style.width = window.state.lavagnaOpen ? '300px' : '0px';
-  var lavInner = document.createElement('div'); lavInner.style.cssText = 'width:300px; height:100%;';
-  if(window.state.lavagnaOpen) { lavInner.appendChild(window.renderLavagna()); }
-  lavPane.appendChild(lavInner);
-  wrap.appendChild(lavPane);
 
   return wrap;
 };
