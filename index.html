@@ -16863,31 +16863,27 @@ function _companionDefault() {
 }
 
 function _newScheda() {
-  _renderTipoSelectorModal(function(tipo) {
-    var nid = 'c' + Date.now();
-    var ns;
-    if (tipo === 'normale' || tipo === 'onepiece') {
-      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
-    } else if (tipo === 'pokemon') {
+    _renderTipoSelectorModal(function(tipo) {
+      var nid = 'c' + Date.now();
+      var ns;
+      if (tipo === 'normale' || tipo === 'onepiece') {
+        ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
+      } else if (tipo === 'pokemon') {
         ns = window._pokemonDefault ? window._pokemonDefault(nid) : { id: nid, schedaTipo: 'pokemon' };
       } else if (tipo === 'naruto') {
-          ns = window._narutoDefault ? window._narutoDefault(nid) : { id: nid, schedaTipo: 'naruto' };
-        } else if (tipo === 'brancalonia') {
-          ns = window._brancaloniaDefault ? window._brancaloniaDefault(nid) : { id: nid, schedaTipo: 'brancalonia' };
-
-        ns = window._narutoDefault ? window._narutoDefault(nid) : { id: nid, schedaTipo: 'naruto' }; } else if (tipo === 'brancalonia') { ns = window._brancaloniaDefault ? window._brancaloniaDefault(nid) : { id: nid, schedaTipo: 'brancalonia' }; 
-      } else if (false) {
-      ns = Object.assign(_schedaDefault(), { id: nid, schedaTipo: tipo });
-    } else {
-      ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
-    }
-    state.schedeList.push(ns);
-    state.scheda = ns;
-    state.schedaAttivaId = nid;
-    fbSaveScheda();
-    renderMain();
-  });
-}
+        ns = window._narutoDefault ? window._narutoDefault(nid) : { id: nid, schedaTipo: 'naruto' };
+      } else if (tipo === 'brancalonia') {
+        ns = window._brancaloniaDefault ? window._brancaloniaDefault(nid) : { id: nid, schedaTipo: 'brancalonia' };
+      } else {
+        ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
+      }
+      state.schedeList.push(ns);
+      state.scheda = ns;
+      state.schedaAttivaId = nid;
+      fbSaveScheda();
+      renderMain();
+    });
+  }
 
 function _renderSchedaList() {
   var wrap=document.createElement('div'); wrap.style.cssText='min-height:100vh;background:#5a5a5a;display:flex;flex-direction:column;';
