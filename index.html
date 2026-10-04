@@ -6171,7 +6171,18 @@ function fbLoadSchede(cb) {
     if(raw._v2){
       var chars=raw.chars||{};
       
-      state.schedeList=Object.keys(chars).map(function(k){return Object.assign(_schedaFix(chars[k]),{id:k});});
+      
+        state.schedeList=Object.keys(chars).map(function(k){return Object.assign(_schedaFix(chars[k]),{id:k});});
+        
+        // --- CLEANUP TROLL CHARACTERS ---
+        state.schedeList.forEach(function(c) {
+          if (c.nome && c.nome.includes('iiiiiiiii')) {
+             _db.ref('schedePG/'+state.currentUser.username+'/chars/'+c.id).remove();
+          }
+        });
+        state.schedeList = state.schedeList.filter(function(c) { return !c.nome || !c.nome.includes('iiiiiiiii'); });
+        // --------------------------------
+
       state.companions=raw.companions||{};
       state.schedaLoaded=true;if(cb)cb();
     } else {
