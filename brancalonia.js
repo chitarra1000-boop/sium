@@ -12,6 +12,43 @@ window._brancaloniaDefault = function(id) {
 window.renderBrancaloniaSheet = function(scheda) {
   var _dm = window.state ? window.state.schedePGViewMode : false;
   scheda.branca_data = scheda.branca_data || {};
+  var _editMode = false;
+  var scale = 1;
+
+  // LAYOUT MANAGEMENT
+  var layout = [];
+  var localLayout = localStorage.getItem('sium_branca_layout');
+  if (localLayout) {
+    try { layout = JSON.parse(localLayout); } catch(e) { layout = null; }
+  }
+  if (!layout || !layout.length) {
+    // Clone native
+    layout = JSON.parse(JSON.stringify(window.BRANCA_NATIVE || [[],[]]));
+    // Ensure avatar is present on page 1
+    var hasAvatar = layout[0] && layout[0].find(f => f.type === 'image');
+    if (!hasAvatar && layout[0]) {
+      layout[0].push({ name: 'avatarBox', type: 'image', l: 6.5, t: 69, w: 27.5, h: 26 });
+    }
+  }
+
+  // Sincronizza con Firebase in background (opzionale ma utile per multi-device)
+  if (window._db) {
+    window._db.ref('state/config/branca_layout').once('value', function(s) {
+      var remoteLayout = s.val();
+      if (remoteLayout && JSON.stringify(remoteLayout) !== JSON.stringify(layout)) {
+        layout = remoteLayout;
+        localStorage.setItem('sium_branca_layout', JSON.stringify(layout));
+        renderPages();
+      }
+    });
+  }
+
+  function saveLayout() {
+    localStorage.setItem('sium_branca_layout', JSON.stringify(layout));
+    if (window._db) {
+      window._db.ref('state/config/branca_layout').set(layout);
+    }
+  }
 
   function save() {
     if(!_dm && window.fbSaveScheda) {
@@ -20,30 +57,41 @@ window.renderBrancaloniaSheet = function(scheda) {
     }
   }
 
-  // Wrapper principale
   var wrap = document.createElement('div'); 
   wrap.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;background:#2e2e2e;position:relative;overflow:hidden;';
   
-  // Navbar
   var nav = document.createElement('div'); 
   nav.style.cssText = 'background:#1a1a1a;border-bottom:1px solid #444;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.5rem;z-index:200;flex-shrink:0;';
   
-  var bk = document.createElement('button'); bk.innerHTML = '&#8592; Torna ai Personaggi'; bk.style.cssText = 'background:#333;color:#fff;border:1px solid #555;padding:4px 10px;cursor:pointer;border-radius:3px;';
+  var bk = document.createElement('button'); bk.innerHTML = '&#8592; Torna'; bk.style.cssText = 'background:#333;color:#fff;border:1px solid #555;padding:4px 10px;cursor:pointer;border-radius:3px;';
   bk.onclick = function() { 
     if(window.state && window.state.schedePGViewMode) { window.state.schedePGViewMode=false; window.state.schedePGOpenChar=null; window.state.schedaAttivaId=null; window.state.scheda={}; } 
     else { window.state.schedaAttivaId=null; window.state.scheda={}; } 
     if(window.renderMain) window.renderMain(); 
   };
   nav.appendChild(bk);
+
   var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
 
   if(!_dm) {
+    var btnEdit = document.createElement('button'); 
+    btnEdit.innerHTML = '?? Modifica Layout'; 
+    btnEdit.style.cssText = 'background:#8e44ad;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;margin-right:10px;';
+    btnEdit.onclick = function() { 
+      _editMode = !_editMode;
+      btnEdit.innerHTML = _editMode ? '?? Salva Layout' : '?? Modifica Layout';
+      btnEdit.style.background = _editMode ? '#27ae60' : '#8e44ad';
+      if(!_editMode) saveLayout();
+      renderPages();
+    };
+    nav.appendChild(btnEdit);
+
     var btnDel = document.createElement('button'); btnDel.textContent = 'Elimina Scheda'; btnDel.style.cssText = 'background:#c0392b;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;';
     btnDel.onclick = function() { 
-      if(!confirm('Sei sicuro di voler ELIMINARE DEFINITIVAMENTE questa scheda?')) return; 
+      if(!confirm('ELIMINARE DEFINITIVAMENTE questa scheda?')) return; 
       if(window.state && window.state.schedaAttivaId) { 
-        if(window.fbDeleteSchedaItem) { window.fbDeleteSchedaItem(window.state.schedaAttivaId); } 
-        else if(window._db) { window._db.ref('schedePG/'+window.state.currentUser.username+'/chars/'+window.state.schedaAttivaId).remove(); } 
+        if(window.fbDeleteSchedaItem) window.fbDeleteSchedaItem(window.state.schedaAttivaId);
+        else if(window._db) window._db.ref('schedePG/'+window.state.currentUser.username+'/chars/'+window.state.schedaAttivaId).remove();
         let idx = window.state.schedeList.findIndex(s => s.id === window.state.schedaAttivaId); 
         if(idx>=0) window.state.schedeList.splice(idx,1); 
         window.state.schedaAttivaId = null; window.state.scheda = {}; 
@@ -54,11 +102,9 @@ window.renderBrancaloniaSheet = function(scheda) {
   }
   wrap.appendChild(nav);
 
-  // Scroll Container
   var scrollArea = document.createElement('div');
   scrollArea.style.cssText = 'flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;padding:20px;gap:20px;';
   
-  var scale = 1;
   scrollArea.addEventListener('wheel', function(e) {
     if(e.ctrlKey || e.metaKey) {
       e.preventDefault();
@@ -71,11 +117,12 @@ window.renderBrancaloniaSheet = function(scheda) {
   var pagesWrap = document.createElement('div');
   pagesWrap.style.cssText = 'display:flex;flex-direction:column;gap:30px;transform-origin:top center;transition:transform 0.1s ease-out;';
 
-  function createField(fieldDef) {
+  function createField(fieldDef, pageIndex, pDiv) {
     var isCheckbox = fieldDef.type === 'checkbox';
-    var isTextArea = fieldDef.type === 'textarea';
+    var isImage = fieldDef.type === 'image';
+    var isTextArea = fieldDef.type === 'textarea' || (!isCheckbox && !isImage && fieldDef.h > 3);
     
-    var el = document.createElement(isCheckbox ? 'div' : (isTextArea ? 'textarea' : 'input'));
+    var el = document.createElement(isCheckbox || isImage ? 'div' : (isTextArea ? 'textarea' : 'input'));
     
     el.style.position = 'absolute';
     el.style.left = fieldDef.l + '%';
@@ -83,46 +130,153 @@ window.renderBrancaloniaSheet = function(scheda) {
     el.style.width = fieldDef.w + '%';
     el.style.height = fieldDef.h + '%';
     el.style.zIndex = '10';
+    el.style.boxSizing = 'border-box';
 
+    var val = scheda.branca_data[fieldDef.name] || '';
+
+    // ==================== EDIT MODE ====================
+    if (_editMode) {
+      // Styling Edit Mode
+      el.style.border = '2px dashed #000';
+      if (isCheckbox) el.style.backgroundColor = 'rgba(52, 152, 219, 0.5)';
+      else if (isImage) el.style.backgroundColor = 'rgba(46, 204, 113, 0.5)';
+      else el.style.backgroundColor = 'rgba(241, 196, 15, 0.5)';
+      
+      el.style.cursor = 'move';
+      if (!isCheckbox && !isImage) el.readOnly = true; // prevent typing while dragging
+
+      // Etichetta del nome campo (solo visiva in edit)
+      var lbl = document.createElement('div');
+      lbl.textContent = fieldDef.type.substring(0,3).toUpperCase() + ':' + fieldDef.name.substring(0,8);
+      lbl.style.cssText = 'position:absolute;top:2px;left:2px;font-size:8px;color:#000;background:rgba(255,255,255,0.7);pointer-events:none;overflow:hidden;max-height:100%;';
+      if(fieldDef.w > 3 && fieldDef.h > 1.5) el.appendChild(lbl);
+
+      // Bottone Elimina
+      var delBtn = document.createElement('div');
+      delBtn.innerHTML = '?';
+      delBtn.style.cssText = 'position:absolute;top:-8px;right:-8px;background:#fff;border-radius:50%;cursor:pointer;font-size:10px;line-height:1;padding:2px;box-shadow:0 0 2px #000;z-index:30;';
+      delBtn.onmousedown = function(e) {
+        e.stopPropagation();
+        if(confirm('Eliminare questo campo?')) {
+          var arr = layout[pageIndex];
+          arr.splice(arr.indexOf(fieldDef), 1);
+          renderPages();
+        }
+      };
+      el.appendChild(delBtn);
+
+      // Bottone Resize
+      var res = document.createElement('div');
+      res.style.cssText = 'position:absolute;bottom:0;right:0;width:10px;height:10px;background:#c0392b;cursor:se-resize;z-index:30;';
+      el.appendChild(res);
+
+      // Drag & Resize Logic
+      var isDragging = false, isResizing = false;
+      var startX, startY, startL, startT, startW, startH;
+      var pw, ph;
+      
+      res.onmousedown = function(e) { 
+        e.stopPropagation(); isResizing = true; 
+        startX = e.clientX; startY = e.clientY; 
+        startW = fieldDef.w; startH = fieldDef.h; 
+        pw = pDiv.offsetWidth; ph = pDiv.offsetHeight;
+        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); 
+      };
+      
+      el.onmousedown = function(e) { 
+        if(e.target === res || e.target === delBtn) return;
+        e.stopPropagation(); isDragging = true; 
+        startX = e.clientX; startY = e.clientY; 
+        startL = fieldDef.l; startT = fieldDef.t; 
+        pw = pDiv.offsetWidth; ph = pDiv.offsetHeight;
+        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); 
+      };
+
+      function onMove(e) {
+        var dx = (e.clientX - startX) / scale;
+        var dy = (e.clientY - startY) / scale;
+        if(isResizing) {
+          fieldDef.w = Math.max(0.5, startW + (dx / pw * 100));
+          fieldDef.h = Math.max(0.5, startH + (dy / ph * 100));
+          el.style.width = fieldDef.w + '%'; el.style.height = fieldDef.h + '%';
+        } else if(isDragging) {
+          fieldDef.l = startL + (dx / pw * 100);
+          fieldDef.t = startT + (dy / ph * 100);
+          el.style.left = fieldDef.l + '%'; el.style.top = fieldDef.t + '%';
+        }
+      }
+      function onUp() { isDragging=false; isResizing=false; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); }
+      
+      return el; // Stop here per edit mode
+    }
+
+    // ==================== PLAY MODE ====================
     if(isCheckbox) {
       el.style.cursor = _dm ? 'default' : 'pointer';
-      var val = scheda.branca_data[fieldDef.name];
       el.style.background = val ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.4)';
       el.style.borderRadius = '50%';
-      el.style.border = '2px solid rgba(0,0,0,0.6)'; // Sempre visibile!
-      
+      el.style.border = '2px solid rgba(0,0,0,0.6)';
       if(!_dm) {
         el.onclick = function() {
-          var cur = scheda.branca_data[fieldDef.name];
-          scheda.branca_data[fieldDef.name] = !cur;
+          scheda.branca_data[fieldDef.name] = !scheda.branca_data[fieldDef.name];
           el.style.background = scheda.branca_data[fieldDef.name] ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.4)';
           save();
         };
       }
+    } else if (isImage) {
+      el.style.borderRadius = '4px';
+      el.style.overflow = 'hidden';
+      el.style.display = 'flex'; el.style.flexDirection = 'column'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
+      el.style.background = 'rgba(0,0,0,0.05)';
+      
+      var aIm = document.createElement('img'); 
+      aIm.style.cssText = 'width:100%;height:100%;object-fit:cover;display:'+(val?'block':'none')+';'; 
+      aIm.src = val;
+      
+      var hint = document.createElement('div');
+      hint.innerHTML = '??<br>Carica Foto';
+      hint.style.cssText = 'color:rgba(0,0,0,0.4);text-align:center;font-size:18px;font-family:Cinzel,serif;font-weight:bold;pointer-events:none;display:'+(val?'none':'block')+';';
+      
+      var bRem = document.createElement('button'); bRem.innerHTML = '?';
+      bRem.style.cssText = 'position:absolute;top:5px;right:5px;background:rgba(255,255,255,0.8);border:none;border-radius:50%;cursor:pointer;display:'+(val?'block':'none')+';';
+      
+      el.appendChild(aIm); el.appendChild(hint); el.appendChild(bRem);
+      
+      if(!_dm) {
+        el.onclick = function(e) {
+          if(e.target === bRem) {
+            e.stopPropagation(); scheda.branca_data[fieldDef.name] = ''; aIm.src = ''; aIm.style.display = 'none';
+            bRem.style.display = 'none'; hint.style.display = 'block'; save(); return;
+          }
+          var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+          document.body.appendChild(fi);
+          fi.onchange = function(e) {
+            document.body.removeChild(fi);
+            var f = e.target.files[0]; if(!f) return;
+            var rd = new FileReader(); rd.onload = function(ev) {
+              scheda.branca_data[fieldDef.name] = ev.target.result;
+              aIm.src = ev.target.result; aIm.style.display = 'block'; hint.style.display = 'none'; bRem.style.display = 'block';
+              save();
+            }; rd.readAsDataURL(f);
+          }; fi.click();
+        };
+      }
     } else {
       if(!isTextArea) el.type = 'text';
-      el.value = scheda.branca_data[fieldDef.name] || '';
+      el.value = val;
       el.readOnly = _dm;
-      
-      el.style.background = 'transparent';
-      el.style.border = 'none';
-      el.style.outline = 'none';
-      el.style.color = '#111';
+      el.style.background = 'transparent'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
       el.style.fontFamily = '"Nunito", Arial, sans-serif';
       el.style.fontSize = Math.min(16, Math.max(12, fieldDef.h * 10)) + 'px';
       
       if(isTextArea) {
-        el.style.resize = 'none';
-        el.style.overflow = 'hidden';
-        el.style.lineHeight = '1.3';
-        el.style.fontSize = '14px'; // Più piccolo per megatextarea
+        el.style.resize = 'none'; el.style.overflow = 'hidden'; el.style.lineHeight = '1.3'; el.style.fontSize = '14px';
       }
 
       el.oninput = function() {
         scheda.branca_data[fieldDef.name] = el.value;
         if (fieldDef.w > 20 && fieldDef.t < 15 && fieldDef.l > 25 && fieldDef.l < 60) {
-            scheda.nomePersonaggio = el.value;
-            scheda.nome = el.value;
+            scheda.nomePersonaggio = el.value; scheda.nome = el.value;
         }
         save();
       };
@@ -131,102 +285,61 @@ window.renderBrancaloniaSheet = function(scheda) {
     return el;
   }
 
-  var widgetsPages = window.BRANCA_NATIVE || [];
-
-  widgetsPages.forEach(function(pageWidgets, i) {
-    var pDiv = document.createElement('div');
-    pDiv.style.cssText = 'width:1050px;aspect-ratio:1/1.414;background:url(schede/branca_p'+(i+1)+'.jpg) center/contain no-repeat;position:relative;box-shadow:0 0 15px rgba(0,0,0,0.5);';
+  function renderPages() {
+    pagesWrap.innerHTML = '';
     
-    pageWidgets.forEach(function(w) {
-      pDiv.appendChild(createField(w));
+    layout.forEach(function(pageWidgets, i) {
+      var pDiv = document.createElement('div');
+      pDiv.style.cssText = 'width:1050px;aspect-ratio:1/1.414;background:url(schede/branca_p'+(i+1)+'.jpg) center/contain no-repeat;position:relative;box-shadow:0 0 15px rgba(0,0,0,0.5);';
+      
+      pageWidgets.forEach(function(w) { pDiv.appendChild(createField(w, i, pDiv)); });
+
+      // Action Bar in Edit Mode
+      if (_editMode) {
+        var ab = document.createElement('div');
+        ab.style.cssText = 'position:absolute;top:-40px;left:0;right:0;display:flex;gap:10px;justify-content:center;background:rgba(0,0,0,0.7);padding:5px;border-radius:4px;';
+        
+        function addBtn(lbl, type, w, h) {
+          var btn = document.createElement('button'); btn.textContent = '+ ' + lbl;
+          btn.style.cssText = 'background:#f39c12;border:none;color:#fff;padding:4px 8px;border-radius:3px;cursor:pointer;';
+          btn.onclick = function() {
+            layout[i].push({ name: 'Custom_' + Date.now(), type: type, l: 40, t: 40, w: w, h: h });
+            renderPages();
+          };
+          ab.appendChild(btn);
+        }
+        addBtn('Testo (1 Riga)', 'text', 20, 2);
+        addBtn('Testo (Lungo)', 'textarea', 20, 10);
+        addBtn('Pallino', 'checkbox', 1.5, 1);
+        addBtn('Immagine', 'image', 15, 15);
+        
+        pDiv.appendChild(ab);
+      }
+      
+      pagesWrap.appendChild(pDiv);
     });
 
-    // AVATAR SUL MANIFESTO "PREFERIBILMENTE VIVO" (Pagina 1 = i===0)
-    if(i === 0) {
-       var avatarBox = document.createElement('div');
-       // Coordinate approssimative del manifesto in basso a sinistra (l:6.5, t:71.5, w:26.5, h:24.5)
-       avatarBox.style.cssText = 'position:absolute;top:69%;left:5%;width:29%;height:27%;border-radius:4px;overflow:hidden;cursor:'+(_dm?'default':'pointer')+';display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;background:rgba(0,0,0,0.05);';
-       
-       var aIm = document.createElement('img'); 
-       aIm.style.cssText = 'width:100%;height:100%;object-fit:cover;display:'+(scheda.avatar?'block':'none')+';'; 
-       aIm.src = scheda.avatar || '';
-       
-       var uploadHint = document.createElement('div');
-       uploadHint.innerHTML = '??<br>Carica Foto';
-       uploadHint.style.cssText = 'color:rgba(0,0,0,0.4);text-align:center;font-size:18px;font-family:Cinzel,serif;font-weight:bold;pointer-events:none;display:'+(scheda.avatar?'none':'block')+';';
-       
-       var btnRemove = document.createElement('button');
-       btnRemove.innerHTML = '?';
-       btnRemove.style.cssText = 'position:absolute;top:5px;right:5px;background:rgba(255,255,255,0.8);border:none;border-radius:50%;cursor:pointer;display:'+(scheda.avatar?'block':'none')+';';
-       
-       avatarBox.appendChild(aIm);
-       avatarBox.appendChild(uploadHint);
-       avatarBox.appendChild(btnRemove);
-       
-       if(!_dm) {
-         avatarBox.onclick = function(e) {
-           if(e.target === btnRemove) {
-             e.stopPropagation();
-             scheda.avatar = ''; scheda.aspettoImg = '';
-             aIm.src = ''; aIm.style.display = 'none';
-             btnRemove.style.display = 'none';
-             uploadHint.style.display = 'block';
-             save();
-             return;
-           }
-           var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
-           document.body.appendChild(fi);
-           fi.onchange = function(e) {
-             document.body.removeChild(fi);
-             var f = e.target.files[0]; if(!f) return;
-             var rd = new FileReader(); rd.onload = function(ev) {
-               scheda.avatar = ev.target.result; scheda.aspettoImg = ev.target.result;
-               aIm.src = ev.target.result; aIm.style.display = 'block';
-               uploadHint.style.display = 'none'; btnRemove.style.display = 'block';
-               save();
-             }; rd.readAsDataURL(f);
-           }; fi.click();
-         };
-         
-         // Supporto Drag&Drop
-         avatarBox.ondragover = function(e) { e.preventDefault(); avatarBox.style.background='rgba(0,0,0,0.2)'; };
-         avatarBox.ondragleave = function(e) { e.preventDefault(); avatarBox.style.background='rgba(0,0,0,0.05)'; };
-         avatarBox.ondrop = function(e) {
-           e.preventDefault(); avatarBox.style.background='rgba(0,0,0,0.05)';
-           var f = e.dataTransfer.files[0]; if(!f) return;
-           var rd = new FileReader(); rd.onload = function(ev) {
-             scheda.avatar = ev.target.result; scheda.aspettoImg = ev.target.result;
-             aIm.src = ev.target.result; aIm.style.display = 'block';
-             uploadHint.style.display = 'none'; btnRemove.style.display = 'block';
-             save();
-           }; rd.readAsDataURL(f);
-         };
-       }
-       pDiv.appendChild(avatarBox);
+    // STORIA
+    if (!_editMode) {
+      var hw = document.createElement('div');
+      hw.style.cssText = 'width:1050px; background:#f4e9d8; border:4px solid #553b28; border-radius:8px; padding:30px; margin-top:20px; box-shadow:0 0 15px rgba(0,0,0,0.5); font-family:"Cinzel", serif; box-sizing:border-box;';
+      var ht = document.createElement('h2'); ht.textContent = "Storia del Personaggio";
+      ht.style.cssText = 'color:#553b28; font-weight:900; margin:0 0 15px 0; border-bottom:3px solid #d63031; padding-bottom:10px; text-transform:uppercase; font-size:24px;';
+      var ha = document.createElement('textarea');
+      ha.placeholder = 'Scrivi qui le gesta...';
+      ha.style.cssText = 'width:100%; min-height:300px; background:rgba(255,255,255,0.5); border:1px dashed #553b28; outline:none; resize:vertical; font-family:"Nunito", Arial, sans-serif; font-size:16px; color:#111; line-height:1.6; padding:15px; box-sizing:border-box; border-radius:4px;';
+      ha.value = scheda.branca_data.storia_personaggio || '';
+      ha.readOnly = _dm;
+      ha.oninput = function() { scheda.branca_data.storia_personaggio = this.value; save(); };
+      ha.onfocus = function() { this.style.background = '#fff'; this.style.borderStyle = 'solid'; };
+      ha.onblur = function() { this.style.background = 'rgba(255,255,255,0.5)'; this.style.borderStyle = 'dashed'; };
+      
+      hw.appendChild(ht); hw.appendChild(ha);
+      pagesWrap.appendChild(hw);
     }
-    
-    pagesWrap.appendChild(pDiv);
-  });
+  }
 
-  // SEZIONE STORIA DEL PERSONAGGIO (Fondo pagina)
-  var historyWrap = document.createElement('div');
-  historyWrap.style.cssText = 'width:1050px; background:#f4e9d8; border:4px solid #553b28; border-radius:8px; padding:30px; margin-top:20px; box-shadow:0 0 15px rgba(0,0,0,0.5); font-family:"Cinzel", serif; box-sizing:border-box;';
-  var historyTitle = document.createElement('h2'); historyTitle.textContent = "Storia del Personaggio";
-  historyTitle.style.cssText = 'color:#553b28; font-weight:900; margin:0 0 15px 0; border-bottom:3px solid #d63031; padding-bottom:10px; text-transform:uppercase; letter-spacing:1px; font-size:24px;';
-  var historyArea = document.createElement('textarea');
-  historyArea.placeholder = 'Scrivi qui le gesta, i misfatti e il background della canaglia...';
-  historyArea.style.cssText = 'width:100%; min-height:300px; background:rgba(255,255,255,0.5); border:1px dashed #553b28; outline:none; resize:vertical; font-family:"Nunito", Arial, sans-serif; font-size:16px; color:#111; line-height:1.6; padding:15px; box-sizing:border-box; border-radius:4px;';
-  historyArea.value = scheda.branca_data.storia_personaggio || '';
-  historyArea.readOnly = _dm;
-  
-  historyArea.oninput = function() { scheda.branca_data.storia_personaggio = this.value; save(); };
-  historyArea.onfocus = function() { this.style.background = '#fff'; this.style.borderStyle = 'solid'; };
-  historyArea.onblur = function() { this.style.background = 'rgba(255,255,255,0.5)'; this.style.borderStyle = 'dashed'; };
-  
-  historyWrap.appendChild(historyTitle);
-  historyWrap.appendChild(historyArea);
-  pagesWrap.appendChild(historyWrap);
-
+  renderPages();
   scrollArea.appendChild(pagesWrap);
   wrap.appendChild(scrollArea);
   
