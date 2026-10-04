@@ -6180,7 +6180,18 @@ function fbLoadSchede(cb) {
              _db.ref('schedePG/'+state.currentUser.username+'/chars/'+c.id).remove();
           }
         });
-        state.schedeList = state.schedeList.filter(function(c) { return !c.nome || !c.nome.includes('iiiiiiiii'); });
+        
+        // --- CLEANUP TROLL E BRANCALONIA VECCHIE ---
+        state.schedeList.forEach(function(c) {
+          if (c.schedaTipo === 'brancalonia' && (!c.branca_data || Object.keys(c.branca_data).length === 0)) {
+             _db.ref('schedePG/'+state.currentUser.username+'/chars/'+c.id).remove();
+          }
+        });
+        state.schedeList = state.schedeList.filter(function(c) { 
+          return !(c.schedaTipo === 'brancalonia' && (!c.branca_data || Object.keys(c.branca_data).length === 0)); 
+        });
+        // --------------------------------
+
         // --------------------------------
 
       state.companions=raw.companions||{};
