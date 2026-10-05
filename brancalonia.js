@@ -46,12 +46,45 @@ window.renderBrancaloniaSheet = function(scheda) {
     }
   }
 
+  
+  function syncDashboard() {
+    let bestNameField = null;
+    let minNameDist = 9999;
+    
+    if (layout[0]) {
+      layout[0].forEach(f => {
+        if (f.type === 'text' || f.type === 'text-fit' || f.type === 'textarea') {
+          let cx = f.l + (f.w / 2);
+          let cy = f.t + (f.h / 2);
+          let dist = Math.pow(cx - 50, 2) + Math.pow(cy - 22, 2);
+          if (dist < minNameDist && scheda.branca_data[f.name]) {
+            minNameDist = dist;
+            bestNameField = f.name;
+          }
+        }
+      });
+      
+      if (bestNameField) {
+         scheda.nomePersonaggio = scheda.branca_data[bestNameField];
+         scheda.nome = scheda.nomePersonaggio;
+      }
+      
+      let avatarField = layout[0].find(f => f.type === 'image' && scheda.branca_data[f.name]);
+      if (avatarField) {
+         scheda.avatar = scheda.branca_data[avatarField.name];
+         scheda.aspettoImg = scheda.avatar;
+      }
+    }
+  }
+
   function save() {
+    syncDashboard();
     if(!_dm && window.fbSaveScheda) {
       if(window._schedaSaveTimer) clearTimeout(window._schedaSaveTimer);
       window._schedaSaveTimer = setTimeout(function(){ window.fbSaveScheda(); }, 600);
     }
   }
+
 
   var wrap = document.createElement('div'); 
   wrap.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;background:#2e2e2e;position:relative;overflow:hidden;';
@@ -80,6 +113,16 @@ window.renderBrancaloniaSheet = function(scheda) {
   nav.appendChild(lavToggle);
 
   if(!_dm) {
+    
+    var lavToggle = document.createElement('button'); 
+    lavToggle.innerHTML = '\uD83D\uDCDD Appunti del Canaglia'; 
+    lavToggle.style.cssText = 'background:#d63031;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;margin-right:10px;';
+    lavToggle.onclick = function() {
+      if(window._toggleGlobalLavagna) window._toggleGlobalLavagna();
+      else { window.state.lavagnaOpen = !window.state.lavagnaOpen; if(window.renderMain) window.renderMain(); }
+    };
+    nav.appendChild(lavToggle);
+
     var btnEdit = document.createElement('button'); 
     btnEdit.innerHTML = '📐 Modifica Layout'; 
     btnEdit.style.cssText = 'background:#8e44ad;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;margin-right:10px;';
@@ -409,5 +452,6 @@ window.renderBrancaloniaSheet = function(scheda) {
   scrollArea.appendChild(pagesWrap);
   wrap.appendChild(scrollArea);
   
+  syncDashboard();
   return wrap;
 };
