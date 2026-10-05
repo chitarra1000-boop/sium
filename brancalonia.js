@@ -69,6 +69,16 @@ window.renderBrancaloniaSheet = function(scheda) {
 
   var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
 
+  
+  var lavToggle = document.createElement('button'); 
+  lavToggle.innerHTML = '\uD83D\uDCDD Appunti del Canaglia'; 
+  lavToggle.style.cssText = 'background:#d63031;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;margin-right:10px;';
+  lavToggle.onclick = function() {
+    if(window._toggleGlobalLavagna) window._toggleGlobalLavagna();
+    else { window.state.lavagnaOpen = !window.state.lavagnaOpen; if(window.renderMain) window.renderMain(); }
+  };
+  nav.appendChild(lavToggle);
+
   if(!_dm) {
     var btnEdit = document.createElement('button'); 
     btnEdit.innerHTML = '📐 Modifica Layout'; 
@@ -304,7 +314,7 @@ window.renderBrancaloniaSheet = function(scheda) {
       el.readOnly = _dm;
       
       // Sync on load
-      if (pageIndex === 0 && fieldDef.w > 10 && fieldDef.t > 10 && fieldDef.t < 30 && fieldDef.l > 20 && fieldDef.l < 80) {
+      if (pageIndex === 0 && (fieldDef.name === 'Text-yh8c2D_kEU' || (fieldDef.w > 30 && fieldDef.l > 25 && fieldDef.l < 40 && fieldDef.t > 18 && fieldDef.t < 25))) {
         if (val && (!scheda.nomePersonaggio || scheda.nomePersonaggio !== val)) {
            scheda.nomePersonaggio = val; scheda.nome = val;
            // avoid recursive saves on bulk init, just set it
@@ -327,7 +337,7 @@ window.renderBrancaloniaSheet = function(scheda) {
 
       el.oninput = function() {
         scheda.branca_data[fieldDef.name] = el.value;
-        if (pageIndex === 0 && fieldDef.w > 10 && fieldDef.t > 10 && fieldDef.t < 30 && fieldDef.l > 20 && fieldDef.l < 80) {
+        if (pageIndex === 0 && (fieldDef.name === 'Text-yh8c2D_kEU' || (fieldDef.w > 30 && fieldDef.l > 25 && fieldDef.l < 40 && fieldDef.t > 18 && fieldDef.t < 25))) {
             scheda.nomePersonaggio = el.value; scheda.nome = el.value;
         }
         save();
