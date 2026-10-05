@@ -131,6 +131,7 @@ window.renderBrancaloniaSheet = function(scheda) {
     el.style.width = '100%';
     el.style.height = '100%';
     el.style.boxSizing = 'border-box';
+    el.spellcheck = false;
     wrapEl.appendChild(el);
 
     var val = scheda.branca_data[fieldDef.name] || '';
@@ -156,7 +157,7 @@ window.renderBrancaloniaSheet = function(scheda) {
       else wrapEl.style.backgroundColor = 'rgba(241, 196, 15, 0.5)';
       
       wrapEl.style.cursor = 'move';
-      el.style.pointerEvents = 'none'; 
+      el.style.pointerEvents = 'none';
       el.style.background = 'transparent';
       el.style.border = 'none';
       if(isCheckbox) el.style.borderRadius = '50%';
@@ -265,6 +266,10 @@ window.renderBrancaloniaSheet = function(scheda) {
       var aIm = document.createElement('img'); 
       aIm.style.cssText = 'width:100%;height:100%;object-fit:cover;display:'+(val?'block':'none')+';'; 
       aIm.src = val;
+      // Sync on load
+      if (val && (!scheda.avatar || scheda.avatar !== val)) {
+         scheda.avatar = val; scheda.aspettoImg = val;
+      }
       
       var hint = document.createElement('div');
       hint.innerHTML = '📷<br>Carica Foto';
@@ -287,8 +292,7 @@ window.renderBrancaloniaSheet = function(scheda) {
             document.body.removeChild(fi);
             var f = e.target.files[0]; if(!f) return;
             var rd = new FileReader(); rd.onload = function(ev) {
-              scheda.branca_data[fieldDef.name] = ev.target.result;
-              aIm.src = ev.target.result; aIm.style.display = 'block'; hint.style.display = 'none'; bRem.style.display = 'block';
+              scheda.branca_data[fieldDef.name] = ev.target.result; scheda.avatar = ev.target.result; scheda.aspettoImg = ev.target.result; aIm.src = ev.target.result; aIm.style.display = 'block'; hint.style.display = 'none'; bRem.style.display = 'block';
               save();
             }; rd.readAsDataURL(f);
           }; fi.click();
@@ -298,7 +302,15 @@ window.renderBrancaloniaSheet = function(scheda) {
       if(!isTextArea) el.type = 'text';
       el.value = val;
       el.readOnly = _dm;
-      el.style.background = 'transparent'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
+      
+      // Sync on load
+      if (pageIndex === 0 && fieldDef.w > 10 && fieldDef.t > 10 && fieldDef.t < 30 && fieldDef.l > 20 && fieldDef.l < 80) {
+        if (val && (!scheda.nomePersonaggio || scheda.nomePersonaggio !== val)) {
+           scheda.nomePersonaggio = val; scheda.nome = val;
+           // avoid recursive saves on bulk init, just set it
+        }
+      }
+      el.style.background = '#ffffff'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
       el.style.fontFamily = '"Nunito", Arial, sans-serif';
       
       if(isTextFit) {
@@ -315,7 +327,7 @@ window.renderBrancaloniaSheet = function(scheda) {
 
       el.oninput = function() {
         scheda.branca_data[fieldDef.name] = el.value;
-        if (fieldDef.w > 20 && fieldDef.t < 15 && fieldDef.l > 25 && fieldDef.l < 60) {
+        if (pageIndex === 0 && fieldDef.w > 10 && fieldDef.t > 10 && fieldDef.t < 30 && fieldDef.l > 20 && fieldDef.l < 80) {
             scheda.nomePersonaggio = el.value; scheda.nome = el.value;
         }
         save();
