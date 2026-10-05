@@ -18026,7 +18026,7 @@ function renderScheda() {
   var _cMapC=(state.companions||{})[state.schedaAttivaId]||{};
   Object.keys(_cMapC).forEach(function(k){_cMapC[k].id=k;pgWrap.appendChild(_renderCompanionMiniSheet(state.schedaAttivaId,_cMapC[k]));});
 
-  if (isOP) {
+  if (isOP || _sTipo === 'normale') {
     if (s.staminaMax !== undefined && !s.staminaMigrated) {
       if(!s.customTrackers) s.customTrackers = [];
       s.customTrackers.push({
@@ -18053,7 +18053,7 @@ function renderScheda() {
     tHdr.style.cssText = 'text-align:center; border-bottom:2px solid #5a3d2b; padding-bottom:10px; margin-bottom:4px;';
     var tTitle = document.createElement('div');
     tTitle.style.cssText = 'font-family:"Cinzel",serif; font-size:16px; font-weight:bold; color:#3e2723; margin-bottom:10px; letter-spacing:0.05em;';
-    tTitle.textContent = '☠ CONTATORI CIURMA ☠';
+    tTitle.textContent = isOP ? '\u2693 CONTATORI CIURMA \u2693' : '\u2694\uFE0F CONTATORI EXTRA \u2694\uFE0F';
     var tAdd = document.createElement('button');
     tAdd.type = 'button';
     tAdd.innerHTML = '+ Aggiungi Contatore';
