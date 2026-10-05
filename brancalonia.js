@@ -116,9 +116,9 @@ window.renderBrancaloniaSheet = function(scheda) {
   function createField(fieldDef, pageIndex, pDiv) {
     var isCheckbox = fieldDef.type === 'checkbox';
     var isImage = fieldDef.type === 'image';
-    var isTextArea = fieldDef.type === 'textarea' || (!isCheckbox && !isImage && fieldDef.h > 3);
+    var isTextFit = fieldDef.type === 'text-fit';
+    var isTextArea = fieldDef.type === 'textarea' || (!isCheckbox && !isImage && !isTextFit && fieldDef.h > 3);
     
-    // CONTAINER WRAPPER (Per supportare i bottoni extra senza rompere input/textarea)
     var wrapEl = document.createElement('div');
     wrapEl.style.position = 'absolute';
     wrapEl.style.left = fieldDef.l + '%';
@@ -135,18 +135,37 @@ window.renderBrancaloniaSheet = function(scheda) {
 
     var val = scheda.branca_data[fieldDef.name] || '';
 
+    // ==================== COMMON STYLE & AUTOFIT ====================
+    if (!isCheckbox && !isImage) {
+      el.style.fontWeight = fieldDef.bold ? 'bold' : 'normal';
+    }
+
+    function doAutoFit() {
+      if(isTextFit && wrapEl.offsetHeight > 0) {
+        // Find best size to fit height, and center
+        el.style.fontSize = (wrapEl.offsetHeight * 0.7) + 'px';
+      }
+    }
+
     // ==================== EDIT MODE ====================
     if (_editMode) {
       wrapEl.style.border = '2px dashed #000';
       if (isCheckbox) wrapEl.style.backgroundColor = 'rgba(52, 152, 219, 0.5)';
       else if (isImage) wrapEl.style.backgroundColor = 'rgba(46, 204, 113, 0.5)';
+      else if (isTextFit) wrapEl.style.backgroundColor = 'rgba(230, 126, 34, 0.5)';
       else wrapEl.style.backgroundColor = 'rgba(241, 196, 15, 0.5)';
       
       wrapEl.style.cursor = 'move';
-      el.style.pointerEvents = 'none'; // Blocca l'interazione interna (es typing) per facilitare il drag
+      el.style.pointerEvents = 'none'; 
       el.style.background = 'transparent';
       el.style.border = 'none';
       if(isCheckbox) el.style.borderRadius = '50%';
+      
+      if(isTextFit) {
+        el.style.textAlign = 'center';
+        setTimeout(doAutoFit, 100);
+        el.value = fieldDef.name.substring(0,6);
+      }
       
       var lbl = document.createElement('div');
       lbl.textContent = fieldDef.type.substring(0,3).toUpperCase() + ':' + fieldDef.name.substring(0,8);
@@ -154,7 +173,7 @@ window.renderBrancaloniaSheet = function(scheda) {
       if(fieldDef.w > 3 && fieldDef.h > 1.5) wrapEl.appendChild(lbl);
 
       var delBtn = document.createElement('div');
-      delBtn.innerHTML = '❌'; // Emoji croce rossa
+      delBtn.innerHTML = '❌'; 
       delBtn.style.cssText = 'position:absolute;top:-10px;right:-10px;background:#fff;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;padding:3px;box-shadow:0 0 3px #000;z-index:30;display:flex;align-items:center;justify-content:center;width:14px;height:14px;';
       delBtn.onmousedown = function(e) {
         e.stopPropagation();
@@ -165,6 +184,20 @@ window.renderBrancaloniaSheet = function(scheda) {
         }
       };
       wrapEl.appendChild(delBtn);
+
+      if (!isCheckbox && !isImage) {
+        var boldBtn = document.createElement('div');
+        boldBtn.innerHTML = 'B';
+        boldBtn.style.cssText = 'position:absolute;top:-10px;right:18px;background:#fff;border-radius:50%;cursor:pointer;font-size:12px;font-weight:900;font-family:serif;line-height:1;padding:3px;box-shadow:0 0 3px #000;z-index:30;display:flex;align-items:center;justify-content:center;width:14px;height:14px;color:'+(fieldDef.bold?'#27ae60':'#333')+';border:'+(fieldDef.bold?'2px solid #27ae60':'none')+';';
+        boldBtn.onmousedown = function(e) {
+          e.stopPropagation();
+          fieldDef.bold = !fieldDef.bold;
+          boldBtn.style.color = fieldDef.bold ? '#27ae60' : '#333';
+          boldBtn.style.border = fieldDef.bold ? '2px solid #27ae60' : 'none';
+          el.style.fontWeight = fieldDef.bold ? 'bold' : 'normal';
+        };
+        wrapEl.appendChild(boldBtn);
+      }
 
       var res = document.createElement('div');
       res.style.cssText = 'position:absolute;bottom:-5px;right:-5px;width:12px;height:12px;background:#c0392b;border:1px solid #fff;border-radius:50%;cursor:se-resize;z-index:30;';
@@ -183,7 +216,7 @@ window.renderBrancaloniaSheet = function(scheda) {
       };
       
       wrapEl.onmousedown = function(e) { 
-        if(e.target === res || e.target === delBtn) return;
+        if(e.target === res || e.target === delBtn || e.target.innerHTML === 'B') return;
         e.stopPropagation(); isDragging = true; 
         startX = e.clientX; startY = e.clientY; 
         startL = fieldDef.l; startT = fieldDef.t; 
@@ -198,6 +231,7 @@ window.renderBrancaloniaSheet = function(scheda) {
           fieldDef.w = Math.max(0.5, startW + (dx / pw * 100));
           fieldDef.h = Math.max(0.5, startH + (dy / ph * 100));
           wrapEl.style.width = fieldDef.w + '%'; wrapEl.style.height = fieldDef.h + '%';
+          doAutoFit();
         } else if(isDragging) {
           fieldDef.l = startL + (dx / pw * 100);
           fieldDef.t = startT + (dy / ph * 100);
@@ -266,7 +300,14 @@ window.renderBrancaloniaSheet = function(scheda) {
       el.readOnly = _dm;
       el.style.background = 'transparent'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
       el.style.fontFamily = '"Nunito", Arial, sans-serif';
-      el.style.fontSize = Math.min(16, Math.max(12, fieldDef.h * 10)) + 'px';
+      
+      if(isTextFit) {
+        el.style.textAlign = 'center';
+        setTimeout(doAutoFit, 50);
+        window.addEventListener('resize', doAutoFit);
+      } else {
+        el.style.fontSize = Math.min(16, Math.max(12, fieldDef.h * 10)) + 'px';
+      }
       
       if(isTextArea) {
         el.style.resize = 'none'; el.style.overflow = 'hidden'; el.style.lineHeight = '1.3'; el.style.fontSize = '14px';
@@ -278,6 +319,11 @@ window.renderBrancaloniaSheet = function(scheda) {
             scheda.nomePersonaggio = el.value; scheda.nome = el.value;
         }
         save();
+      };
+      
+      // Quando finisce di scrivere (blur), riadatta
+      el.onblur = function() {
+        if(isTextFit) doAutoFit();
       };
     }
     
@@ -299,15 +345,16 @@ window.renderBrancaloniaSheet = function(scheda) {
         
         function addBtn(lbl, type, w, h) {
           var btn = document.createElement('button'); btn.textContent = '+ ' + lbl;
-          btn.style.cssText = 'background:#f39c12;border:none;color:#fff;padding:4px 8px;border-radius:3px;cursor:pointer;';
+          btn.style.cssText = 'background:#f39c12;border:none;color:#fff;padding:4px 8px;border-radius:3px;cursor:pointer;font-weight:bold;';
           btn.onclick = function() {
-            layout[i].push({ name: 'Custom_' + Date.now(), type: type, l: 40, t: 40, w: w, h: h });
+            layout[i].push({ name: 'Custom_' + Date.now(), type: type, l: 40, t: 40, w: w, h: h, bold: false });
             renderPages();
           };
           ab.appendChild(btn);
         }
-        addBtn('Testo (1 Riga)', 'text', 20, 2);
+        addBtn('Testo (Normale)', 'text', 20, 2);
         addBtn('Testo (Lungo)', 'textarea', 20, 10);
+        addBtn('Testo (Centrato/Auto)', 'text-fit', 10, 5);
         addBtn('Pallino', 'checkbox', 1.5, 1);
         addBtn('Immagine', 'image', 15, 15);
         
