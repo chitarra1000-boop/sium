@@ -103,14 +103,7 @@ window.renderBrancaloniaSheet = function(scheda) {
   var sp = document.createElement('span'); sp.style.flex = '1'; nav.appendChild(sp);
 
   
-  var lavToggle = document.createElement('button'); 
-  lavToggle.innerHTML = '\uD83D\uDCDD Appunti del Canaglia'; 
-  lavToggle.style.cssText = 'background:#d63031;color:#fff;border:none;border-radius:3px;padding:4px 10px;cursor:pointer;font-weight:bold;margin-right:10px;';
-  lavToggle.onclick = function() {
-    if(window._toggleGlobalLavagna) window._toggleGlobalLavagna();
-    else { window.state.lavagnaOpen = !window.state.lavagnaOpen; if(window.renderMain) window.renderMain(); }
-  };
-  nav.appendChild(lavToggle);
+  
 
   if(!_dm) {
     
