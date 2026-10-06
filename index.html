@@ -9219,7 +9219,9 @@ function _renderTipoSelectorModal(onSelect) {
       { key: 'pokemon', label: 'Pokémon Tabletop', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBkMDcwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIi8+PHBhdGggZD0iTTIgMTJoN00xNSAxMmg3Ii8+PC9zdmc+', desc: 'Trainer & Party System' },
       { key: 'naruto', label: 'NARUTO 5e', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBkMDcwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgMTQuNWMtMi40OSAwLTQuNS0yLjAxLTQuNS00LjVTOS41MSA3LjUgMTIgNy41czQuNSAyLjAxIDQuNSA0LjUtMi4wMSA0LjUtNC41IDQuNXptMC03LjVjLTEuNjYgMC0zIDEuMzQtMyAzczEuMzQgMyAzIDMgMy0xLjM0IDMtMy0xLjM0LTMtMy0zeiIvPjwvc3ZnPg==', desc: 'Shinobi & Chakra System' },
         { key: 'brancalonia', label: 'Brancalonia', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBkMDcwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNS0xMC01ek0yIDE3bDEwIDUgMTAtNU0yIDEybDEwIDUgMTAtNSIvPjwvc3ZnPg==', desc: 'Spaghetti Fantasy' }
-    ];
+    ,
+        { key: 'sw5e', label: 'Star Wars 5e', thumb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBkMDcwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJMMiA3bDEwIDUgMTAtNS0xMC01ek0yIDE3bDEwIDUgMTAtNU0yIDEybDEwIDUgMTAtNSIvPjwvc3ZnPg==', desc: 'Sci-Fi 5e Engine' }
+      ];
   Object.keys(SHEET_DEFS).forEach(function(k) {
     var thumb = SHEET_DEFS[k].thumbnail;
       if (k === '7thsea') thumb = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBkMDcwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48cGF0aCBkPSJNMTIgMnYyME0yIDEyaDIwTTQuOTMgNC45M2wxNC4xNCAxNC4xNE00LjkzIDE5LjA3TDE5LjA3IDQuOTMiLz48L3N2Zz4=';
@@ -16884,6 +16886,9 @@ function _newScheda() {
       } else if (tipo === 'naruto') {
         ns = window._narutoDefault ? window._narutoDefault(nid) : { id: nid, schedaTipo: 'naruto' };
       } else if (tipo === 'brancalonia') {
+          ns = window._brancaloniaDefault ? window._brancaloniaDefault(nid) : { id: nid, schedaTipo: 'brancalonia' };
+        } else if (tipo === 'sw5e') {
+          ns = window._sw5eDefault ? window._sw5eDefault(nid) : { id: nid, schedaTipo: 'sw5e' };
         ns = window._brancaloniaDefault ? window._brancaloniaDefault(nid) : { id: nid, schedaTipo: 'brancalonia' };
       } else {
         ns = { id: nid, nome: '', schedaTipo: tipo, annotations: {}, annotPage: 0 };
@@ -17187,6 +17192,7 @@ function renderScheda() {
   if (_sTipo === 'pokemon' && window.renderPokemonSheet) return window.renderPokemonSheet(state.scheda);
     if (_sTipo === 'naruto' && window.renderNarutoSheet) return window.renderNarutoSheet(state.scheda);
     if (_sTipo === 'brancalonia' && window.renderBrancaloniaSheet) return window.renderBrancaloniaSheet(state.scheda);
+    if (_sTipo === 'sw5e' && window.renderSW5eSheet) return window.renderSW5eSheet(state.scheda);
   if (_sTipo !== 'normale' && SHEET_DEFS[_sTipo]) return _renderAltSheet(_sTipo);
 
   var wrap=document.createElement('div');
@@ -24973,6 +24979,7 @@ function renderArchivio() {
 }
 </script>
 <script src="brancalonia.js"></script>
+<script src="sw5e.js"></script>
 <script src="pokemon.js"></script>
   <script src="naruto.js"></script>
 </body>
