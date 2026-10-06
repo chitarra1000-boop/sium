@@ -365,7 +365,7 @@ window.renderSW5eSheet = function(scheda) {
       if(!isTextArea) el.type = 'text';
       el.value = val;
       el.readOnly = _dm;
-      el.style.background = 'transparent'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
+      el.style.background = '#ffffff'; el.style.border = 'none'; el.style.outline = 'none'; el.style.color = '#111';
       el.style.fontFamily = '"Nunito", Arial, sans-serif';
       
       if(isTextFit) {
